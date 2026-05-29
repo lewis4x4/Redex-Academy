@@ -16,9 +16,11 @@ A known-good target for your first **ultracode** run. Read this before running `
 ```
 supabase/
   migrations/
-    <ts>_init_academy.sql        # = migrations/0001_init_academy.sql, copied verbatim
+    <ts>_init_academy.sql                 # = migrations/0001_init_academy.sql, copied verbatim
+    <ts>_signoff_line_item_templates.sql  # = migrations/0003_..., copied verbatim (academy; needs only 0001)
   tests/
     0001_invariants_test.sql     # = migrations/tests/..., copied verbatim
+    0002_rls_negative.sql        # NEW: cross-org RLS negative matrix (F2.md "Tests required")
   config.toml                    # [api] schemas += "academy"; extra_search_path += "academy"
 packages/db-types/
   database.types.ts              # REGENERATED + COMMITTED (academy only at F2; workos added in F2a)
@@ -26,7 +28,7 @@ infra/
   dag-check.ts                   # now real: calls academy.prereq_graph_is_dag(); exits non-zero on a cycle
 .github/workflows/ci.yml         # rls-negative, dag-check, typegen-drift flip stub → real & required
 ```
-Nothing else. No `apps/`/feature code. `0002_workos_stub.sql` is **NOT** applied here (it's F2a — `workos.jobs` doesn't exist yet, so the cross-schema FK can't be added).
+No `apps/`/feature code. `0002_workos_stub.sql` is **NOT** applied here (it's F2a — `workos.jobs` doesn't exist yet, so the cross-schema FK can't be added). `0003` (the `signoff_line_item_templates` rubric-template catalog) **IS** wired in alongside `0001`: it is academy-schema, depends only on `0001`, is already applied on the live project, and the S1 seed needs it — so the committed db-types and the migration set stay in lockstep at 30 academy tables.
 
 ## 3. Commands it should run
 ```bash
@@ -42,8 +44,8 @@ pnpm dag:check && pnpm typecheck && pnpm lint
 
 ## 4. Expected RESULT signals (acceptance evidence)
 - `supabase db reset` applies cleanly from scratch — **idempotent, forward-only**.
-- Object counts (from `0001`): **29 tables**, ~**25 enum types**, **52 policies**, **8 triggers**, the `check_prereq_dag()` / `prereq_graph_is_dag()` functions, plus the three JWT helpers (`current_org_id`, `current_user_id`, `jwt_has_role`).
-- **RLS is `ENABLE` + `FORCE` on every one of the 29 tables** (applied via the loop in `0001`).
+- Object counts (from `0001` + `0003`): **30 tables** (incl. `signoff_line_item_templates`), ~**25 enum types**, **53 policies**, **8 triggers** (+ per-table `updated_at` triggers), the `check_prereq_dag()` / `prereq_graph_is_dag()` functions, plus the three JWT helpers (`current_org_id`, `current_user_id`, `jwt_has_role`). _(F2 now wires `0003` alongside `0001` — see §2; the table count was 29 with `0001` alone.)_
+- **RLS is `ENABLE` + `FORCE` on every one of the 30 tables** (the loop in `0001` covers its 29; `0003` enables + forces `signoff_line_item_templates`).
 - The invariant test ends with the notices: each assertion `ok` and a final **`ALL INVARIANT TESTS PASSED`**.
 - `typegen-drift` CI job **green**; `database.types.ts` committed and covers `academy.*` (workos types arrive after F2a).
 - `dag-check` **fails on a seeded cycle, passes on the acyclic graph**.
