@@ -9,7 +9,7 @@
  * committed file was produced with, so there is no postgres-meta version skew.
  *
  * Requires SUPABASE_PROJECT_REF + SUPABASE_ACCESS_TOKEN (CI secrets / .env.local).
- * After F2a, add `,workos` to the --schema list (here and in CLAUDE.md §4).
+ * Schema set is `academy,workos` (F2a added `workos`; see CLAUDE.md §4 / SCHEMA_NOTES §7).
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -42,7 +42,7 @@ let fresh: string;
 try {
   fresh = execFileSync(
     'supabase',
-    ['gen', 'types', 'typescript', '--project-id', ref, '--schema', 'academy'],
+    ['gen', 'types', 'typescript', '--project-id', ref, '--schema', 'academy,workos'],
     {
       encoding: 'utf8',
       env: { ...process.env, SUPABASE_ACCESS_TOKEN: token },
@@ -68,8 +68,8 @@ if (norm(committed) === norm(fresh)) {
 
 console.error(
   '[typegen:check] DRIFT: packages/db-types/database.types.ts differs from a fresh ' +
-    '`supabase gen types --schema academy`. Regenerate and commit:\n' +
-    '  supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema academy ' +
+    '`supabase gen types --schema academy,workos`. Regenerate and commit:\n' +
+    '  supabase gen types typescript --project-id $SUPABASE_PROJECT_REF --schema academy,workos ' +
     '> packages/db-types/database.types.ts',
 );
 process.exit(1);

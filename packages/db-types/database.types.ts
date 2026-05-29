@@ -1718,6 +1718,61 @@ export type Database = {
       [_ in never]: never
     }
   }
+  workos: {
+    Tables: {
+      jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          external_ref: string | null
+          id: string
+          org_id: string
+          scheduled_at: string | null
+          site_id: string | null
+          status: Database["workos"]["Enums"]["job_status"]
+          tech_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          org_id: string
+          scheduled_at?: string | null
+          site_id?: string | null
+          status?: Database["workos"]["Enums"]["job_status"]
+          tech_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          external_ref?: string | null
+          id?: string
+          org_id?: string
+          scheduled_at?: string | null
+          site_id?: string | null
+          status?: Database["workos"]["Enums"]["job_status"]
+          tech_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      job_status: "scheduled" | "in_progress" | "completed" | "cancelled"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
@@ -1961,6 +2016,11 @@ export const Constants = {
         "failed",
       ],
       user_status: ["active", "suspended"],
+    },
+  },
+  workos: {
+    Enums: {
+      job_status: ["scheduled", "in_progress", "completed", "cancelled"],
     },
   },
 } as const
