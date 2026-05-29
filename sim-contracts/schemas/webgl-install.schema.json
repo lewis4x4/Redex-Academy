@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/webgl-install.schema.json",
+  "title": "WebGL 3D Install Spec (engine #3) — STUB",
+  "description": "STUB schema for the WebGL 3D install engine (engine #3, 'The Forge'; R3F/Three.js; mounting/wiring/egress installs). Built in M5 ON the F5 framework — Rapier physics deferred from MVP. This stub fixes ONLY the shared envelope + the engine_kind so consumers and the 2D picture-book fallback can target it now; the 3D scene/asset/interaction model is EXPANDED in F5/M5. engine_kind is pinned to 'webgl_install' (academy.sim_kind). DO NOT author production 3D specs against this stub — it intentionally under-specifies the scene.",
+  "type": "object",
+  "required": ["envelope"],
+  "additionalProperties": true,
+  "properties": {
+    "envelope": {
+      "description": "Shared sim envelope (present in the stub so the safety-veto, telemetry, i18n and colorblind-safe contracts already apply). engine_kind MUST be 'webgl_install'.",
+      "allOf": [
+        { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope" },
+        { "properties": { "engine_kind": { "const": "webgl_install" } } }
+      ]
+    },
+    "scene": {
+      "description": "PLACEHOLDER (expanded in F5/M5): the 3D scene graph — glTF asset R2 keys (Draco-compressed, LOD for mobile), mount points, wire-route targets, terminal blocks, and the verdict-bearing assertions. Also declares the 2D picture-book fallback mapping (same drag targets, same Verdict). Left open here on purpose.",
+      "type": "object"
+    },
+    "fallback_2d": {
+      "description": "PLACEHOLDER (expanded in M5): reference to the first-class 2D picture-book schematic that produces the SAME Verdict/score as the 3D scene (invariant 7 / F5 §5).",
+      "type": "object"
+    }
+  }
+}

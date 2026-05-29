@@ -1,0 +1,104 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac304.failsafe-vs-faillocked.decider",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac304.failstate.title",
+    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000000304"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac304.failstate.veto",
+      "veto_state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    },
+    "state_tokens": [
+      { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" },
+      { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" },
+      { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    ],
+    "i18n_string_keys": [
+      "sim.ac304.failstate.title",
+      "sim.ac304.failstate.veto",
+      "sim.ac304.failstate.match.prompt",
+      "sim.ac304.failstate.left.gl1fsm",
+      "sim.ac304.failstate.left.scissor_maglock",
+      "sim.ac304.failstate.left.mandoor",
+      "sim.ac304.failstate.right.faillocked",
+      "sim.ac304.failstate.right.failsafe",
+      "sim.ac304.failstate.match.feedback",
+      "sim.ac304.failstate.hotspot.prompt",
+      "sim.ac304.failstate.region.rollup",
+      "sim.ac304.failstate.region.mandoor",
+      "sim.ac304.failstate.hotspot.feedback",
+      "sim.ac304.media.storefront.alt",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "offline_cacheable": true
+  },
+  "background": {
+    "r2_key": "sims/ac304/victra-storefront-rollup-mandoor.png",
+    "alt_i18n": "sim.ac304.media.storefront.alt",
+    "width": 1200,
+    "height": 700
+  },
+  "items": [
+    {
+      "id": "match-failstate",
+      "kind": "match",
+      "prompt_i18n": "sim.ac304.failstate.match.prompt",
+      "left": [
+        { "id": "gl1fsm", "text_i18n": "sim.ac304.failstate.left.gl1fsm" },
+        { "id": "scissor_maglock", "text_i18n": "sim.ac304.failstate.left.scissor_maglock" },
+        { "id": "mandoor", "text_i18n": "sim.ac304.failstate.left.mandoor" }
+      ],
+      "right": [
+        { "id": "faillocked", "text_i18n": "sim.ac304.failstate.right.faillocked" },
+        { "id": "failsafe", "text_i18n": "sim.ac304.failstate.right.failsafe" }
+      ],
+      "answer_key": {
+        "gl1fsm": "faillocked",
+        "scissor_maglock": "failsafe",
+        "mandoor": "failsafe"
+      },
+      "scoring": {
+        "weight": 3,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac.304.failstate_matches_egress_role",
+        "safety_flag": true
+      },
+      "feedback_i18n": "sim.ac304.failstate.match.feedback"
+    },
+    {
+      "id": "hotspot-egress-mandoor",
+      "kind": "hotspot",
+      "prompt_i18n": "sim.ac304.failstate.hotspot.prompt",
+      "regions": [
+        {
+          "id": "rollup",
+          "label_i18n": "sim.ac304.failstate.region.rollup",
+          "shape": "rect",
+          "rect": { "x": 120, "y": 90, "w": 520, "h": 380 }
+        },
+        {
+          "id": "mandoor",
+          "label_i18n": "sim.ac304.failstate.region.mandoor",
+          "shape": "rect",
+          "rect": { "x": 760, "y": 180, "w": 220, "h": 420 }
+        }
+      ],
+      "answer_key": ["mandoor"],
+      "scoring": {
+        "weight": 2,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac.304.compliant_mandoor_identified",
+        "safety_flag": true
+      },
+      "feedback_i18n": "sim.ac304.failstate.hotspot.feedback"
+    }
+  ]
+}

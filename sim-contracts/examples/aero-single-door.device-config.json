@@ -1,0 +1,178 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/device-config.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac201.aero.single-door-commission",
+    "engine_kind": "device_config",
+    "title_i18n": "sim.ac201.aero.title",
+    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000000201"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac201.aero.veto",
+      "veto_state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    },
+    "state_tokens": [
+      { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" },
+      { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" },
+      { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    ],
+    "i18n_string_keys": [
+      "sim.ac201.aero.title",
+      "sim.ac201.aero.veto",
+      "sim.ac201.aero.screen.wiring",
+      "sim.ac201.aero.screen.relay",
+      "sim.ac201.aero.screen.portal",
+      "sim.ac201.aero.field.lock_output_mode",
+      "sim.ac201.aero.field.rex_input",
+      "sim.ac201.aero.field.dps_input",
+      "sim.ac201.aero.field.lock_polarity",
+      "sim.ac201.aero.field.relay_logic",
+      "sim.ac201.aero.field.cloud_added",
+      "sim.ac201.aero.opt.failsafe",
+      "sim.ac201.aero.opt.faillocked",
+      "sim.ac201.aero.opt.rex_terminal",
+      "sim.ac201.aero.opt.dps_terminal",
+      "sim.ac201.aero.opt.normal",
+      "sim.ac201.aero.opt.reversed",
+      "sim.ac201.aero.rule.failsafe.desc",
+      "sim.ac201.aero.rule.failsafe.feedback",
+      "sim.ac201.aero.rule.rexdps.desc",
+      "sim.ac201.aero.rule.rexdps.feedback",
+      "sim.ac201.aero.rule.relay.desc",
+      "sim.ac201.aero.rule.relay.feedback",
+      "sim.ac201.aero.rule.cloud.desc",
+      "sim.ac201.aero.rule.cloud.feedback",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "fixture_set_ref": "fixture:adc-aero-x1100-create-customer-v3",
+    "offline_cacheable": true
+  },
+  "device": {
+    "model_i18n": "sim.ac201.aero.title",
+    "platform_key": "adc_aero_x1100",
+    "source_citation": "ADC-AC-X1100-2PSE Aero two-door controller install guide; Alarm.com Partner Portal Create-Customer workflow (sanitized fixture v3)."
+  },
+  "screens": [
+    {
+      "id": "wiring",
+      "title_i18n": "sim.ac201.aero.screen.wiring",
+      "fixture_image_r2_key": "fixtures/aero/01-door-wiring.png",
+      "field_ids": ["lock_output_mode", "rex_input", "dps_input", "lock_polarity"],
+      "ordinal": 0
+    },
+    {
+      "id": "relay",
+      "title_i18n": "sim.ac201.aero.screen.relay",
+      "fixture_image_r2_key": "fixtures/aero/02-relay-logic.png",
+      "field_ids": ["relay_logic"],
+      "ordinal": 1
+    },
+    {
+      "id": "portal",
+      "title_i18n": "sim.ac201.aero.screen.portal",
+      "fixture_image_r2_key": "fixtures/aero/03-partner-portal-add-door.png",
+      "field_ids": ["cloud_added"],
+      "ordinal": 2
+    }
+  ],
+  "fields": {
+    "lock_output_mode": {
+      "label_i18n": "sim.ac201.aero.field.lock_output_mode",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "fail_safe", "label_i18n": "sim.ac201.aero.opt.failsafe" },
+        { "value": "fail_locked", "label_i18n": "sim.ac201.aero.opt.faillocked" }
+      ]
+    },
+    "rex_input": {
+      "label_i18n": "sim.ac201.aero.field.rex_input",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "rex_terminal", "label_i18n": "sim.ac201.aero.opt.rex_terminal" },
+        { "value": "dps_terminal", "label_i18n": "sim.ac201.aero.opt.dps_terminal" }
+      ]
+    },
+    "dps_input": {
+      "label_i18n": "sim.ac201.aero.field.dps_input",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "dps_terminal", "label_i18n": "sim.ac201.aero.opt.dps_terminal" },
+        { "value": "rex_terminal", "label_i18n": "sim.ac201.aero.opt.rex_terminal" }
+      ]
+    },
+    "lock_polarity": {
+      "label_i18n": "sim.ac201.aero.field.lock_polarity",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "normal", "label_i18n": "sim.ac201.aero.opt.normal" },
+        { "value": "reversed", "label_i18n": "sim.ac201.aero.opt.reversed" }
+      ]
+    },
+    "relay_logic": {
+      "label_i18n": "sim.ac201.aero.field.relay_logic",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "switch_lock_circuit", "label_i18n": "sim.ac201.aero.opt.normal" },
+        { "value": "power_lock_through_relay", "label_i18n": "sim.ac201.aero.opt.reversed" }
+      ]
+    },
+    "cloud_added": {
+      "label_i18n": "sim.ac201.aero.field.cloud_added",
+      "type": "boolean",
+      "required_field": true,
+      "default": false
+    }
+  },
+  "assertion_rules": [
+    {
+      "id": "egress-fail-safe",
+      "description_i18n": "sim.ac201.aero.rule.failsafe.desc",
+      "expr": "field('lock_output_mode') == 'fail_safe'",
+      "dimension": "safety_compliance",
+      "line_item_key": "ac.201.failstate_set_for_egress_role",
+      "weight": 3,
+      "safety_flag": true,
+      "fail_feedback_i18n": "sim.ac201.aero.rule.failsafe.feedback"
+    },
+    {
+      "id": "rex-dps-not-swapped",
+      "description_i18n": "sim.ac201.aero.rule.rexdps.desc",
+      "expr": "field('rex_input') == 'rex_terminal' && field('dps_input') == 'dps_terminal'",
+      "dimension": "technical_execution",
+      "line_item_key": "ac.201.rex_dps_terminals_correct",
+      "weight": 2,
+      "safety_flag": false,
+      "fail_feedback_i18n": "sim.ac201.aero.rule.rexdps.feedback"
+    },
+    {
+      "id": "relay-switches-not-powers",
+      "description_i18n": "sim.ac201.aero.rule.relay.desc",
+      "expr": "field('relay_logic') == 'switch_lock_circuit' && field('lock_polarity') == 'normal'",
+      "dimension": "technical_execution",
+      "line_item_key": "ac.201.relay_switches_lock_circuit",
+      "weight": 2,
+      "safety_flag": false,
+      "fail_feedback_i18n": "sim.ac201.aero.rule.relay.feedback"
+    },
+    {
+      "id": "verified-in-cloud",
+      "description_i18n": "sim.ac201.aero.rule.cloud.desc",
+      "expr": "field('cloud_added') == true",
+      "dimension": "verification_documentation",
+      "line_item_key": "ac.201.door_added_and_verified_cloud",
+      "weight": 1,
+      "safety_flag": false,
+      "fail_feedback_i18n": "sim.ac201.aero.rule.cloud.feedback"
+    }
+  ]
+}

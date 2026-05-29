@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/panel-state.schema.json",
+  "title": "Virtual IQ-Panel State-Machine Spec (engine #4) — STUB",
+  "description": "STUB schema for the virtual IQ-panel state-machine engine (engine #4; Qolsys IQ Panel programming via XState). Phase 2 — F5 reserves the API surface only. This stub fixes ONLY the shared envelope + engine_kind; the XState chart (states, events, guards, zone/partition/delay model + assertion rules) is EXPANDED in the Phase-2 build. engine_kind is pinned to 'panel_state_machine' (academy.sim_kind). The fixtures/iq-panel.sample.json fixture establishes the (synthetic, sanitized) fixture pipeline this engine will replay. DO NOT author production panel specs against this stub.",
+  "type": "object",
+  "required": ["envelope"],
+  "additionalProperties": true,
+  "properties": {
+    "envelope": {
+      "description": "Shared sim envelope (present in the stub so the safety-veto, telemetry, i18n and colorblind-safe contracts already apply). engine_kind MUST be 'panel_state_machine'. Replay specs set envelope.fixture_set_ref to a sanitized IQ-panel fixture.",
+      "allOf": [
+        { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope" },
+        { "properties": { "engine_kind": { "const": "panel_state_machine" } } }
+      ]
+    },
+    "machine": {
+      "description": "PLACEHOLDER (expanded in Phase 2): the XState chart — states (programming screens), events (key presses/field writes), guards, the zone/partition/entry-delay/exit-delay/chime/user model, and assertion_rules (e.g. 'entry delay > 0', 'smoke zone = 24-hour fire', 'two partitions defined') §5.4-tagged with optional safety_flag. Left open here on purpose.",
+      "type": "object"
+    }
+  }
+}

@@ -1,0 +1,226 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/branching.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac203.egress-fail.maglock-door",
+    "engine_kind": "branching_scenario",
+    "title_i18n": "sim.ac203.egress-fail.title",
+    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000000203"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac203.egress-fail.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "emits_verbs": [
+      "http://adlnet.gov/expapi/verbs/attempted",
+      "http://adlnet.gov/expapi/verbs/answered",
+      "http://adlnet.gov/expapi/verbs/completed",
+      "https://academy.goredex.com/xapi/verbs/triggered-safety-veto"
+    ],
+    "state_tokens": [
+      { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" },
+      { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" },
+      { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    ],
+    "i18n_string_keys": [
+      "sim.ac203.egress-fail.title",
+      "sim.ac203.egress-fail.veto",
+      "sim.ac203.egress-fail.node.arrival.prompt",
+      "sim.ac203.egress-fail.node.failstate.prompt",
+      "sim.ac203.egress-fail.choice.failsafe.label",
+      "sim.ac203.egress-fail.choice.failsafe.consequence",
+      "sim.ac203.egress-fail.choice.faillocked.label",
+      "sim.ac203.egress-fail.choice.faillocked.consequence",
+      "sim.ac203.egress-fail.node.rex.prompt",
+      "sim.ac203.egress-fail.choice.pushtoexit.label",
+      "sim.ac203.egress-fail.choice.pushtoexit.consequence",
+      "sim.ac203.egress-fail.choice.motiononly.label",
+      "sim.ac203.egress-fail.choice.motiononly.consequence",
+      "sim.ac203.egress-fail.node.fire.prompt",
+      "sim.ac203.egress-fail.choice.facp.label",
+      "sim.ac203.egress-fail.choice.facp.consequence",
+      "sim.ac203.egress-fail.choice.nofacp.label",
+      "sim.ac203.egress-fail.choice.nofacp.consequence",
+      "sim.ac203.egress-fail.terminal.pass.text",
+      "sim.ac203.egress-fail.terminal.trapped_lock.text",
+      "sim.ac203.egress-fail.terminal.trapped_motion.text",
+      "sim.ac203.egress-fail.terminal.trapped_fire.text",
+      "sim.ac203.egress-fail.replay.faillocked.overlay",
+      "sim.ac203.egress-fail.replay.motiononly.overlay",
+      "sim.ac203.egress-fail.replay.nofacp.overlay",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop",
+      "sim.ac203.media.storefront.alt",
+      "sim.ac203.media.crowd_trapped.alt"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "start": "arrival",
+  "nodes": {
+    "arrival": {
+      "type": "situation",
+      "prompt_i18n": "sim.ac203.egress-fail.node.arrival.prompt",
+      "media": [
+        { "r2_key": "sims/ac203/storefront-maglock-door.jpg", "kind": "image", "alt_i18n": "sim.ac203.media.storefront.alt" }
+      ],
+      "is_safety_decision": false,
+      "choices": [
+        {
+          "id": "begin",
+          "label_i18n": "sim.ac203.egress-fail.choice.failsafe.label",
+          "to": "failstate",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.failsafe.consequence",
+          "score_delta": 0
+        },
+        {
+          "id": "begin-alt",
+          "label_i18n": "sim.ac203.egress-fail.choice.failsafe.label",
+          "to": "failstate",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.failsafe.consequence",
+          "score_delta": 0
+        }
+      ]
+    },
+    "failstate": {
+      "type": "prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.failstate.prompt",
+      "is_safety_decision": true,
+      "choices": [
+        {
+          "id": "failsafe",
+          "label_i18n": "sim.ac203.egress-fail.choice.failsafe.label",
+          "to": "rex",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.failsafe.consequence",
+          "score_delta": 3,
+          "safety_flag": false,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.releases_on_power_loss" }
+        },
+        {
+          "id": "faillocked",
+          "label_i18n": "sim.ac203.egress-fail.choice.faillocked.label",
+          "to": "trapped_lock",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.faillocked.consequence",
+          "score_delta": -3,
+          "safety_flag": true,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.releases_on_power_loss" }
+        }
+      ]
+    },
+    "rex": {
+      "type": "prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.rex.prompt",
+      "is_safety_decision": true,
+      "choices": [
+        {
+          "id": "pushtoexit",
+          "label_i18n": "sim.ac203.egress-fail.choice.pushtoexit.label",
+          "to": "fire",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.pushtoexit.consequence",
+          "score_delta": 3,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.push_to_exit_present_30s" }
+        },
+        {
+          "id": "motiononly",
+          "label_i18n": "sim.ac203.egress-fail.choice.motiononly.label",
+          "to": "trapped_motion",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.motiononly.consequence",
+          "score_delta": -3,
+          "safety_flag": true,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.push_to_exit_present_30s" }
+        }
+      ]
+    },
+    "fire": {
+      "type": "prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.fire.prompt",
+      "is_safety_decision": true,
+      "choices": [
+        {
+          "id": "facp",
+          "label_i18n": "sim.ac203.egress-fail.choice.facp.label",
+          "to": "pass",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.facp.consequence",
+          "score_delta": 3,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.releases_on_fire_alarm" }
+        },
+        {
+          "id": "nofacp",
+          "label_i18n": "sim.ac203.egress-fail.choice.nofacp.label",
+          "to": "trapped_fire",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.nofacp.consequence",
+          "score_delta": -3,
+          "safety_flag": true,
+          "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac.203.releases_on_fire_alarm" }
+        }
+      ]
+    },
+    "pass": {
+      "type": "terminal",
+      "outcome": "pass",
+      "safety_veto": false,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.pass.text",
+      "state": { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" }
+    },
+    "trapped_lock": {
+      "type": "terminal",
+      "outcome": "fail",
+      "safety_veto": true,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.trapped_lock.text",
+      "media": [
+        { "r2_key": "sims/ac203/crowd-trapped-locked-door.jpg", "kind": "image", "alt_i18n": "sim.ac203.media.crowd_trapped.alt" }
+      ],
+      "state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" },
+      "replay": {
+        "freeze_node": "trapped_lock",
+        "decided_at_node": "failstate",
+        "overlay_i18n": "sim.ac203.egress-fail.replay.faillocked.overlay"
+      }
+    },
+    "trapped_motion": {
+      "type": "terminal",
+      "outcome": "fail",
+      "safety_veto": true,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.trapped_motion.text",
+      "media": [
+        { "r2_key": "sims/ac203/crowd-trapped-locked-door.jpg", "kind": "image", "alt_i18n": "sim.ac203.media.crowd_trapped.alt" }
+      ],
+      "state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" },
+      "replay": {
+        "freeze_node": "trapped_motion",
+        "decided_at_node": "rex",
+        "overlay_i18n": "sim.ac203.egress-fail.replay.motiononly.overlay"
+      }
+    },
+    "trapped_fire": {
+      "type": "terminal",
+      "outcome": "fail",
+      "safety_veto": true,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.trapped_fire.text",
+      "media": [
+        { "r2_key": "sims/ac203/crowd-trapped-locked-door.jpg", "kind": "image", "alt_i18n": "sim.ac203.media.crowd_trapped.alt" }
+      ],
+      "state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" },
+      "replay": {
+        "freeze_node": "trapped_fire",
+        "decided_at_node": "fire",
+        "overlay_i18n": "sim.ac203.egress-fail.replay.nofacp.overlay"
+      }
+    }
+  }
+}

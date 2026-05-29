@@ -1,0 +1,35 @@
+# =============================================================================
+# Secrets / local env — NEVER commit
+# =============================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p8
+
+# Stray filled duplicates (e.g. macOS "... copy") — may contain real secrets
+*copy
+* copy
+.env.example copy
+
+# Dependencies / build output
+node_modules/
+dist/
+build/
+.turbo/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+# Supabase local
+supabase/.temp/
+supabase/.branches/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json

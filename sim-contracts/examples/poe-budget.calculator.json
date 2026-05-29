@@ -1,0 +1,190 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/calculator.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "vid202.poe-budget.blow-the-budget",
+    "engine_kind": "calculator",
+    "title_i18n": "sim.vid202.poe.title",
+    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000202020"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.vid202.poe.veto",
+      "veto_state": { "token": "safety_veto", "shape": "octagon", "label_i18n": "sim.common.state.safety_stop", "color_role": "danger" }
+    },
+    "state_tokens": [
+      { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" },
+      { "token": "warn", "shape": "triangle", "label_i18n": "sim.common.state.warn", "color_role": "warning" },
+      { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" }
+    ],
+    "i18n_string_keys": [
+      "sim.vid202.poe.title",
+      "sim.vid202.poe.veto",
+      "sim.vid202.poe.input.switch_budget",
+      "sim.vid202.poe.input.fixed_count",
+      "sim.vid202.poe.input.fixed_class",
+      "sim.vid202.poe.input.ptz_count",
+      "sim.vid202.poe.input.ptz_class",
+      "sim.vid202.poe.input.heated_count",
+      "sim.vid202.poe.input.heated_class",
+      "sim.vid202.poe.input.headroom_pct",
+      "sim.vid202.poe.class.af",
+      "sim.vid202.poe.class.at",
+      "sim.vid202.poe.class.bt3",
+      "sim.vid202.poe.class.bt4",
+      "sim.vid202.poe.threshold.pass.feedback",
+      "sim.vid202.poe.threshold.warn.feedback",
+      "sim.vid202.poe.threshold.fail.feedback",
+      "sim.vid202.poe.meter.label",
+      "sim.common.state.pass",
+      "sim.common.state.warn",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "offline_cacheable": true
+  },
+  "inputs": {
+    "switch_budget_w": {
+      "label_i18n": "sim.vid202.poe.input.switch_budget",
+      "type": "number",
+      "unit": "W",
+      "min": 0,
+      "max": 1000,
+      "step": 5,
+      "default": 130
+    },
+    "fixed_count": {
+      "label_i18n": "sim.vid202.poe.input.fixed_count",
+      "type": "integer",
+      "unit": "count",
+      "min": 0,
+      "max": 48,
+      "default": 6
+    },
+    "fixed_class": {
+      "label_i18n": "sim.vid202.poe.input.fixed_class",
+      "type": "enum",
+      "default": "af",
+      "options": [
+        { "value": "af", "label_i18n": "sim.vid202.poe.class.af" },
+        { "value": "at", "label_i18n": "sim.vid202.poe.class.at" },
+        { "value": "bt3", "label_i18n": "sim.vid202.poe.class.bt3" },
+        { "value": "bt4", "label_i18n": "sim.vid202.poe.class.bt4" }
+      ]
+    },
+    "ptz_count": {
+      "label_i18n": "sim.vid202.poe.input.ptz_count",
+      "type": "integer",
+      "unit": "count",
+      "min": 0,
+      "max": 16,
+      "default": 2
+    },
+    "ptz_class": {
+      "label_i18n": "sim.vid202.poe.input.ptz_class",
+      "type": "enum",
+      "default": "at",
+      "options": [
+        { "value": "af", "label_i18n": "sim.vid202.poe.class.af" },
+        { "value": "at", "label_i18n": "sim.vid202.poe.class.at" },
+        { "value": "bt3", "label_i18n": "sim.vid202.poe.class.bt3" },
+        { "value": "bt4", "label_i18n": "sim.vid202.poe.class.bt4" }
+      ]
+    },
+    "heated_count": {
+      "label_i18n": "sim.vid202.poe.input.heated_count",
+      "type": "integer",
+      "unit": "count",
+      "min": 0,
+      "max": 16,
+      "default": 2
+    },
+    "heated_class": {
+      "label_i18n": "sim.vid202.poe.input.heated_class",
+      "type": "enum",
+      "default": "bt3",
+      "options": [
+        { "value": "af", "label_i18n": "sim.vid202.poe.class.af" },
+        { "value": "at", "label_i18n": "sim.vid202.poe.class.at" },
+        { "value": "bt3", "label_i18n": "sim.vid202.poe.class.bt3" },
+        { "value": "bt4", "label_i18n": "sim.vid202.poe.class.bt4" }
+      ]
+    },
+    "headroom_pct": {
+      "label_i18n": "sim.vid202.poe.input.headroom_pct",
+      "type": "number",
+      "unit": "%",
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 30
+    }
+  },
+  "compute_ref": "poe_power_budget",
+  "result_unit": "W",
+  "thresholds": [
+    {
+      "id": "within-budget-with-headroom",
+      "band": "pass",
+      "op": ">=",
+      "value": 0,
+      "dimension": "technical_execution",
+      "line_item_key": "vid.202.budget_within_with_headroom",
+      "safety_flag": false,
+      "feedback_i18n": "sim.vid202.poe.threshold.pass.feedback",
+      "state": { "token": "pass", "shape": "check", "label_i18n": "sim.common.state.pass", "color_role": "success" }
+    },
+    {
+      "id": "no-headroom",
+      "band": "warn",
+      "op": "between",
+      "value": -0.0001,
+      "value_high": 0,
+      "dimension": "technical_execution",
+      "line_item_key": "vid.202.budget_no_headroom",
+      "safety_flag": false,
+      "feedback_i18n": "sim.vid202.poe.threshold.warn.feedback",
+      "state": { "token": "warn", "shape": "triangle", "label_i18n": "sim.common.state.warn", "color_role": "warning" }
+    },
+    {
+      "id": "over-budget-sheds-load",
+      "band": "fail",
+      "op": "<",
+      "value": 0,
+      "dimension": "technical_execution",
+      "line_item_key": "vid.202.budget_over_sheds_load",
+      "safety_flag": false,
+      "feedback_i18n": "sim.vid202.poe.threshold.fail.feedback",
+      "state": { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" }
+    }
+  ],
+  "meter": {
+    "label_i18n": "sim.vid202.poe.meter.label",
+    "min": 0,
+    "max": 130,
+    "unit": "W",
+    "show_numeric_value": true,
+    "band_markers": [
+      { "at": 100, "state": { "token": "warn", "shape": "triangle", "label_i18n": "sim.common.state.warn", "color_role": "warning" } },
+      { "at": 130, "state": { "token": "fail", "shape": "cross", "label_i18n": "sim.common.state.fail", "color_role": "danger" } }
+    ]
+  },
+  "$computeContract": {
+    "$comment": "NOT part of the schema — an author + engineering note documenting the poe_power_budget formula registry entry the engine implements. The spec references it by compute_ref id; the constants live in code (vetted, unit-tested) so the compute path is deterministic and auditable.",
+    "psu_pd_watts_by_class": {
+      "$note": "PD (powered-device) max available power per IEEE 802.3 (the number that actually matters at the camera). PSE budget is what the switch must supply (~higher due to cable loss).",
+      "af": { "type": "1", "pse_w": 15.4, "pd_w": 12.95 },
+      "at": { "type": "2", "pse_w": 30.0, "pd_w": 25.5 },
+      "bt3": { "type": "3", "pse_w": 60.0, "pd_w": 51.0 },
+      "bt4": { "type": "4", "pse_w": 90.0, "pd_w": 71.3 }
+    },
+    "formula": "demand_w = sum(count_i * pse_w(class_i)) ;; available_w = switch_budget_w * (1 - headroom_pct/100) ;; result_w = available_w - demand_w  (>=0 pass, <0 fail: the switch sheds load and the front-door camera drops)",
+    "worked_default_example": {
+      "demand_w": "6*15.4 + 2*30.0 + 2*60.0 = 92.4 + 60 + 120 = 272.4 W (PSE)",
+      "available_w": "130 * (1 - 0.30) = 91.0 W",
+      "result_w": "91.0 - 272.4 = -181.4 W  => FAIL (massively over budget; learner must move PTZs/heated domes to a second switch or right-size the switch)"
+    }
+  }
+}
