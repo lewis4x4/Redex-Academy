@@ -1,0 +1,8 @@
+{
+  "app": {
+    "title": "Redex Academy",
+    "tagline": "Míralo. Hazlo. Demuéstralo.",
+    "loading": "Cargando…",
+    "offline_banner": "Estás sin conexión. Tu progreso se sincronizará al reconectar."
+  }
+}

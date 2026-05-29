@@ -1,0 +1,8 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+
+# esbuild's postinstall verifies its platform binary (required by Vite + Vitest).
+# pnpm 10+ blocks dependency build scripts by default; allow this one explicitly.
+allowBuilds:
+  esbuild: true

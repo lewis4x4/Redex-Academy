@@ -1,0 +1,33 @@
+{
+  "name": "@redex/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared tooling presets for the Redex Academy monorepo: tsconfig base, ESLint flat config, Prettier, Tailwind.",
+  "exports": {
+    "./tsconfig.base.json": "./tsconfig.base.json",
+    "./eslint-preset": "./eslint-preset.js",
+    "./prettier-preset": "./prettier-preset.js",
+    "./tailwind-preset": "./tailwind-preset.js"
+  },
+  "files": [
+    "tsconfig.base.json",
+    "eslint-preset.js",
+    "prettier-preset.js",
+    "tailwind-preset.js"
+  ],
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "globals": "^15.14.0",
+    "typescript-eslint": "^8.18.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  }
+}

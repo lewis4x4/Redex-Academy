@@ -1,0 +1,34 @@
+# Build output & deps
+**/node_modules/**
+**/dist/**
+**/build/**
+**/.turbo/**
+**/coverage/**
+**/playwright-report/**
+**/test-results/**
+pnpm-lock.yaml
+
+# Generated, committed artifacts — never hand-edited
+**/database.types.ts
+**/*.gen.ts
+
+# =============================================================================
+# Authored build-kit sources — kept VERBATIM (do not reformat). These predate
+# the monorepo scaffold and are governance/spec/seed content owned elsewhere.
+# Later goals (F2/F5/S1) wire the SQL/JSON specs into supabase/ and packages/,
+# where the monorepo's formatting WILL apply.
+# =============================================================================
+AGENT_ROLES_AND_ACCEPTANCE.md
+CLAUDE.md
+CODING_STANDARDS.md
+DECISIONS_LEDGER.md
+PRE_BUILD_CHECKLIST.md
+README.md
+SAFETY_GLOSSARY.md
+adr/**
+goals/**
+migrations/**
+seed/**
+sim-contracts/**
+supabase/migrations/**
+supabase/tests/**

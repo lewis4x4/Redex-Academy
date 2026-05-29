@@ -1,0 +1,6 @@
+# Vite build output
+dist/
+
+# Playwright e2e/a11y artifacts
+test-results/
+playwright-report/

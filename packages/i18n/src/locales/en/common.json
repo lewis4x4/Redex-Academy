@@ -1,0 +1,8 @@
+{
+  "app": {
+    "title": "Redex Academy",
+    "tagline": "See one. Do one. Prove one.",
+    "loading": "Loading…",
+    "offline_banner": "You are offline. Progress will sync when you reconnect."
+  }
+}

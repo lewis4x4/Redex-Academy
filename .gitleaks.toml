@@ -1,0 +1,13 @@
+title = "Redex Academy gitleaks config"
+
+# Use gitleaks' built-in rule set, then add repo-specific allowlisting below.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths that legitimately contain no real secrets (names-only examples, lockfiles, generated artifacts)."
+paths = [
+  '''\.env\.example$''',
+  '''pnpm-lock\.yaml$''',
+  '''packages/db-types/database\.types\.ts$''',
+]

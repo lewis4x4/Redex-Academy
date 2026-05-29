@@ -1,0 +1,50 @@
+# Netlify build + hosting for the Redex Academy PWA (apps/web).
+# Env values (names only — set in Netlify UI, never committed): see .env.example.
+# Instant rollback is enabled by Netlify deploys (Deploys → Publish/Rollback).
+
+[build]
+  base = "."
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @redex/web build"
+  publish = "apps/web/dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NPM_FLAGS = "--version" # no-op; pnpm (via corepack) is the package manager
+
+# PR preview deploys: build the same way so the PWA shell loads on the preview URL.
+[context.deploy-preview]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @redex/web build"
+
+[context.branch-deploy]
+  command = "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @redex/web build"
+
+# ── SPA fallback ────────────────────────────────────────────────────────────
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ── PWA cache headers ───────────────────────────────────────────────────────
+# Service worker must NEVER be cached (F4 ships the real Workbox SW; the exact
+# filename is finalized there — cover the common names now).
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/service-worker.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/manifest+json"
+
+# Hashed, content-addressed build assets — cache forever.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

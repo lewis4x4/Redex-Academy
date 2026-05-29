@@ -1,0 +1,48 @@
+# Supabase local config for Redex Academy.
+#
+# Schema + RLS land in F2 (`academy`) and F2a (`workos`). The remote project is
+# already provisioned (ref in .env.local / Supabase MCP) with the academy schema +
+# seed applied live — `supabase link --project-ref <PROJECT_REF>`. F2 wires the
+# authored migration files into supabase/migrations/ and appends "academy" to
+# [api].schemas / extra_search_path below; F2 must NOT re-apply to a fresh remote
+# or rewrite the DDL (see goals/F2_DRY_RUN.md).
+project_id = "redex-academy"
+
+[api]
+enabled = true
+port = 54321
+# F2 appends "academy"; F2a appends "workos".
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:5173"
+additional_redirect_urls = ["http://localhost:5173"]
+jwt_expiry = 3600
+enable_signup = true
+
+[edge_runtime]
+enabled = true
+# Edge Functions (Deno): finalize-signoff, issue-badge, xapi-bridge,
+# grade-open-response, sim-feedback, recert-scan, sync — added in later goals.

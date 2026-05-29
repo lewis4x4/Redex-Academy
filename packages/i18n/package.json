@@ -1,0 +1,30 @@
+{
+  "name": "@redex/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "react-i18next config + locale JSON + the LOCKED, non-overridable bilingual safety glossary (SAFETY_GLOSSARY.md).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./glossary": "./src/glossary.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
+  },
+  "dependencies": {
+    "i18next": "^24.2.0",
+    "react-i18next": "^15.4.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "react": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

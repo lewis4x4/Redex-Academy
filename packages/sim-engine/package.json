@@ -1,0 +1,18 @@
+{
+  "name": "@redex/sim-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Forge runtime + shared Verdict/scoring/safety-veto hook, telemetry emitter, offline cache + i18n contracts. Stub until F5/F5b.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}

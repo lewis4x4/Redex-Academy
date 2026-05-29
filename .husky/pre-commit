@@ -1,0 +1,9 @@
+pnpm exec lint-staged
+
+# Secret scan on staged changes. Non-blocking if gitleaks isn't installed locally
+# (CI enforces it as a required check); install: https://github.com/gitleaks/gitleaks
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks protect --staged --redact --no-banner
+else
+  echo "⚠ gitleaks not installed — skipping local secret scan (CI still enforces it)."
+fi
