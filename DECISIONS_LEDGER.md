@@ -51,10 +51,10 @@ The canonical engine set (the wave3 "4 data shapes" and the experience-design "F
 - **F5b** — Build **engine #5 (2D-interaction)** and **engine #6 (calculator)** + their JSON Schemas (MVP needs them for AC-101/102 and PPF/PoE calculators).
 - **S1 (seed data)** — Seed the MVP-slice **catalog** (courses/units/competencies/prerequisites), the **§5.4 line-items for AC-203** (its ~6 safety lines), and the **badge_class** definitions for the slice. M1/M2/M6/M7 depend on S1.
 
-## I. Effort tiering (ultracode vs standard)
-- **ultracode** (xhigh + dynamic workflow + adversarial verification; token-justified): **F2, F2a, F3, F4, F5, F5b, F6, M5, M6, M7, M12.** (Security boundaries, the credential/safety path, the sim engines, the hardest bets, CCS isolation.)
-- **standard:** **F1, S1, M1, M2, M3, M4, M8, M9, M10, M11.**
-- Pair ultracode with **auto mode**.
+## I. Effort — UltraCode on EVERY goal (operator directive)
+- **Run ALL goals (F1 → M12, including S1) with UltraCode** (xhigh + dynamic workflow + adversarial verification), **paired with auto mode.** Standing directive from Brian: maximum thoroughness on every goal; the higher token cost is accepted.
+- This **supersedes** the earlier standard/ultracode split. There is **no "standard" tier** anymore — any per-goal label or table cell still reading "standard" is overridden by this rule.
+- Trade-off acknowledged: light goals (F1, S1, simple MVP goals) burn far more tokens under UltraCode than they strictly need; that is the accepted cost of uniform rigor + adversarial verification on every goal.
 
 ## J. Done-criteria that are NOT CI-automatable (human verification required)
 - **F4** offline test on **real hardware in airplane mode**; **F6** "badge verifies at a public URL"; and **all safety-/credential-critical merges**. These get an explicit **human-verification** checkbox in the acceptance rubric — never agent self-certification.

@@ -3,7 +3,7 @@
 A known-good target for the **MVP-slice catalog seed** run. Read this before running `/goal S1`, then check the result against §4–§6. If anything in §6 (Red Flags) appears, reject the run and re-prompt.
 
 - **Goal:** apply the authored seed `seed/0001_mvp_slice_seed.sql` to the `academy` schema — the 14-course Access-Control-through-egress slice (2 orgs, 15 competencies, 14 courses, 14 published versions, 42 units, 24 prereq edges, 30 assessment_items, 4 badge_classes), the AC-201/202/203 §5.4 line-item templates (**29 rows in `academy.signoff_line_item_templates`**), and the slice badge stack — and prove the prerequisite graph stays a DAG.
-- **Tier:** standard. (Content-as-data; the heavy adversarial lifting was F2. Pairing with auto mode is optional.)
+- **Tier:** ultracode. (Content-as-data; the heavy adversarial lifting was F2. Pairing with auto mode is optional.)
 - **Depends on:** **F2** merged (the `academy` schema + the DAG check + `0003_signoff_line_item_templates.sql`, which must be applied before this seed — the seed INSERTs into that table) and **F2a** merged (the `workos` stub — S1 itself seeds no jobs, but S1 is the contract M6's job-linked sign-off path consumes, so F2a should already be in).
 - **Human gate:** none HARD for S1 (no safety/credential boundary is *enforced* here). But the AC-203 critical-safety line-item **data** seeded here feeds M6's veto — eyeball the 7 ⚠ keys (§5).
 

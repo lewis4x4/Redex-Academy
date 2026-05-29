@@ -8,7 +8,9 @@
 
 ## 1. Actors & when each is used
 
-There are **three** actors. **UltraCode is NOT a separate agent** — it is a Claude Code **effort mode** (Opus 4.8) that pins effort to `xhigh` and auto-spins dynamic workflows (parallel subagents + independent/adversarial verification). It burns substantially more tokens, so it is **reserved** for heavy/critical goals and **paired with auto mode**.
+> **OPERATOR DIRECTIVE (supersedes the tables below):** run **EVERY goal with UltraCode + auto mode** — F1 through M12, including S1. The standard/ultracode split is retired; the "standard effort" actor row is no longer a routine path, and every **Effort** cell below is **UltraCode**.
+
+There are **three** actors. **UltraCode is NOT a separate agent** — it is a Claude Code **effort mode** (Opus 4.8) that pins effort to `xhigh` and auto-spins dynamic workflows (parallel subagents + independent/adversarial verification). It burns substantially more tokens; per the directive above it is now used on **every** goal, **paired with auto mode**.
 
 | Actor | What it is | When it runs |
 |---|---|---|
@@ -20,7 +22,7 @@ There are **three** actors. **UltraCode is NOT a separate agent** — it is a Cl
 
 | Goal | Effort | Why |
 |---|---|---|
-| **F1** Repo + CI/CD + Netlify + env scaffolding | **standard** | Mechanical scaffolding once the monorepo layout is given. |
+| **F1** Repo + CI/CD + Netlify + env scaffolding | **UltraCode** | Mechanical scaffolding once the monorepo layout is given. |
 | **F2** Base schema + RLS + generated types | **UltraCode** | Foundational contract every goal compiles against + RLS is a security boundary. |
 | **F2a** `workos` schema stub + cross-schema FK + grants | **UltraCode** | Cross-schema boundary the sign-off/recert/dashboard joins depend on; runs before M6. |
 | **F3** Auth + SSO + shared identity | **UltraCode** | Identity model is load-bearing and security-critical; JWT-claim/RLS interaction is subtle. |
@@ -28,21 +30,21 @@ There are **three** actors. **UltraCode is NOT a separate agent** — it is a Cl
 | **F5** Reusable sim engine v0 + fixture pipeline | **UltraCode** | #2 program risk; defines the reusable contract every sim consumes. |
 | **F5b** Engine #5 (2D-interaction) + engine #6 (calculator) + schemas | **UltraCode** | MVP-critical engines + their JSON Schemas (AC-101/102, PPF/PoE calculators). |
 | **F6** OB 3.0 issuer + key management | **UltraCode** | Cryptographic correctness + key custody; a signing bug is a credibility/liability event. |
-| **S1** Seed the MVP-slice catalog + AC-203 line-items + badge_classes | **standard** | Content-as-data load; M1/M2/M6/M7 depend on it. |
-| **M1** Catalog + prereq-gated enrollment + skill-tree | **standard** | CRUD + graph resolver. |
-| **M2** MDX lessons + retry-to-mastery checks (EN+ES) | **standard** | Content rendering + retry logic once the schema exists. |
-| **M3** Branching scenario engine (egress-fail) | **standard** | App of F5's engine if the F5 contract is solid. |
-| **M4** Device-config sim (Aero/Mercury) | **standard** | App of F5 + fixtures given the contract. |
+| **S1** Seed the MVP-slice catalog + AC-203 line-items + badge_classes | **UltraCode** | Content-as-data load; M1/M2/M6/M7 depend on it. |
+| **M1** Catalog + prereq-gated enrollment + skill-tree | **UltraCode** | CRUD + graph resolver. |
+| **M2** MDX lessons + retry-to-mastery checks (EN+ES) | **UltraCode** | Content rendering + retry logic once the schema exists. |
+| **M3** Branching scenario engine (egress-fail) | **UltraCode** | App of F5's engine if the F5 contract is solid. |
+| **M4** Device-config sim (Aero/Mercury) | **UltraCode** | App of F5 + fixtures given the contract. |
 | **M5** WebGL install sim (AC-201/203) | **UltraCode** | Spatial wiring correctness + the safety-fail (normally-open mag-lock) verdict; perf-budgeted 3D is hard. |
 | **M6** §5.4 sign-off + DB safety-veto + Work OS evidence | **UltraCode** | Single most liability-critical goal; defense-in-depth veto must be adversarially verified. |
 | **M7** OB 3.0 issuance for slice badges | **UltraCode** | Credential correctness + stackability + evidence binding. |
-| **M8** xAPI → LRS + Postgres summary projection | **standard** | Integration + mapping once the profile is pinned. |
-| **M9** Authoring admin v1 (content-as-data) | **standard** | Forms over schemas once F2 types + F5 schemas exist. |
-| **M10** AI adaptive feedback + open-response grading | **standard** | Assistive only; the guardrail is testable. |
-| **M11** Manager sign-off dashboard (Realtime) | **standard** | Read-side Realtime UI. |
+| **M8** xAPI → LRS + Postgres summary projection | **UltraCode** | Integration + mapping once the profile is pinned. |
+| **M9** Authoring admin v1 (content-as-data) | **UltraCode** | Forms over schemas once F2 types + F5 schemas exist. |
+| **M10** AI adaptive feedback + open-response grading | **UltraCode** | Assistive only; the guardrail is testable. |
+| **M11** Manager sign-off dashboard (Realtime) | **UltraCode** | Read-side Realtime UI. |
 | **M12** SSO + one CCS partner org (isolation test) | **UltraCode** | RLS/tenant-isolation adversarial test; a leak is a contractual breach with the anchor/CCS. |
 
-**Token-cost rationale.** UltraCode concentrates spend on the security boundaries, the two hardest risk bets (offline sync, the sim engine), the credential/safety path, and the isolation proof. Routine CRUD / content / app-of-engine goals stay **standard** to keep the build cheap. Be mindful that UltraCode itself burns tokens during the build — reserve it per §I and always **pair UltraCode with auto mode**.
+**Token-cost rationale.** Per the operator directive, **every goal runs UltraCode + auto mode** — including routine CRUD / content / app-of-engine goals. This applies uniform max-thoroughness + adversarial verification across the whole build; the higher token cost (UltraCode burns substantially more, even on light goals like F1/S1) is the accepted trade. Always **pair UltraCode with auto mode**.
 
 ---
 
@@ -52,7 +54,7 @@ Run **one goal at a time.** For each goal:
 
 1. **Pick the goal** — read its spec in `goals/<ID>.md` (scope, `Depends on`, acceptance-test list, out-of-scope / pinned-invariant block).
 2. **Confirm all `Depends on` are merged.** A goal consumes contracts (DB schema, generated types, engine API + JSON Schemas, seed data). **If a contract is missing, STOP and surface it — do not invent it.** Contract-producer goals merge before consumers.
-3. **Set the effort tier** from the goal spec / §1 (UltraCode + auto mode for the listed goals; standard otherwise).
+3. **Set effort to UltraCode + auto mode** — every goal (operator directive; no standard tier).
 4. **Build** the vertical slice; honor every pinned invariant in §5; write the tests the Definition of Done requires.
 5. **Self-verify** against the goal's done-criteria **and** the shared Definition of Done (§3).
 6. **Run the invariant tests** (§4) — the locked safety-veto / immutability / RLS / idempotency / no-fake-pass / no-client-secret suite must pass.

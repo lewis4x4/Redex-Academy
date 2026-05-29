@@ -175,12 +175,12 @@ WebGL sims carry an explicit **mobile perf budget** (FPS + asset-size) asserted 
 
 ---
 
-## 9. Effort: when to use UltraCode
+## 9. Effort: UltraCode on every goal
 
-**UltraCode is a Claude Code effort mode** (Opus 4.8: pins effort to `xhigh`, auto-spins dynamic workflows — parallel subagents + adversarial verification). It is **NOT a separate agent**. It burns substantially more tokens, so it is **reserved** for heavy/critical goals and **paired with auto mode**.
+**UltraCode is a Claude Code effort mode** (Opus 4.8: pins effort to `xhigh`, auto-spins dynamic workflows — parallel subagents + adversarial verification). It is **NOT a separate agent**.
 
-- **UltraCode goals:** `F2, F2a, F3, F4, F5, F5b, F6, M5, M6, M7, M12` (security boundaries, the credential/safety path, the sim engines, the hardest bets, CCS isolation).
-- **Standard goals:** `F1, S1, M1, M2, M3, M4, M8, M9, M10, M11`.
+- **Operator directive: run EVERY goal (F1 → M12, including S1) with UltraCode + auto mode.** No exceptions. This supersedes any earlier standard/ultracode split — ignore any "standard" label still present in a goal file or table.
+- Yes, UltraCode burns substantially more tokens; that cost is accepted in exchange for uniform max-thoroughness and adversarial verification on every goal.
 
 **Human-gate items (ledger §J) are never agent-self-certified:** F4 offline test on **real hardware in airplane mode**; F6 "badge verifies at a public URL"; and **all safety-/credential-critical merges** (M6 safety-veto, F6/M7 signing, F2/F3/M12 RLS + tenant isolation, F5 engine-contract sign-off). These get an explicit human-verification checkbox and stop for review before merge.
 
@@ -190,7 +190,7 @@ WebGL sims carry an explicit **mobile perf budget** (FPS + asset-size) asserted 
 
 1. **Read the spec** in `goals/<ID>.md` (scope, depends-on, acceptance-test list, out-of-scope / pinned-invariant block).
 2. **Confirm dependencies are merged.** A goal consumes contracts (schema, generated types, engine API/JSON Schema). **If a contract is missing, STOP and surface it — do not invent it.** Contract-producer goals merge before consumers.
-3. **Set the effort tier** per §9 (UltraCode + auto mode for the listed goals; standard otherwise).
+3. **Set effort to UltraCode + auto mode — every goal** (§9; no standard tier).
 4. **Build** the vertical slice; honor every pinned invariant in §5; write the tests in the §8 DoD.
 5. **Self-verify** against the goal's done-criteria and the DoD checklist.
 6. **Stop at any human-gate** (§9): produce artifacts + checklist, mark "pending human verification," do not self-certify.

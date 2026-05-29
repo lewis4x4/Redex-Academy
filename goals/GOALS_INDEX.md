@@ -4,7 +4,7 @@
 
 **How to read a goal file:** Title · Effort tier · Phase · Objective · Depends on · Consumes (contracts) · Tasks · Done-criteria (with `[HUMAN-VERIFY]` flags) · Out of scope · Invariants in play · Tests required.
 
-**Effort tiers** (ledger §I): `ultracode` = Opus 4.8 xhigh + dynamic parallel subagents + adversarial verification, paired with auto mode (token-heavy; reserved for security/credential/safety/engine/isolation goals). `standard` = normal effort.
+**Effort (ledger §I — operator directive):** run **EVERY goal with UltraCode + auto mode** (Opus 4.8 xhigh + dynamic parallel subagents + adversarial verification). The standard/ultracode split is retired; the **Tier** column below reads `ultracode` for all 21 goals.
 
 ---
 
@@ -12,7 +12,7 @@
 
 | Order | ID | Title | Tier | Phase | Depends on |
 |---|---|---|---|---|---|
-| 1 | **F1** | Repo + CI/CD + monorepo + env scaffolding | standard | 0 | (accounts) |
+| 1 | **F1** | Repo + CI/CD + monorepo + env scaffolding | ultracode | 0 | (accounts) |
 | 2 | **F2** | Academy schema apply/install + RLS + typegen | ultracode | 0 | F1 |
 | 3 | **F2a** | `workos` schema stub + cross-schema FK + grants | ultracode | 0 | F2 |
 | 4 | **F3** | Auth + SSO + shared-auth identity + JWT claims | ultracode | 0 | F2 |
@@ -20,22 +20,21 @@
 | 6 | **F5** | Sim framework + engines #1 (branching) & #2 (device-config) + JSON Schemas | ultracode | 0 | F2 |
 | 7 | **F5b** | Engines #5 (2D-interaction) & #6 (calculator) + JSON Schemas | ultracode | 0 | F5 |
 | 8 | **F6** | OB 3.0 issuer + key mgmt + status list (Deno-vs-Node decision) | ultracode | 0 | F2 |
-| 9 | **S1** | MVP-slice catalog seed + AC-203 line-items + badge_class defs | standard | Seed | F2, F2a |
-| 10 | **M1** | Catalog + prereq-gated enrollment + skill-tree view | standard | MVP | F2, S1 |
-| 11 | **M2** | MDX lessons + retry-to-mastery knowledge checks (EN+ES) | standard | MVP | F2, M1, S1, F5b |
-| 12 | **M3** | Branching egress-fail scenario (AC-103, AC-203) | standard | MVP | F5, S1, M1 |
-| 13 | **M4** | Device-config sim — Aero/Mercury (AC-201) | standard | MVP | F5, S1, M1 |
+| 9 | **S1** | MVP-slice catalog seed + AC-203 line-items + badge_class defs | ultracode | Seed | F2, F2a |
+| 10 | **M1** | Catalog + prereq-gated enrollment + skill-tree view | ultracode | MVP | F2, S1 |
+| 11 | **M2** | MDX lessons + retry-to-mastery knowledge checks (EN+ES) | ultracode | MVP | F2, M1, S1, F5b |
+| 12 | **M3** | Branching egress-fail scenario (AC-103, AC-203) | ultracode | MVP | F5, S1, M1 |
+| 13 | **M4** | Device-config sim — Aero/Mercury (AC-201) | ultracode | MVP | F5, S1, M1 |
 | 14 | **M5** | WebGL install sim — AC-201/203 mag-lock/REX/egress | ultracode | MVP | F5, S1, M1 |
 | 15 | **M6** | §5.4 sign-off + line-items + safety-veto + Work OS evidence | ultracode | MVP | F2a, F3, F4, S1 |
 | 16 | **M7** | OB 3.0 issuance for the slice (skill→tier stackable) | ultracode | MVP | F6, M6, S1 |
-| 17 | **M8** | xAPI → LRS + Postgres summary projection | standard | MVP | F4, F5 |
-| 18 | **M9** | Authoring admin v1 (content-as-data) | standard | MVP | F2, F5, F5b |
-| 19 | **M10** | AI adaptive feedback + open-response grading (cached/budgeted) | standard | MVP | F5, M3 |
-| 20 | **M11** | Manager sign-off dashboard (Realtime) | standard | MVP | F3, M6 |
+| 17 | **M8** | xAPI → LRS + Postgres summary projection | ultracode | MVP | F4, F5 |
+| 18 | **M9** | Authoring admin v1 (content-as-data) | ultracode | MVP | F2, F5, F5b |
+| 19 | **M10** | AI adaptive feedback + open-response grading (cached/budgeted) | ultracode | MVP | F5, M3 |
+| 20 | **M11** | Manager sign-off dashboard (Realtime) | ultracode | MVP | F3, M6 |
 | 21 | **M12** | SSO + one CCS org isolation test | ultracode | MVP | F3, M6 |
 
-**ultracode goals (11):** F2, F2a, F3, F4, F5, F5b, F6, M5, M6, M7, M12.
-**standard goals (10):** F1, S1, M1, M2, M3, M4, M8, M9, M10, M11.
+**All 21 goals run UltraCode + auto mode** (operator directive; the standard tier is retired).
 
 ---
 
