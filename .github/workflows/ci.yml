@@ -114,10 +114,12 @@ jobs:
       SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
     steps:
       - uses: actions/checkout@v4
-      - name: Apply academy migration(s)
+      - name: Apply academy + workos migration(s)
         run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
       - name: Invariant tests (safety-veto / immutability / RLS / fixture / audit / DAG)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0001_invariants_test.sql
+      - name: Cross-schema FK + workos RLS (F2a)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0003_workos_fk.sql
 
   # ── RLS negative matrix (REAL @ F2): cross-org actor sees ZERO rows.
   rls-negative:
