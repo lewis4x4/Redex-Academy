@@ -11,15 +11,15 @@ project_id = "redex-academy"
 [api]
 enabled = true
 port = 54321
-# F2 appends "academy"; F2a appends "workos".
-schemas = ["public", "graphql_public"]
-extra_search_path = ["public", "extensions"]
+# F2 added "academy"; F2a appends "workos".
+schemas = ["public", "graphql_public", "academy"]
+extra_search_path = ["public", "extensions", "academy"]
 max_rows = 1000
 
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 15
+major_version = 16
 
 [db.pooler]
 enabled = false

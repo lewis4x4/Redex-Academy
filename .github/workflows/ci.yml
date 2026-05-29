@@ -93,10 +93,47 @@ jobs:
       - run: pnpm --filter @redex/web exec playwright install --with-deps chromium
       - run: pnpm test:a11y
 
-  # ── Stub gates: wired now, flipped to real by F2 (rls/dag/typegen) & F5 (fixture)
+  # ── DB-backed invariant regression (REAL @ F2; locked safety-veto/immutability/RLS/DAG)
+  # Bare postgres:16 + apply supabase/migrations/* (the migration is bare-PG safe;
+  # the auth.users FK is added only against Supabase — SCHEMA_NOTES §2), then run
+  # the committed invariant test (safety-veto, immutability+void, RLS cross-tenant,
+  # fixture gate, audit append-only, DAG cycle detection).
+  db-invariants:
+    name: db-invariants
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply academy migration(s)
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: Invariant tests (safety-veto / immutability / RLS / fixture / audit / DAG)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0001_invariants_test.sql
+
+  # ── RLS negative matrix (REAL @ F2): cross-org actor sees ZERO rows.
   rls-negative:
     name: rls-negative
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
@@ -105,11 +142,25 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Apply academy migration(s)
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
       - run: pnpm test:rls
 
+  # ── DAG check (REAL @ F2): passes on the acyclic graph, FAILS on a seeded cycle.
   dag-check:
     name: dag-check
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
@@ -118,8 +169,25 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm dag:check
+      - name: Apply academy migration(s)
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: dag:check passes on the acyclic graph
+        run: pnpm dag:check
+      - name: dag:check FAILS on a seeded prerequisite cycle
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "
+            insert into academy.courses(id,code,title,domain,tier) values
+              ('00000000-0000-0000-0000-0000000000a1','__CYC-A','A','FND','foundations'),
+              ('00000000-0000-0000-0000-0000000000b1','__CYC-B','B','FND','foundations');
+            insert into academy.course_prerequisites(course_id,requires_course_id) values
+              ('00000000-0000-0000-0000-0000000000a1','00000000-0000-0000-0000-0000000000b1'),
+              ('00000000-0000-0000-0000-0000000000b1','00000000-0000-0000-0000-0000000000a1');"
+          if pnpm dag:check; then echo "::error::dag:check should FAIL on a cycle"; exit 1; fi
+          echo "dag:check correctly failed on the seeded cycle ✓"
 
+  # ── typegen drift (REAL @ F2): committed types == fresh `gen types --schema academy`.
+  # Uses the Management API (no Docker) — the SAME generator the committed file was
+  # produced with. Requires repo secrets SUPABASE_PROJECT_REF + SUPABASE_ACCESS_TOKEN.
   typegen-drift:
     name: typegen-drift
     runs-on: ubuntu-latest
@@ -131,7 +199,14 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm typegen:check
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: typegen drift (academy)
+        env:
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: pnpm typegen:check
 
   sanitized-fixture:
     name: sanitized-fixture

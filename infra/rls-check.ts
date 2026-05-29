@@ -1,34 +1,29 @@
 #!/usr/bin/env tsx
 /**
- * test:rls — RLS negative / tenant-isolation matrix (a cross-org actor must get
- * ZERO rows; deny-by-default). CLAUDE.md invariant §4.
+ * test:rls — RLS cross-tenant negative matrix (CLAUDE.md inv. 3/4).
  *
- * F1: stub no-op (no schema, no policies yet). F2 makes this real and
- * merge-blocking against a live Postgres (see goals/F2_DRY_RUN.md §4 rls-negative).
+ * F2 (REAL): runs the committed supabase/tests/0002_rls_negative.sql against
+ * SUPABASE_DB_URL — a Redex (org A) manager sees the seeded org-A rows
+ * (positive control) and a cross-org (CCS) actor sees ZERO rows in every
+ * personal table; anon cannot read personal tables at all. The script seeds in
+ * a transaction that is ROLLED BACK.
  */
-import { readdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-
-function hasMigrations(): boolean {
-  try {
-    return readdirSync(resolve(repoRoot, 'supabase/migrations')).some((f) => f.endsWith('.sql'));
-  } catch {
-    return false;
-  }
+const dbUrl = process.env.SUPABASE_DB_URL ?? process.env.DATABASE_URL;
+if (!dbUrl) {
+  console.error('[test:rls] SUPABASE_DB_URL (or DATABASE_URL) is required.');
+  process.exit(2);
 }
 
-if (!hasMigrations()) {
-  console.log(
-    '[test:rls] No schema/policies applied yet (pre-F2). RLS negative tests are a no-op.',
-  );
-  process.exit(0);
+const testFile = resolve(repoRoot, 'supabase/tests/0002_rls_negative.sql');
+try {
+  execFileSync('psql', [dbUrl, '-v', 'ON_ERROR_STOP=1', '-f', testFile], { stdio: 'inherit' });
+} catch {
+  console.error('[test:rls] RLS negative matrix FAILED (see the failing assertion above). ✗');
+  process.exit(1);
 }
-
-console.error(
-  '[test:rls] Schema exists but the RLS negative-test matrix is not wired yet. ' +
-    'F2 must implement the cross-org zero-rows assertions against a live Postgres.',
-);
-process.exit(1);
+console.log('[test:rls] cross-org isolation verified — zero rows across personal tables. ✓');
