@@ -1,40 +1,40 @@
 #!/usr/bin/env tsx
 /**
- * dag:check — assert the course-prerequisite graph is a DAG (no cycles).
+ * dag:check — assert academy.course_prerequisites is a DAG (no cycles).
  *
- * F1: safe no-op. There is no schema and no `course_prerequisites` data yet, so
- * this exits 0 with a clear "no schema yet" message. F2 rewrites this to call
- * `academy.prereq_graph_is_dag()` against the committed types/DB and exit non-zero
- * on a cycle (see goals/F2_DRY_RUN.md §2–§4).
+ * F2 (REAL): connects to SUPABASE_DB_URL (or DATABASE_URL) and calls
+ * academy.prereq_graph_is_dag(); exits non-zero on a cycle so the broken
+ * ADC-201-class prerequisite bug is un-shippable (wave3 §3.2). Run after the
+ * migration is applied (local stack / CI postgres service).
  */
-import { readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const migrationsDir = resolve(repoRoot, 'supabase/migrations');
-
-function appliedMigrations(): string[] {
-  try {
-    return readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'));
-  } catch {
-    return [];
-  }
+const dbUrl = process.env.SUPABASE_DB_URL ?? process.env.DATABASE_URL;
+if (!dbUrl) {
+  console.error('[dag:check] SUPABASE_DB_URL (or DATABASE_URL) is required to run the DAG check.');
+  process.exit(2);
 }
 
-const migrations = appliedMigrations();
-if (migrations.length === 0) {
-  console.log(
-    '[dag:check] No schema applied yet (pre-F2). Prerequisite-graph DAG check is a no-op.',
+let result: string;
+try {
+  result = execFileSync('psql', [dbUrl, '-tAqc', 'select academy.prereq_graph_is_dag();'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  }).trim();
+} catch (err) {
+  console.error(
+    '[dag:check] query failed (is the academy schema applied?):',
+    err instanceof Error ? err.message : String(err),
   );
+  process.exit(2);
+}
+
+if (result === 't') {
+  console.log('[dag:check] academy.course_prerequisites is acyclic (DAG). ✓');
   process.exit(0);
 }
 
-// Post-F2 the real check lives here. Until F2 wires it, fail loudly rather than
-// silently passing once migrations exist — surfacing that the check needs to be
-// made real (contract-first; never fake a pass).
 console.error(
-  '[dag:check] Migrations exist but the real DAG check is not wired yet. ' +
-    'F2 must implement academy.prereq_graph_is_dag() invocation here.',
+  '[dag:check] CYCLE DETECTED in course_prerequisites — academy.check_prereq_dag() returned rows. ✗',
 );
 process.exit(1);
