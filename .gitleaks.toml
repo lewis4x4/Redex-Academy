@@ -9,5 +9,9 @@ description = "Paths that legitimately contain no real secrets (names-only examp
 paths = [
   '''\.env\.example$''',
   '''pnpm-lock\.yaml$''',
+  # Deno lockfile: SHA-256 integrity hashes of public deps. generic-api-key
+  # false-positives on the high-entropy hash for modules whose URL ends in a
+  # keyword (e.g. postgres/connection/auth.ts). Machine-generated, no real secrets.
+  '''deno\.lock$''',
   '''packages/db-types/database\.types\.ts$''',
 ]
