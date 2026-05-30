@@ -1,15 +1,16 @@
 import { personaShell } from '@redex/auth';
-import { StatusBadge } from '@redex/ui';
+import { AppShell, Button, NavPill, ScreenHead, StatusBadge } from '@redex/ui';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './auth/components/LoginPage';
 import { RoleGate } from './auth/components/RoleGate';
 import { signOut, useAuth } from './auth/useAuth';
 
 /**
- * F3 auth-aware shell. Logged out → SSO login. Logged in → a persona-adaptive
- * shell (UI driven by the `persona` claim) with a role-gated supervisory section
- * (permissions driven by the `roles` claim) — the two are kept distinct
- * (CODING_STANDARDS §7). Real feature surfaces arrive in M1+.
+ * Auth-aware shell (F3) re-skinned on the D1 design system. Logged out → the
+ * dark/red SSO login. Logged in → the @redex/ui AppShell with persona-adaptive
+ * DENSITY (Marco = field, large-touch; Priya/Dana = dense) and a role-gated
+ * supervisory section (permissions from the `roles` claim) — persona drives
+ * density, roles drive permissions, never conflated. Renders entirely on tokens.
  */
 export default function App() {
   const { t } = useTranslation();
@@ -17,8 +18,10 @@ export default function App() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-white text-slate-900">
-        <p role="status">{t('app.loading')}</p>
+      <main className="rdx-scope flex min-h-screen items-center justify-center bg-canvas text-white">
+        <p role="status" className="text-ink-muted">
+          {t('app.loading')}
+        </p>
       </main>
     );
   }
@@ -27,43 +30,48 @@ export default function App() {
     return <LoginPage />;
   }
 
-  const shell = personaShell(claims?.persona);
-  const isField = shell === 'field';
+  // persona → shell DENSITY only (never permissions).
+  const density = personaShell(claims?.persona);
 
   return (
-    <main
-      data-shell={shell}
-      className={`min-h-screen bg-white text-slate-900 ${isField ? 'text-lg' : 'text-base'}`}
+    <AppShell
+      density={density}
+      proofPoints={0}
+      onBackpack={() => {}}
+      nav={
+        <>
+          <NavPill active>Home</NavPill>
+          <NavPill>Catalog</NavPill>
+        </>
+      }
+      actions={
+        <Button variant="secondary" size="sm" onClick={() => void signOut()}>
+          Sign out
+        </Button>
+      }
     >
-      <div
-        className={`mx-auto flex flex-col gap-6 px-6 py-12 ${isField ? 'max-w-md' : 'max-w-4xl'}`}
-      >
-        <header className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-redex">{t('app.title')}</h1>
-            <p className="text-slate-600">{t('app.tagline')}</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium"
-          >
-            Sign out
-          </button>
-        </header>
-
-        <section aria-label="Session" className="text-sm text-slate-600">
-          Signed in · shell: <span data-testid="shell">{shell}</span>
-          {claims?.persona ? ` (persona: ${claims.persona})` : ''}
+      <div className="flex flex-col gap-5 pb-10">
+        <ScreenHead
+          eyebrow="Signed in"
+          title="Your"
+          accent="Academy"
+          subtitle="Real feature surfaces — the Constellation, lessons, sims, sign-off — arrive in M1+."
+        />
+        <section aria-label="Session" className="px-8 text-body text-ink-muted">
+          Shell density:{' '}
+          <span data-testid="shell" className="font-label text-white">
+            {density}
+          </span>
+          {claims?.persona ? ` · persona: ${claims.persona}` : ''}
         </section>
 
         <RoleGate claims={claims} anyOf={['manager', 'org_admin', 'exec']}>
-          <section aria-label="Manager tools" className="flex items-center gap-3">
-            <span className="text-sm text-slate-500">Supervisory:</span>
+          <section aria-label="Manager tools" className="flex items-center gap-3 px-8">
+            <span className="text-body text-ink-muted">Supervisory:</span>
             <StatusBadge kind="pending" label="Manager dashboard" />
           </section>
         </RoleGate>
       </div>
-    </main>
+    </AppShell>
   );
 }

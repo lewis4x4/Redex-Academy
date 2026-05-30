@@ -1,0 +1,47 @@
+/* @redex/ui — design-system stylesheet entry (D1). Apps import this once
+ * (`import '@redex/ui/styles.css'`) to load the token variables, the motion
+ * keyframe library (with its prefers-reduced-motion guard), the background
+ * system, and the dark base theme. Tailwind utilities (from the shared preset)
+ * resolve their colors/shadows/etc. against the variables defined here. */
+@import './tokens.css';
+@import './keyframes.css';
+@import './background.css';
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Dark is the brand default — the whole app themes from the token variables. */
+body {
+  background: var(--canvas);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Visible keyboard focus everywhere (a11y): a brand-red ring, never removed. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--red);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Persona DENSITY (D1 §3) — derived from the `persona` claim, set as data-density
+ * on the shell root. `field` (Marco) is LARGE-TOUCH: interactive controls hit a
+ * ≥44px target (WCAG 2.5.5) + roomier line-height for the field tech on a phone;
+ * `dense` (Priya/Dana) stays compact. Density is PURE LAYOUT — never permissions. */
+[data-density='field'] {
+  line-height: 1.6;
+}
+[data-density='field'] :where(button, select, [role='switch'], [role='tab']),
+[data-density='field'] :where(input):not([type='checkbox']):not([type='radio']) {
+  min-height: 44px;
+}
+[data-density='field'] :where(label):has(> input[type='checkbox'], > input[type='radio']) {
+  min-height: 44px;
+  align-items: center;
+}

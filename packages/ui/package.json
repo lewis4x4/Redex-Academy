@@ -5,7 +5,10 @@
   "type": "module",
   "description": "Shared component library — WCAG 2.1 AA + colorblind-safe primitives (shape + text + color, never color alone).",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/index.css",
+    "./tokens": "./src/tokens/index.ts",
+    "./gallery": "./src/gallery/index.ts"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",

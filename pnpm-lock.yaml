@@ -44,6 +44,9 @@ importers:
       '@redex/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@redex/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       '@supabase/supabase-js':
         specifier: ^2.45.0
         version: 2.106.2

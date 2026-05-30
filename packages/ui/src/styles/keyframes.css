@@ -1,0 +1,150 @@
+/* @redex/ui — MOTION KEYFRAME LIBRARY (D1). Extracted from the prototype +
+ * authored on-brand (fadeUp/sealPop/toastIn/out). EVERY animation is gated behind
+ * prefers-reduced-motion at the bottom — under the OS "reduce motion" setting all
+ * of these are disabled (WCAG 2.3.3 / invariant 7). Components reference these by
+ * name via the `.rdx-anim-*` utilities (so a single guard covers all of them). */
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 4px rgba(237, 27, 36, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(237, 27, 36, 1));
+  }
+}
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+@keyframes bossPulse {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 10px rgba(237, 27, 36, 0.7));
+    opacity: 0.95;
+  }
+  50% {
+    filter: drop-shadow(0 0 28px rgba(237, 27, 36, 1));
+    opacity: 1;
+  }
+}
+@keyframes edgeDash {
+  to {
+    stroke-dashoffset: -1000;
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes sealPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes toastOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.rdx-anim-pulse {
+  animation: pulseGlow 1.8s ease-in-out infinite;
+}
+.rdx-anim-heartbeat {
+  animation: heartbeat 1.6s ease-in-out infinite;
+}
+.rdx-anim-boss {
+  animation: bossPulse 2s ease-in-out infinite;
+}
+.rdx-anim-twinkle {
+  animation: twinkle 4s ease-in-out infinite;
+}
+.rdx-anim-fadeup {
+  animation: fadeUp var(--dur-screen) var(--ease-out) both;
+}
+.rdx-anim-seal {
+  /* back-out "seal lands" easing (the prototype's overshoot) — token-backed. */
+  animation: sealPop 0.5s var(--ease-overshoot) both;
+}
+.rdx-anim-toast-in {
+  animation: toastIn 0.4s var(--ease-out) both;
+}
+.rdx-anim-toast-out {
+  animation: toastOut 0.3s var(--ease-out) forwards;
+}
+.rdx-edge-keystone {
+  stroke-dasharray: 7 6;
+  animation: edgeDash 22s linear infinite;
+}
+
+/* Non-motion brand utility: the capstone "moonshot" title bloom. This is a
+ * text-shadow (NOT an animation), so it is intentionally NOT disabled under
+ * prefers-reduced-motion — it is decoration, not movement. */
+.rdx-title-glow {
+  text-shadow: 0 0 30px rgba(237, 27, 36, 0.55);
+}
+
+/* The single reduced-motion guard for the whole library. */
+@media (prefers-reduced-motion: reduce) {
+  .rdx-anim-pulse,
+  .rdx-anim-heartbeat,
+  .rdx-anim-boss,
+  .rdx-anim-twinkle,
+  .rdx-anim-fadeup,
+  .rdx-anim-seal,
+  .rdx-anim-toast-in,
+  .rdx-anim-toast-out,
+  .rdx-edge-keystone,
+  *[class*='rdx-anim-'] {
+    animation: none !important;
+  }
+  * {
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
