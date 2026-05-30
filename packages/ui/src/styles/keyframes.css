@@ -108,11 +108,25 @@
   animation: fadeUp var(--dur-screen) var(--ease-out) both;
 }
 .rdx-anim-seal {
-  animation: sealPop 0.5s var(--ease-out) both;
+  /* back-out "seal lands" easing (the prototype's overshoot) — token-backed. */
+  animation: sealPop 0.5s var(--ease-overshoot) both;
+}
+.rdx-anim-toast-in {
+  animation: toastIn 0.4s var(--ease-out) both;
+}
+.rdx-anim-toast-out {
+  animation: toastOut 0.3s var(--ease-out) forwards;
 }
 .rdx-edge-keystone {
   stroke-dasharray: 7 6;
   animation: edgeDash 22s linear infinite;
+}
+
+/* Non-motion brand utility: the capstone "moonshot" title bloom. This is a
+ * text-shadow (NOT an animation), so it is intentionally NOT disabled under
+ * prefers-reduced-motion — it is decoration, not movement. */
+.rdx-title-glow {
+  text-shadow: 0 0 30px rgba(237, 27, 36, 0.55);
 }
 
 /* The single reduced-motion guard for the whole library. */
@@ -123,6 +137,8 @@
   .rdx-anim-twinkle,
   .rdx-anim-fadeup,
   .rdx-anim-seal,
+  .rdx-anim-toast-in,
+  .rdx-anim-toast-out,
   .rdx-edge-keystone,
   *[class*='rdx-anim-'] {
     animation: none !important;

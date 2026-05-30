@@ -24,7 +24,7 @@ export function ScreenHead({
     <div className="flex items-end justify-between gap-5 px-8 pb-1.5 pt-[22px]">
       <div>
         {eyebrow ? (
-          <div className="text-eyebrow font-label uppercase tracking-eyebrow text-redex">
+          <div className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
             {eyebrow}
           </div>
         ) : null}

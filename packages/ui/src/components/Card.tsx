@@ -59,7 +59,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
       {hasHeader ? (
         <div className="mb-3 flex flex-col gap-1">
           {eyebrow != null ? (
-            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex">
+            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
               {eyebrow}
             </span>
           ) : null}

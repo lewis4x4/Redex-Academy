@@ -1,7 +1,6 @@
 import {
   forwardRef,
   useCallback,
-  useEffect,
   useId,
   useRef,
   type HTMLAttributes,
@@ -10,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { cx } from '../cx';
+import { useFocusTrap } from '../useFocusTrap';
 
 export type ScrimVariant = 'modal' | 'drawer';
 
@@ -52,9 +52,11 @@ export const Scrim = forwardRef<HTMLDivElement, ScrimProps>(function Scrim(
 
 /**
  * Centered modal dialog (D1 §5.8). `role="dialog"` + `aria-modal`, labelled by
- * its title, Escape-to-close, scrim-click-to-close, and focus moved to the card
- * on open (focus-trapped-ish). The card is the 180deg panel gradient with the
- * modal shadow and the fadeUp entrance (auto-disabled under prefers-reduced-motion).
+ * its title, Escape-to-close, scrim-click-to-close, and a real focus trap (via
+ * {@link useFocusTrap}): focus moves into the dialog on open, Tab/Shift+Tab cycle
+ * within it, and focus is restored to the trigger on close. The card is the 180deg
+ * panel gradient with the modal shadow and the fadeUp entrance (auto-disabled under
+ * prefers-reduced-motion).
  */
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   { open, onClose, title, className, children },
@@ -63,11 +65,9 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const titleId = useId();
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  // Move focus into the dialog when it opens (focus-trapped-ish: the card is
-  // focusable via tabIndex={-1} so keyboard users land inside, not behind it).
-  useEffect(() => {
-    if (open) cardRef.current?.focus();
-  }, [open]);
+  // Trap focus inside the dialog while open (moves focus in on open, cycles
+  // Tab/Shift+Tab within the card, and restores focus to the trigger on close).
+  useFocusTrap(cardRef, open);
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {

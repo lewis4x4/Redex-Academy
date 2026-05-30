@@ -20,7 +20,7 @@ describe('Toast', () => {
     expect(pill.className).toContain('rounded-pill');
     expect(pill.className).toContain('border-redex');
     expect(pill.className).toContain('bg-grad-panel');
-    expect(pill.className).toContain('rdx-anim-fadeup');
+    expect(pill.className).toContain('rdx-anim-toast-in');
     // token discipline: no raw hex ever lands in the rendered class list
     expect(pill.className).not.toMatch(/#[0-9a-fA-F]{3,8}/);
   });

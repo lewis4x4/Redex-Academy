@@ -59,7 +59,9 @@ const DEFAULT_NODE_STATES: readonly NodeStateSwatch[] = [
 function DefaultLegend(): ReactNode {
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-eyebrow font-label uppercase tracking-eyebrow text-redex">Node states</p>
+      <p className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+        Node states
+      </p>
       <ul className="flex flex-col gap-1.5">
         {DEFAULT_NODE_STATES.map(({ state, label, swatch }) => (
           <li key={state} className="flex items-center gap-2">

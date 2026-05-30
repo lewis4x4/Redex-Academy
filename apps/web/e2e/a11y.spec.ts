@@ -18,6 +18,12 @@ test('app shell / login (re-skinned, dark+red) has no axe violations (WCAG 2a/2a
 // in the dark/red theme must pass axe (contrast AA on the dark canvas, labelled
 // controls, no color-only state).
 test('the @redex/ui component gallery has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+  // Scan with reduced motion emulated: the @redex/ui keyframe guard then disables
+  // every rdx-anim-* entrance + the Skeleton shimmer, so the DOM is static and at
+  // its final, fully-opaque paint. Otherwise axe can sample contrast mid-fadeUp
+  // (opacity < 1) and report false low-contrast on text that is AA at rest. This is
+  // also the correct a11y posture — the page must be clean under reduced motion.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/dev/ui');
   await page.getByRole('radiogroup', { name: /Persona density/i }).waitFor();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();

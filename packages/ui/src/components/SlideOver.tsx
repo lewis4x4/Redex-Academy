@@ -3,10 +3,13 @@ import {
   useCallback,
   useEffect,
   useId,
+  useRef,
   type HTMLAttributes,
+  type MutableRefObject,
   type ReactNode,
 } from 'react';
 import { cx } from '../cx';
+import { useFocusTrap } from '../useFocusTrap';
 
 export interface SlideOverProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
   /** Whether the panel is open (slid in). Drives the translate-x transform + scrim. */
@@ -46,15 +49,35 @@ const SCRIM =
  * open = `translate-x-0`. Escape closes; clicking the scrim closes.
  *
  * a11y: `role="dialog"` + `aria-modal="true"`, labelled by its visible heading via
- * `aria-labelledby`. Native keyboard close via Escape and a real <button>. When
- * closed it is `aria-hidden` and `pointer-events-none` so it never traps focus or
- * intercepts clicks off-screen. Inherits the global brand focus ring.
+ * `aria-labelledby`. Native keyboard close via Escape and a real <button>. While open
+ * focus is trapped inside the panel (via {@link useFocusTrap}): focus moves into the
+ * panel on open, Tab/Shift+Tab cycle within it, and focus is restored to the trigger
+ * on close. When closed it is `aria-hidden` + `inert` + `pointer-events-none` so it
+ * never traps focus or intercepts clicks off-screen. Inherits the global brand focus ring.
  */
 export const SlideOver = forwardRef<HTMLElement, SlideOverProps>(function SlideOver(
   { open, onClose, title, children, scrim, className, ...rest },
   ref,
 ) {
   const titleId = useId();
+  const panelRef = useRef<HTMLElement | null>(null);
+
+  // Compose the forwarded ref with our internal panelRef (so the focus trap can
+  // reach the panel node while callers still get the forwarded ref).
+  const setPanelRef = useCallback(
+    (node: HTMLElement | null) => {
+      panelRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) (ref as MutableRefObject<HTMLElement | null>).current = node;
+    },
+    [ref],
+  );
+
+  // Trap focus inside the panel while open (moves focus in on open, cycles
+  // Tab/Shift+Tab within the panel, and restores focus to the trigger on close).
+  // The panel carries tabIndex={-1} so the container-focus fallback works when it
+  // momentarily has no focusable descendants.
+  useFocusTrap(panelRef, open);
 
   // Escape-to-close (only while open).
   useEffect(() => {
@@ -90,11 +113,12 @@ export const SlideOver = forwardRef<HTMLElement, SlideOverProps>(function SlideO
         />
       )}
       <aside
-        ref={ref}
+        ref={setPanelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         aria-hidden={open ? undefined : true}
+        tabIndex={-1}
         {...inertWhenClosed}
         className={cx(
           PANEL,

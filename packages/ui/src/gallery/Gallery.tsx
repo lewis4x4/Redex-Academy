@@ -26,6 +26,14 @@ import { Skeleton, EmptyState, ErrorState } from '../components/States';
 import { StatusBadge, type VerdictKind } from '../StatusBadge';
 import { BrandMark } from '../shell/BrandMark';
 import { ScreenHead } from '../shell/ScreenHead';
+import { CatalogGrid } from '../templates/CatalogGrid';
+import { ConstellationFrame } from '../templates/ConstellationFrame';
+import { LessonReader } from '../templates/LessonReader';
+import { SimStage } from '../templates/SimStage';
+import { SignoffForm } from '../templates/SignoffForm';
+import { ManagerDashboard } from '../templates/ManagerDashboard';
+import { BackpackWall } from '../templates/BackpackWall';
+import { CapstoneStage } from '../templates/CapstoneStage';
 
 // ── Gallery density ──────────────────────────────────────────────────────────
 // The reviewer-facing persona-density toggle. `field` (Marco) = roomier touch +
@@ -78,6 +86,32 @@ function Specimen({ caption, children }: { caption: string; children: ReactNode 
 /** Even grid wrapper for specimen cells. */
 function Grid({ children }: { children: ReactNode }): ReactElement {
   return <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">{children}</div>;
+}
+
+/**
+ * A labelled wrapper for a single module-archetype template specimen. Each gets a
+ * caption + an <h3> name so the templates section stays screen-reader navigable and
+ * the document outline is correct (the templates render their own inner headings;
+ * this <h3> is the specimen's own caption above the frame).
+ */
+function TemplateSpecimen({
+  name,
+  blurb,
+  children,
+}: {
+  name: string;
+  blurb: string;
+  children: ReactNode;
+}): ReactElement {
+  return (
+    <section className="flex flex-col gap-3 rounded-card border border-line bg-panel p-4">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-subtitle font-bold tracking-tighttitle text-white">{name}</h3>
+        <p className="text-caption text-ink-muted">{blurb}</p>
+      </div>
+      {children}
+    </section>
+  );
 }
 
 // The six learning domains (TrophyMedal domain union) + a human label each.
@@ -667,6 +701,233 @@ export default function Gallery(): ReactElement {
             ))}
           </div>
         </Card>
+      </Section>
+
+      {/* ── Module-archetype templates ─────────────────────────────────────── */}
+      <Section
+        id="templates"
+        eyebrow="Module archetypes"
+        title="Templates"
+        subtitle="All eight module-archetype LAYOUT SHELLS with placeholder slot content — the frames the M-goals compose + fill (no feature logic). Empty slots fall back to on-brand placeholders."
+      >
+        <div className="flex flex-col gap-6">
+          <TemplateSpecimen
+            name="CatalogGrid"
+            blurb="Course catalog frame — header + filters above a responsive auto-fill grid of course Card slots."
+          >
+            <CatalogGrid
+              filters={
+                <>
+                  <Chip selected>All</Chip>
+                  <Chip>Access Control</Chip>
+                  <Chip>Video</Chip>
+                </>
+              }
+            >
+              <Card variant="raised" eyebrow="AC-203" title="Maglock fail-safe wiring">
+                <p className="text-body text-ink-muted">Tier 2 · Access Control</p>
+              </Card>
+              <Card variant="raised" eyebrow="VID-110" title="PPF / DORI basics">
+                <p className="text-body text-ink-muted">Tier 1 · Video</p>
+              </Card>
+              <Card variant="raised" eyebrow="INT-101" title="Panel programming intro">
+                <p className="text-body text-ink-muted">Tier 1 · Intrusion</p>
+              </Card>
+            </CatalogGrid>
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="ConstellationFrame"
+            blurb="Skill-map pan/zoom stage shell — full-bleed stage with a lens panel + the colorblind-safe node-state legend."
+          >
+            <div className="h-[320px] overflow-hidden rounded-panel border border-line">
+              <ConstellationFrame
+                lensPanel={
+                  <div className="flex flex-wrap gap-1.5">
+                    <Chip selected>All domains</Chip>
+                    <Chip>Access Control</Chip>
+                  </div>
+                }
+              />
+            </div>
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="LessonReader"
+            blurb="Centered reading column for lessons — header masthead, prose body, optional right rail + prev/next nav."
+          >
+            <LessonReader
+              header={
+                <ScreenHead
+                  eyebrow="Lesson"
+                  title="Egress &"
+                  accent="fail-safe"
+                  subtitle="Why a maglock must release on power loss."
+                />
+              }
+              aside={
+                <Card variant="panel" padding="md" eyebrow="On this page" title="Contents">
+                  <ul className="flex flex-col gap-1 text-body text-ink-muted">
+                    <li>Fail-safe vs fail-locked</li>
+                    <li>REX devices</li>
+                    <li>Code requirements</li>
+                  </ul>
+                </Card>
+              }
+              footerNav={
+                <div className="flex items-center justify-between">
+                  <Button variant="ghost">Previous</Button>
+                  <Button variant="primary">Next lesson</Button>
+                </div>
+              }
+            >
+              <p>
+                Egress hardware must fail safe: on a loss of power, the door releases so people can
+                always get out. This reading column owns the measure + rhythm; the lesson body
+                renders here once authored.
+              </p>
+            </LessonReader>
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="SimStage"
+            blurb="Sim runtime frame — a main stage where the engine mounts + a right rail (objectives / feedback / telemetry) and a toolbar."
+          >
+            <SimStage
+              toolbar={
+                <>
+                  <Button variant="primary" leftIcon={<Icon name="play" size={16} />}>
+                    Run
+                  </Button>
+                  <Button variant="ghost">Reset</Button>
+                </>
+              }
+              objectives={
+                <Card variant="panel" padding="md" eyebrow="Objectives" title="This scenario">
+                  <ul className="flex flex-col gap-1 text-body text-ink-muted">
+                    <li>Wire the maglock fail-safe</li>
+                    <li>Verify egress on power loss</li>
+                  </ul>
+                </Card>
+              }
+              feedback={
+                <Card variant="panel" padding="md" eyebrow="Feedback" title="Live">
+                  <StatusBadge kind="pending" />
+                </Card>
+              }
+            />
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="SignoffForm"
+            blurb="Evaluator sign-off rubric shell — the four fixed safety-veto dimensions, each with line-item + score slots, plus evidence + submit."
+          >
+            <SignoffForm
+              header={
+                <ScreenHead
+                  eyebrow="Sign-off"
+                  title="Field"
+                  accent="evaluation"
+                  subtitle="AC-203 · against Work OS job 4821"
+                />
+              }
+              dimensions={{
+                safety_compliance: {
+                  lineItems: (
+                    <ul className="flex flex-col gap-1 text-body text-ink-muted">
+                      <li>Confirmed fail-safe egress release</li>
+                      <li>Verified no live-circuit contact</li>
+                    </ul>
+                  ),
+                  scoreControl: <Meter value={1} tone="ok" ariaLabel="Safety rollup — pass" />,
+                },
+              }}
+              evidence={
+                <p className="text-body text-ink-muted">
+                  Photos + notes captured against the real job render here.
+                </p>
+              }
+              submit={
+                <Button variant="cta" leftIcon={<Icon name="check" size={18} />}>
+                  Finalize sign-off
+                </Button>
+              }
+            />
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="ManagerDashboard"
+            blurb="Manager overview frame — ScreenHead + filters + a HUD stats strip + a main team/progress table region."
+          >
+            <ManagerDashboard
+              accent="overview"
+              subtitle="Team competency rollups across your sites."
+              filters={
+                <>
+                  <Chip selected>All sites</Chip>
+                  <Chip>Site 12</Chip>
+                </>
+              }
+              stats={
+                <>
+                  <StatBlock value="24" label="Techs" align="start" />
+                  <StatBlock value="86%" label="On-track" accent align="start" />
+                  <StatBlock value="3" label="Overdue recerts" align="start" />
+                  <StatBlock value="12" label="Sign-offs (30d)" align="start" />
+                </>
+              }
+            />
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="BackpackWall"
+            blurb="Digital backpack trophy wall — header + stats row + domain-filter chips above a responsive TrophyMedal grid."
+          >
+            <BackpackWall
+              header={<ScreenHead eyebrow="Backpack" title="Earned" accent="trophies" />}
+              stats={
+                <>
+                  <StatBlock value="3" label="Badges" align="start" />
+                  <StatBlock value="1,240" label="Proof Points" accent align="start" />
+                </>
+              }
+              filters={
+                <>
+                  <Chip selected>All</Chip>
+                  <Chip>Access Control</Chip>
+                </>
+              }
+            >
+              {/* BackpackWall wraps children in role="list"; each child must be a
+                  listitem, so wrap each role="img" TrophyMedal accordingly. */}
+              <div role="listitem">
+                <TrophyMedal domain="FND" earned name="Foundations" />
+              </div>
+              <div role="listitem">
+                <TrophyMedal domain="INT" earned name="Intrusion" />
+              </div>
+              <div role="listitem">
+                <TrophyMedal domain="AC" earned={false} name="Access Control" />
+              </div>
+            </BackpackWall>
+          </TemplateSpecimen>
+
+          <TemplateSpecimen
+            name="CapstoneStage"
+            blurb="Capstone cinematic stage — centered hero with the red core-glow bloom, the moonshot title, a CTA, and an optional completion seal."
+          >
+            <CapstoneStage
+              eyebrow="Capstone"
+              title="Prove One"
+              subtitle="Complete the field walkthrough to earn your portable credential."
+              cta={
+                <Button variant="cta" leftIcon={<Icon name="bolt" size={18} />}>
+                  Begin capstone
+                </Button>
+              }
+            />
+          </TemplateSpecimen>
+        </div>
       </Section>
     </div>
   );

@@ -4,6 +4,7 @@
 // No screen hardcodes its own look — everything renders on these tokens/components.
 
 export { cx } from './cx';
+export { useFocusTrap } from './useFocusTrap';
 export * as tokens from './tokens';
 
 // ── Component kit ───────────────────────────────────────────────────────────

@@ -83,12 +83,12 @@ function BoltIcon() {
 const TOAST_CLASS =
   'inline-flex items-center gap-3 bg-grad-panel border border-redex rounded-pill ' +
   'px-[22px] py-[11px] font-label text-body-lg text-white ' +
-  'shadow-[var(--shadow-toast),var(--glow-soft)] rdx-anim-fadeup pointer-events-auto';
+  'shadow-[var(--shadow-toast),var(--glow-soft)] rdx-anim-toast-in pointer-events-auto';
 
 /**
  * A single toast pill (D1, spec §5.10): `rounded-pill`, `bg-grad-panel` with a
  * `border-redex` edge, `font-label`, and the combined toast + soft-glow shadow.
- * Animates in with `rdx-anim-fadeup` (opacity-only under reduced motion).
+ * Animates in with `rdx-anim-toast-in` (rise + scale; disabled under reduced motion).
  *
  * Colorblind-safe: the message text is the carrier of meaning; the leading bolt
  * is decorative (aria-hidden). Used standalone or rendered by {@link ToastStack}.

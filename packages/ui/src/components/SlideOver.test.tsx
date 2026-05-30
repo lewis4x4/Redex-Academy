@@ -1,6 +1,26 @@
+import { useState } from 'react';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SlideOver } from './SlideOver';
+
+/**
+ * A trigger + SlideOver harness exercising the focus-trap lifecycle: a real trigger
+ * button opens the panel (so we can assert focus RETURNS to it on close). The panel
+ * already contains a focusable Close button, so opening moves focus INTO the panel.
+ */
+function SlideOverHarness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open panel
+      </button>
+      <SlideOver open={open} onClose={() => setOpen(false)} title="Course detail">
+        <button type="button">Body action</button>
+      </SlideOver>
+    </>
+  );
+}
 
 describe('SlideOver', () => {
   it('renders a labelled modal dialog with its title and panel transform classes', () => {
@@ -101,5 +121,25 @@ describe('SlideOver', () => {
       </SlideOver>,
     );
     expect(screen.getByTestId('custom-scrim')).toBeInTheDocument();
+  });
+
+  it('moves focus INTO the panel on open (first focusable: the close button)', () => {
+    render(<SlideOverHarness />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open panel' }));
+    // The first focusable descendant is the panel's Close button.
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+  });
+
+  it('restores focus to the trigger when the panel closes', () => {
+    render(<SlideOverHarness />);
+    const trigger = screen.getByRole('button', { name: 'Open panel' });
+    // fireEvent.click does not move DOM focus in jsdom the way a real click does,
+    // so focus the trigger first — this is the element the trap must restore to.
+    trigger.focus();
+    fireEvent.click(trigger);
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+    // Close via the panel's close button; focus returns to the trigger.
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    expect(trigger).toHaveFocus();
   });
 });

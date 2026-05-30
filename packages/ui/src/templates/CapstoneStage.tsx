@@ -91,12 +91,14 @@ export const CapstoneStage = forwardRef<HTMLDivElement, CapstoneStageProps>(func
         {/* Title block — eyebrow · big display h1 · muted subtitle. */}
         <div className="flex flex-col items-center gap-2">
           {eyebrow != null ? (
-            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex">
+            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
               {eyebrow}
             </span>
           ) : null}
           {title != null ? (
-            <h1 className="text-display-lg font-display tracking-tighttitle text-white">{title}</h1>
+            <h1 className="rdx-title-glow text-display-lg font-display tracking-tighttitle text-white">
+              {title}
+            </h1>
           ) : (
             <h1 className="text-display-lg font-display tracking-tighttitle text-ink-muted">
               Capstone title
