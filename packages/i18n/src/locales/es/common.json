@@ -3,6 +3,44 @@
     "title": "Redex Academy",
     "tagline": "Míralo. Hazlo. Demuéstralo.",
     "loading": "Cargando…",
-    "offline_banner": "Estás sin conexión. Tu progreso se sincronizará al reconectar."
+    "offline_banner": "Estás sin conexión. Tu progreso se sincronizará al reconectar.",
+    "supervisory": "Supervisión:",
+    "manager_dashboard": "Panel de gerente",
+    "shell_density": "Densidad de interfaz"
+  },
+  "catalog": {
+    "eyebrow": "Tu ruta",
+    "title": "La",
+    "title_accent": "Constelación",
+    "subtitle": "Cada competencia que puedes obtener y lo que se desbloquea después. Maestría, no horas de asiento.",
+    "filters": "Filtrar la constelación",
+    "domains": "Dominios",
+    "persona_lens": "Enfoque: la ruta de {{persona}}",
+    "map_label": "Constelación de competencias — cursos y sus requisitos previos",
+    "node_label": "{{code}} — {{title}}. {{state}}.{{boss}}",
+    "boss_suffix": " Barrera de egreso obligatoria.",
+    "loading": "Cargando la constelación…",
+    "error_title": "No se pudo cargar la constelación",
+    "retry": "Reintentar",
+    "empty_title": "Aún no hay cursos",
+    "empty_desc": "Tu catálogo se está preparando. Vuelve en un momento.",
+    "pick_a_node": "Selecciona un nodo para ver qué desbloquea y inscríbete cuando esté disponible.",
+    "gate": "Barrera de egreso",
+    "enroll": "Inscribirse",
+    "enrolling": "Inscribiendo…",
+    "enrolled": "Inscrito en {{code}}.",
+    "locked_hint": "Bloqueado. Aprueba sus cursos requisito para desbloquear este nodo.",
+    "tier": {
+      "foundations": "Fundamentos",
+      "core": "Esencial",
+      "advanced": "Avanzado",
+      "mastery": "Maestría"
+    },
+    "state_hint": {
+      "available": "Disponible ahora — inscríbete para comenzar.",
+      "in_progress": "En curso — continúa donde lo dejaste.",
+      "passed": "Aprobado. Obtén tu firma para alcanzar la maestría.",
+      "mastered": "Dominado — firmado por un evaluador en campo."
+    }
   }
 }

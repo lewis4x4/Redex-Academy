@@ -3,6 +3,44 @@
     "title": "Redex Academy",
     "tagline": "See one. Do one. Prove one.",
     "loading": "Loading…",
-    "offline_banner": "You are offline. Progress will sync when you reconnect."
+    "offline_banner": "You are offline. Progress will sync when you reconnect.",
+    "supervisory": "Supervisory:",
+    "manager_dashboard": "Manager dashboard",
+    "shell_density": "Shell density"
+  },
+  "catalog": {
+    "eyebrow": "Your path",
+    "title": "The",
+    "title_accent": "Constellation",
+    "subtitle": "Every skill you can earn, and what unlocks next. Mastery, not seat-time.",
+    "filters": "Filter the constellation",
+    "domains": "Domains",
+    "persona_lens": "Lens: {{persona}}'s path",
+    "map_label": "Skill constellation — courses and their prerequisites",
+    "node_label": "{{code}} — {{title}}. {{state}}.{{boss}}",
+    "boss_suffix": " Egress hard gate.",
+    "loading": "Loading the constellation…",
+    "error_title": "Couldn't load the constellation",
+    "retry": "Retry",
+    "empty_title": "No courses yet",
+    "empty_desc": "Your catalog is being prepared. Check back shortly.",
+    "pick_a_node": "Select a node to see what it unlocks — and enroll when it's available.",
+    "gate": "Egress gate",
+    "enroll": "Enroll",
+    "enrolling": "Enrolling…",
+    "enrolled": "Enrolled in {{code}}.",
+    "locked_hint": "Locked. Pass its prerequisite courses to unlock this node.",
+    "tier": {
+      "foundations": "Foundations",
+      "core": "Core",
+      "advanced": "Advanced",
+      "mastery": "Mastery"
+    },
+    "state_hint": {
+      "available": "Available now — enroll to begin.",
+      "in_progress": "In progress — pick up where you left off.",
+      "passed": "Passed. Earn your sign-off to reach mastery.",
+      "mastered": "Mastered — Evaluator-signed in the field."
+    }
   }
 }
