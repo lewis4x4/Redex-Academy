@@ -1,0 +1,125 @@
+{
+  "$comment": "SYNTHETIC FIXTURE — NOT A REAL RECORDING. This file is a hand-authored, sanitized sample that establishes the fixture_set R2 manifest contract (F5 §11) that replay engines (#2 device_config, #4 panel_state_machine) consume. It contains NO real customer PII and NO real captured device session — every value is invented for training. It maps to a row in academy.fixture_sets (source='iq_panel', sanitized=true is the publish gate, invariant 6). A production fixture would point image_r2_key entries at real sanitized screenshots in R2; here they are placeholder keys. The `sanitized: true` flag is the publish gate the DB trigger tg_block_unsanitized_fixture enforces.",
+  "manifest_version": "1.0.0",
+  "fixture_id": "iq-panel-create-and-program-v1-synthetic",
+  "source": "iq_panel",
+  "label": "Qolsys IQ Panel — program zones/partitions/delays (SYNTHETIC sample)",
+  "version": "iq-panel-programming v1 (synthetic)",
+  "sanitized": true,
+  "synthetic": true,
+  "source_citation": "Synthetic/illustrative only — authored from the Qolsys IQ Panel programming UI described in SEC-102 / the Course Bible AC store spec; no real session recorded, no real account.",
+  "platform_key": "iq_panel",
+  "platform_manifest_surface": "qolsys_iq_panel.programming.v1",
+  "screens": [
+    {
+      "id": "home-disarmed",
+      "ordinal": 0,
+      "title": "Home (Disarmed)",
+      "image_r2_key": "fixtures/iq-panel/synthetic/00-home-disarmed.png",
+      "hotspots": [
+        {
+          "id": "open-settings",
+          "rect": { "x": 980, "y": 40, "w": 120, "h": 80 },
+          "action": "navigate",
+          "to_screen": "installer-menu"
+        }
+      ],
+      "field_map": []
+    },
+    {
+      "id": "installer-menu",
+      "ordinal": 1,
+      "title": "Installer / Advanced Settings",
+      "image_r2_key": "fixtures/iq-panel/synthetic/01-installer-menu.png",
+      "hotspots": [
+        {
+          "id": "open-zones",
+          "rect": { "x": 60, "y": 200, "w": 300, "h": 90 },
+          "action": "navigate",
+          "to_screen": "zones"
+        },
+        {
+          "id": "open-partitions",
+          "rect": { "x": 60, "y": 300, "w": 300, "h": 90 },
+          "action": "navigate",
+          "to_screen": "partitions"
+        }
+      ],
+      "field_map": []
+    },
+    {
+      "id": "zones",
+      "ordinal": 2,
+      "title": "Zone Programming",
+      "image_r2_key": "fixtures/iq-panel/synthetic/02-zones.png",
+      "hotspots": [
+        {
+          "id": "zone-1-type",
+          "rect": { "x": 400, "y": 160, "w": 360, "h": 70 },
+          "action": "set_field",
+          "field_id": "zone1_type"
+        },
+        {
+          "id": "zone-7-type",
+          "rect": { "x": 400, "y": 460, "w": 360, "h": 70 },
+          "action": "set_field",
+          "field_id": "zone7_smoke_type"
+        }
+      ],
+      "field_map": [
+        {
+          "field_id": "zone1_type",
+          "label": "Zone 1 — Front Door",
+          "kind": "enum",
+          "options": ["entry_exit", "interior_follower", "perimeter", "24hr_fire", "24hr_co"],
+          "recorded_value": "entry_exit"
+        },
+        {
+          "field_id": "zone7_smoke_type",
+          "label": "Zone 7 — Stockroom Smoke",
+          "kind": "enum",
+          "options": ["entry_exit", "interior_follower", "perimeter", "24hr_fire", "24hr_co"],
+          "recorded_value": "24hr_fire"
+        }
+      ]
+    },
+    {
+      "id": "partitions",
+      "ordinal": 3,
+      "title": "Partition & Delay Programming",
+      "image_r2_key": "fixtures/iq-panel/synthetic/03-partitions-delays.png",
+      "hotspots": [
+        {
+          "id": "p1-entry-delay",
+          "rect": { "x": 420, "y": 200, "w": 200, "h": 70 },
+          "action": "set_field",
+          "field_id": "partition1_entry_delay_s"
+        },
+        {
+          "id": "p1-exit-delay",
+          "rect": { "x": 420, "y": 300, "w": 200, "h": 70 },
+          "action": "set_field",
+          "field_id": "partition1_exit_delay_s"
+        }
+      ],
+      "field_map": [
+        {
+          "field_id": "partition1_entry_delay_s",
+          "label": "Partition 1 — Entry Delay (seconds)",
+          "kind": "duration_seconds",
+          "min": 0,
+          "max": 240,
+          "recorded_value": 30
+        },
+        {
+          "field_id": "partition1_exit_delay_s",
+          "label": "Partition 1 — Exit Delay (seconds)",
+          "kind": "duration_seconds",
+          "min": 0,
+          "max": 240,
+          "recorded_value": 60
+        }
+      ]
+    }
+  ]
+}

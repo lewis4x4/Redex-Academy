@@ -1,17 +1,68 @@
-// @redex/sim-engine — the Forge runtime + shared Verdict/scoring/safety-veto
-// hook, xAPI telemetry emitter, offline cache contract, and i18n string layer
-// (CLAUDE.md §6). Built in F5 (framework + engines #1/#2) and F5b (#5/#6).
-//
-// This stub fixes the Verdict shape (CODING_STANDARDS.md §1) so consumers can
-// type against it now. The deterministic scoring + safety-veto computation are
-// SERVER-AUTHORITATIVE (CLAUDE.md invariants §5.1 / §5.3 / §5.5) — added in
-// F5 / M6 and never computed on the client or offline. AI only *explains* a
-// Verdict; it never decides pass/fail.
+// @redex/sim-engine — the Forge: the shared sim runtime + engines #1 (branching)
+// and #2 (device-config). Authors write declarative specs validated against
+// @redex/sim-schemas; they never write a runtime. This barrel is the documented
+// consumer contract M3/M4/M5/M9/M10 build against (signed off at the F5 human gate).
 
-export type Verdict =
-  | { kind: 'pass' }
-  | { kind: 'fail'; reasons: string[] }
-  | { kind: 'safety_veto'; lineItemKey: string };
+// ── Public entry + preview/sandbox ──────────────────────────────────────────
+export { loadSpec, type AnySimInstance } from './loadSpec';
+export { previewSpec, isValidSpec, type PreviewResult } from './preview/harness';
 
-/** Marker that the runtime has not been implemented yet (F5/F5b). */
-export const FORGE_RUNTIME_READY = false;
+// ── Engine API contract (types) ─────────────────────────────────────────────
+export type {
+  EngineKindValue,
+  LoadSpecOptions,
+  RubricResult,
+  SimInstanceBase,
+  TelemetrySink,
+  Verdict,
+  VerdictKind,
+} from './api';
+
+// ── Shared services (built once, used by every engine) ──────────────────────
+export { computeVerdict, type ScoringHook } from './verdict/verdict';
+export {
+  createEmitter,
+  resultFromVerdict,
+  XAPI_VERBS,
+  type Emitter,
+  type EmitterDeps,
+} from './telemetry/emitter';
+export {
+  DEFAULT_STATE_TOKENS,
+  resolveStateToken,
+  SHAPE_GLYPH,
+  type StateToken,
+} from './colorblind/tokens';
+export { StateBadge, type StateBadgeProps } from './colorblind/StateBadge';
+export {
+  createI18nResolver,
+  type I18nResolver,
+  type SimLocale,
+  type SimStringTable,
+} from './i18n/resolver';
+export { SIM_STRINGS } from './i18n/sim-strings';
+export { SimFrame, type RenderMode, type SimFrameProps } from './fallback-2d/Schematic';
+
+// ── Engine #1 — branching scenario ──────────────────────────────────────────
+export {
+  createBranchingSim,
+  type BranchingInstance,
+  type BranchingState,
+  type BranchingChoice,
+} from './engines/branching/core';
+export { BranchingSim, type BranchingSimProps } from './engines/branching/BranchingSim';
+
+// ── Engine #2 — device-config state machine ─────────────────────────────────
+export {
+  createDeviceConfigSim,
+  type DeviceConfigInstance,
+  type DeviceConfigState,
+} from './engines/device-config/core';
+export {
+  DeviceConfigSim,
+  type DeviceConfigSimProps,
+} from './engines/device-config/DeviceConfigSim';
+export { evalExpr, type ExprContext } from './engines/device-config/expr';
+
+// ── Engine #4 — panel state machine (Phase-2 stub; API surface reserved) ─────
+export { createPanelStateSim, PANEL_STATE_ENGINE_KIND } from './engines/panel-state.stub';

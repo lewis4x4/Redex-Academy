@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/calculator.schema.json",
+  "title": "Parametric Calculator Spec (engine #6)",
+  "description": "Declarative spec for the parametric calculator engine (engine #6, ledger §E / F5b). Declares typed `inputs` (units, ranges, defaults), a referenced deterministic `compute_ref` (a NAMED, pure, unit-checked computation — PPF/DORI, PoE power budget by 802.3af/at/bt, voltage-drop 'will it hold', storage-retention), and `thresholds` (pass/warn/fail bands) each §5.4-tagged with an optional safety_flag. NO LLM, NO network in the compute path (same inputs -> same output). A `meter` spec drives the colorblind-safe visual budget meter (shape + numeric value + color, never color alone). engine_kind is pinned to 'calculator' (academy.sim_kind).",
+  "type": "object",
+  "required": ["envelope", "inputs", "compute_ref", "thresholds"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "Optional editor/CI hint pointing at this schema's $id.",
+      "type": "string"
+    },
+    "$computeContract": {
+      "description": "Optional non-normative author+engineering note documenting the referenced formula registry entry (constants, formula, worked example). Ignored by the runtime; lives here so the spec is self-documenting.",
+      "type": "object"
+    },
+    "envelope": {
+      "description": "Shared sim envelope. engine_kind MUST be 'calculator'.",
+      "allOf": [
+        {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope"
+        },
+        { "properties": { "engine_kind": { "const": "calculator" } } }
+      ]
+    },
+    "inputs": {
+      "description": "The parametric inputs the learner sets. Keyed by input id; values are unit-checked and range-bounded.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/input" }
+    },
+    "compute_ref": {
+      "title": "referenced formula id",
+      "description": "The id of a registered deterministic computation in the calculator engine's formula registry. The spec NEVER carries executable math — it references a vetted, unit-tested function so the compute path stays pure and auditable. The registry id pins the exact wattage/threshold constants used.",
+      "type": "string",
+      "enum": ["poe_power_budget", "voltage_drop_will_it_hold", "ppf_dori", "storage_retention"]
+    },
+    "result_unit": {
+      "description": "Unit of the computed primary result (e.g. 'W' for poe_power_budget headroom, 'V' for voltage at the lock, 'PPF' for ppf_dori, 'days' for storage_retention).",
+      "type": "string",
+      "minLength": 1
+    },
+    "thresholds": {
+      "description": "Pass/warn/fail bands evaluated against the computed result. Each is §5.4-tagged; a safety_flag band failing routes through the veto hook.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/threshold" }
+    },
+    "meter": {
+      "description": "The visual budget meter spec ('a budget meter you can blow' — F5b). Colorblind-safe: the renderer shows the numeric value + a shape marker per band, color advisory only.",
+      "$ref": "#/$defs/meter"
+    }
+  },
+  "$defs": {
+    "input": {
+      "title": "typed input",
+      "description": "One calculator input. type + unit + min/max bound the value; the engine unit-checks before compute.",
+      "type": "object",
+      "properties": {
+        "label_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "type": { "type": "string", "enum": ["number", "integer", "enum", "boolean"] },
+        "unit": {
+          "description": "Physical unit (e.g. 'W', 'V', 'ft', 'AWG', 'm', 'Mbps', 'days'). Required for number/integer.",
+          "type": "string"
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "step": { "type": "number", "exclusiveMinimum": 0 },
+        "default": {},
+        "options": {
+          "description": "For type=enum (e.g. a PoE standard pick: 802.3af/at/bt-type3/bt-type4).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": { "type": "string" },
+              "label_i18n": {
+                "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+              }
+            },
+            "required": ["value", "label_i18n"],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": ["label_i18n", "type"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "$comment": "number/integer inputs must declare a unit (deterministic + unit-checked).",
+          "if": { "properties": { "type": { "enum": ["number", "integer"] } } },
+          "then": { "required": ["label_i18n", "type", "unit"] }
+        }
+      ]
+    },
+    "threshold": {
+      "title": "threshold band",
+      "description": "A pass/warn/fail band over the computed result. `op` + `value` define the boundary; `band` is the verdict the band yields.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "band": { "type": "string", "enum": ["pass", "warn", "fail"] },
+        "op": {
+          "description": "Comparison of the computed result against `value`.",
+          "type": "string",
+          "enum": [">=", ">", "<=", "<", "==", "between"]
+        },
+        "value": { "type": "number" },
+        "value_high": { "description": "Upper bound when op='between'.", "type": "number" },
+        "dimension": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/rubricDimension"
+        },
+        "line_item_key": { "type": "string" },
+        "safety_flag": {
+          "description": "True if breaching this band is a SAFETY-CRITICAL failure (e.g. voltage at a mag lock below hold → the lock chatters/drops; an under-budget PoE switch sheds the front-door camera). Routes through the veto hook + applies the >=90% safety bar (ledger §C).",
+          "type": "boolean",
+          "default": false
+        },
+        "feedback_i18n": {
+          "description": "Band feedback — names the real-world consequence + the fix (e.g. 'At 10.8 V the 1200s mag lock will chatter and may not hold; increase gauge or shorten the run').",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "state": {
+          "description": "Colorblind-safe state token to render for this band (pass→check, warn→triangle, fail→cross).",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/colorblindSafeState"
+        }
+      },
+      "required": ["id", "band", "op", "value", "dimension", "feedback_i18n"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "safety_flag": { "const": true } }, "required": ["safety_flag"] },
+          "then": { "properties": { "dimension": { "const": "safety_compliance" } } }
+        },
+        {
+          "if": { "properties": { "op": { "const": "between" } } },
+          "then": {
+            "required": ["id", "band", "op", "value", "value_high", "dimension", "feedback_i18n"]
+          }
+        }
+      ]
+    },
+    "meter": {
+      "type": "object",
+      "properties": {
+        "label_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "unit": { "type": "string" },
+        "show_numeric_value": {
+          "description": "MUST be true for colorblind-safety: the meter always shows the numeric value, not just a colored fill.",
+          "type": "boolean",
+          "const": true,
+          "default": true
+        },
+        "band_markers": {
+          "description": "Shape markers drawn at band boundaries so the band is readable without color.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "at": { "type": "number" },
+              "state": {
+                "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/colorblindSafeState"
+              }
+            },
+            "required": ["at", "state"],
+            "additionalProperties": false
+          },
+          "default": []
+        }
+      },
+      "required": ["label_i18n", "min", "max", "show_numeric_value"],
+      "additionalProperties": false
+    }
+  }
+}

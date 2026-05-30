@@ -1,0 +1,248 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "title": "Declarative 2D-Interaction Spec (engine #5)",
+  "description": "Declarative spec for the 2D-interaction engine (engine #5, ledger §E / F5b). MVP-critical (AC-101, AC-102, ~25-30 courses). A spec is a `background` (image R2 key or schematic) plus a list of `items`, each of one kind: drag-label, label, match, sort, or hotspot. Every item carries an answer key and per-item scoring, per-item feedback ('why that's wrong'), a §5.4 dimension tag and an optional safety_flag (fail-safe/fail-locked items are safety-adjacent → >=90% per ledger §C). engine_kind is pinned to 'interaction_2d' (academy.sim_kind).",
+  "type": "object",
+  "required": ["envelope", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "Optional editor/CI hint pointing at this schema's $id.",
+      "type": "string"
+    },
+    "envelope": {
+      "description": "Shared sim envelope. engine_kind MUST be 'interaction_2d'.",
+      "allOf": [
+        {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope"
+        },
+        { "properties": { "engine_kind": { "const": "interaction_2d" } } }
+      ]
+    },
+    "background": {
+      "description": "The shared canvas most items render over (the diagram/schematic). Optional for pure match/sort items.",
+      "type": "object",
+      "properties": {
+        "r2_key": {
+          "description": "R2 image key, OR omit and set schematic_id for a vector schematic (the high-contrast picture-book fallback is first-class).",
+          "type": "string"
+        },
+        "schematic_id": {
+          "description": "Id of a built-in vector schematic (the 2D picture-book primitive).",
+          "type": "string"
+        },
+        "alt_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "required": ["alt_i18n"],
+      "additionalProperties": false
+    },
+    "items": {
+      "description": "The interactive items. Each is independently scored; the envelope scoring hook aggregates and applies the safety subset bar.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/item" }
+    }
+  },
+  "$defs": {
+    "region": {
+      "title": "region / target",
+      "description": "A rectangular or polygonal area on the background, used as a drop target or hotspot. Coordinates are in background units.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "shape": { "type": "string", "enum": ["rect", "polygon"] },
+        "rect": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "w": { "type": "number" },
+            "h": { "type": "number" }
+          },
+          "required": ["x", "y", "w", "h"],
+          "additionalProperties": false
+        },
+        "points": {
+          "type": "array",
+          "items": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+          "minItems": 3
+        }
+      },
+      "required": ["id", "shape"],
+      "additionalProperties": false
+    },
+    "scoring": {
+      "title": "per-item scoring",
+      "description": "Per-item score weight + the §5.4 mapping + the safety flag.",
+      "type": "object",
+      "properties": {
+        "weight": { "type": "number", "minimum": 0, "default": 1 },
+        "dimension": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/rubricDimension"
+        },
+        "line_item_key": { "type": "string" },
+        "safety_flag": {
+          "description": "True if this item is safety-adjacent (e.g. an AC-102 fail-safe/fail-locked match). Applies the >=90% safety bar (ledger §C) and routes a wrong answer through the veto hook when the sim is safety-gated.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["dimension"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "safety_flag": { "const": true } }, "required": ["safety_flag"] },
+          "then": { "properties": { "dimension": { "const": "safety_compliance" } } }
+        }
+      ]
+    },
+    "item": {
+      "title": "interaction item",
+      "description": "A single interaction. Discriminated by `kind`: drag-label/label (place a label on a region), match (pair items across columns), sort (order a sequence), hotspot (tap the correct region).",
+      "type": "object",
+      "required": ["id", "kind", "prompt_i18n", "scoring", "feedback_i18n"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "kind": { "type": "string", "enum": ["drag-label", "label", "match", "sort", "hotspot"] },
+        "prompt_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "scoring": { "$ref": "#/$defs/scoring" },
+        "feedback_i18n": {
+          "description": "One-line 'why that's wrong' shown on a wrong answer (instant, specific, diagnostic).",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        }
+      },
+      "$comment": "unevaluatedProperties (not additionalProperties) at the item level: it sees the properties evaluated by the matched oneOf branch AND the base props above, so it locks the object down without each branch having to re-declare the base props. This avoids the classic additionalProperties+oneOf collision.",
+      "unevaluatedProperties": false,
+      "oneOf": [
+        {
+          "title": "drag-label / label item",
+          "description": "Place draggable labels onto regions of the background (AC-101 anatomy-of-a-door). answer_key maps each label id to its correct region id.",
+          "properties": {
+            "kind": { "enum": ["drag-label", "label"] },
+            "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "minItems": 1 },
+            "labels": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "text_i18n": {
+                    "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+                  }
+                },
+                "required": ["id", "text_i18n"],
+                "additionalProperties": false
+              }
+            },
+            "answer_key": {
+              "description": "label id -> correct region id.",
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "type": "string" }
+            }
+          },
+          "required": ["kind", "regions", "labels", "answer_key"]
+        },
+        {
+          "title": "match item",
+          "description": "Match items across columns (AC-102 'Spec the Door': credential <-> reader-protocol <-> lock-family <-> fail-state). answer_key pairs left ids to right ids.",
+          "properties": {
+            "kind": { "const": "match" },
+            "left": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "text_i18n": {
+                    "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+                  }
+                },
+                "required": ["id", "text_i18n"],
+                "additionalProperties": false
+              }
+            },
+            "right": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "text_i18n": {
+                    "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+                  }
+                },
+                "required": ["id", "text_i18n"],
+                "additionalProperties": false
+              }
+            },
+            "answer_key": {
+              "description": "left id -> correct right id.",
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": { "type": "string" }
+            }
+          },
+          "required": ["kind", "left", "right", "answer_key"]
+        },
+        {
+          "title": "sort / order item",
+          "description": "Order a sequence (AC-101 access-event lifecycle). answer_key is the ordered list of element ids.",
+          "properties": {
+            "kind": { "const": "sort" },
+            "elements": {
+              "type": "array",
+              "minItems": 2,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "text_i18n": {
+                    "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+                  }
+                },
+                "required": ["id", "text_i18n"],
+                "additionalProperties": false
+              }
+            },
+            "answer_key": {
+              "description": "Correct order as a list of element ids.",
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 2
+            }
+          },
+          "required": ["kind", "elements", "answer_key"]
+        },
+        {
+          "title": "hotspot item",
+          "description": "Tap the correct region (e.g. 'tap the side that must always allow free egress'). answer_key lists the correct region id(s).",
+          "properties": {
+            "kind": { "const": "hotspot" },
+            "regions": { "type": "array", "items": { "$ref": "#/$defs/region" }, "minItems": 1 },
+            "answer_key": {
+              "description": "Correct region id(s).",
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            }
+          },
+          "required": ["kind", "regions", "answer_key"]
+        }
+      ]
+    }
+  }
+}

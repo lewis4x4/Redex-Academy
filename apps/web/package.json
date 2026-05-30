@@ -16,6 +16,8 @@
   "dependencies": {
     "@redex/auth": "workspace:*",
     "@redex/i18n": "workspace:*",
+    "@redex/sim-engine": "workspace:*",
+    "@redex/sim-schemas": "workspace:*",
     "@redex/sync-core": "workspace:*",
     "@redex/ui": "workspace:*",
     "@supabase/supabase-js": "^2.45.0",

@@ -4,6 +4,7 @@ import { Gallery } from '@redex/ui/gallery';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { ForgePreview } from './forge/ForgePreview';
 import './index.css';
 import { startSync } from './offline/sync-manager';
 import { registerServiceWorker } from './registerSW';
@@ -24,8 +25,12 @@ if (import.meta.env.VITE_SUPABASE_URL) {
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element #root not found');
 
-// Public dev route: the D1 component gallery (/dev/ui) — the reviewable artifact
-// for the human-verify gate. Everything else renders the auth-aware app shell.
-const isGallery = window.location.pathname === '/dev/ui';
+// Public standalone routes (no auth): the D1 component gallery (/dev/ui — the
+// reviewable artifact for the visual gate) and the F5 Forge preview/sandbox
+// (/forge-preview — the authoring preview). Everything else renders the
+// auth-aware app shell.
+const path = window.location.pathname;
+const devView =
+  path === '/dev/ui' ? <Gallery /> : path === '/forge-preview' ? <ForgePreview /> : null;
 
-createRoot(rootEl).render(<StrictMode>{isGallery ? <Gallery /> : <App />}</StrictMode>);
+createRoot(rootEl).render(<StrictMode>{devView ?? <App />}</StrictMode>);
