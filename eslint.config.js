@@ -22,6 +22,9 @@ export default [
       'sim-contracts/**',
       'supabase/migrations/**',
       'supabase/tests/**',
+      // Deno Edge Functions are a separate runtime (npm:/jsr: imports, Deno.*);
+      // checked by `deno check` in CI, not the node ESLint/Prettier toolchain.
+      'supabase/functions/**',
     ],
   },
   ...preset,
