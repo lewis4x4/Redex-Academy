@@ -6,14 +6,41 @@ interface Presentation {
   label: string;
   /** Non-color shape carrier (rendered aria-hidden alongside the text label). */
   symbol: string;
-  className: string;
+  /** Hue carried by the tint pill + the symbol glyph (the colorblind-safe color cue). */
+  symbolClassName: string;
+  /** Translucent verdict tint pill (hue@.14 bg + hue@.5 edge) the badge rides on. */
+  pillClassName: string;
 }
 
+// The label text is white (clears WCAG AA on the dark canvas — the dark state hues
+// #b3261e/#7a1fa2 as text did not), while the verdict HUE is carried by the tint
+// pill + the colored shape glyph. State stays shape + text + color, never color
+// alone. Token classes only — no raw hex.
 const PRESENTATION: Record<VerdictKind, Presentation> = {
-  pass: { label: 'Pass', symbol: '✓', className: 'text-state-pass' },
-  fail: { label: 'Fail', symbol: '✕', className: 'text-state-fail' },
-  safety_veto: { label: 'Safety veto', symbol: '⚠', className: 'text-state-veto' },
-  pending: { label: 'Pending', symbol: '…', className: 'text-state-pending' },
+  pass: {
+    label: 'Pass',
+    symbol: '✓',
+    symbolClassName: 'text-state-pass',
+    pillClassName: 'bg-green-tint border-green-edge',
+  },
+  fail: {
+    label: 'Fail',
+    symbol: '✕',
+    symbolClassName: 'text-redex-bright',
+    pillClassName: 'bg-red-tint border-red-edge',
+  },
+  safety_veto: {
+    label: 'Safety veto',
+    symbol: '⚠',
+    symbolClassName: 'text-state-veto',
+    pillClassName: 'bg-veto-tint border-veto-edge',
+  },
+  pending: {
+    label: 'Pending',
+    symbol: '…',
+    symbolClassName: 'text-state-pending',
+    pillClassName: 'bg-amber-tint border-amber-edge',
+  },
 };
 
 export interface StatusBadgeProps {
@@ -34,9 +61,11 @@ export function StatusBadge({ kind, label }: StatusBadgeProps): ReactElement {
     <span
       role="status"
       data-kind={kind}
-      className={`inline-flex items-center gap-1 ${p.className}`}
+      className={`inline-flex items-center gap-1.5 rounded-pill border px-2.5 py-0.5 text-white ${p.pillClassName}`}
     >
-      <span aria-hidden="true">{p.symbol}</span>
+      <span aria-hidden="true" className={p.symbolClassName}>
+        {p.symbol}
+      </span>
       <span>{label ?? p.label}</span>
     </span>
   );

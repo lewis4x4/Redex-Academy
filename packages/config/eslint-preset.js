@@ -41,5 +41,37 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
     },
   },
+  // ── D1 invariant 9: NO raw color hex outside the token layer. Components, the
+  // shell, templates, the gallery, and app screens must use @redex/ui tokens /
+  // Tailwind classes (backed by CSS variables) — never a literal hex. The token
+  // layer (packages/ui/src/tokens/**) + tokens.css + the Tailwind preset are the
+  // ONLY places a hex may live; they are excluded below.
+  {
+    files: [
+      'packages/ui/src/components/**/*.{ts,tsx}',
+      'packages/ui/src/shell/**/*.{ts,tsx}',
+      'packages/ui/src/templates/**/*.{ts,tsx}',
+      'packages/ui/src/gallery/**/*.{ts,tsx}',
+      'packages/ui/src/StatusBadge.tsx',
+      'apps/web/src/**/*.{ts,tsx}',
+      'apps/admin/src/**/*.{ts,tsx}',
+    ],
+    ignores: ['**/*.test.{ts,tsx}', '**/tokens/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/#[0-9a-fA-F]{3,8}\\b/]',
+          message:
+            'Raw color hex is forbidden outside the token layer (D1 invariant 9) — use a @redex/ui token or a Tailwind class backed by a CSS variable.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}/]',
+          message:
+            'Raw color hex is forbidden outside the token layer (D1 invariant 9) — use a @redex/ui token or a Tailwind class backed by a CSS variable.',
+        },
+      ],
+    },
+  },
   prettier,
 );

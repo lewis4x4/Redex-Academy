@@ -1,0 +1,50 @@
+/* @redex/ui — BACKGROUND SYSTEM (D1). Near-black canvas + dual red radial
+ * vignette (from the prototype body::before), an optional starfield primitive, and
+ * the radial core-glow. Applied by the app shell / theme base. */
+
+/* The canvas vignette — attach to a fixed, pointer-events:none layer behind content. */
+.rdx-canvas-vignette::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(1200px 700px at 70% -10%, rgba(237, 27, 36, 0.1), transparent 60%),
+    radial-gradient(900px 600px at 10% 110%, rgba(237, 27, 36, 0.06), transparent 60%);
+}
+
+/* Radial core-glow — a centered red bloom (used behind hero/brand marks). */
+.rdx-core-glow {
+  background: radial-gradient(circle at center, rgba(237, 27, 36, 0.18), transparent 70%);
+}
+
+/* Starfield primitive — faint twinkling dots (decorative; reduced-motion-gated via
+ * the .rdx-anim-twinkle class on the dots). */
+.rdx-starfield {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.rdx-starfield .star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--muted);
+  opacity: 0.2;
+}
+
+/* Brand scrollbars. */
+.rdx-scope ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.rdx-scope ::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 8px;
+}
+.rdx-scope ::-webkit-scrollbar-track {
+  background: transparent;
+}
