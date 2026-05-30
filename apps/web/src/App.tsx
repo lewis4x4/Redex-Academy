@@ -4,12 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { LoginPage } from './auth/components/LoginPage';
 import { RoleGate } from './auth/components/RoleGate';
 import { signOut, useAuth } from './auth/useAuth';
+import { SyncStatus } from './components/SyncStatus';
 
 /**
- * F3 auth-aware shell. Logged out → SSO login. Logged in → a persona-adaptive
- * shell (UI driven by the `persona` claim) with a role-gated supervisory section
- * (permissions driven by the `roles` claim) — the two are kept distinct
- * (CODING_STANDARDS §7). Real feature surfaces arrive in M1+.
+ * Auth-aware shell (F3) with the offline-sync indicator (F4). Logged out → SSO
+ * login. Logged in → a persona-adaptive shell (UI driven by the `persona` claim)
+ * with a role-gated supervisory section (permissions driven by the `roles` claim)
+ * — persona and role kept distinct (CODING_STANDARDS §7). The SyncStatus banner
+ * makes queued-but-unsynced OR server-refused work UNMISSABLE (INT-102) — a tech
+ * can never mistake unfinished offline work for a completed job. Feature surfaces
+ * arrive in M1+.
  */
 export default function App() {
   const { t } = useTranslation();
@@ -51,6 +55,8 @@ export default function App() {
             Sign out
           </button>
         </header>
+
+        <SyncStatus />
 
         <section aria-label="Session" className="text-sm text-slate-600">
           Signed in · shell: <span data-testid="shell">{shell}</span>

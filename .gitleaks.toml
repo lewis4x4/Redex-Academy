@@ -9,5 +9,6 @@ description = "Paths that legitimately contain no real secrets (names-only examp
 paths = [
   '''\.env\.example$''',
   '''pnpm-lock\.yaml$''',
+  '''deno\.lock$''', # Deno lockfile: module content-integrity hashes (sha256), never secrets
   '''packages/db-types/database\.types\.ts$''',
 ]

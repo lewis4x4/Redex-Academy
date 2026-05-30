@@ -32,3 +32,6 @@ seed/**
 sim-contracts/**
 supabase/migrations/**
 supabase/tests/**
+
+# Deno Edge Functions — separate runtime/toolchain (deno fmt / deno check), not prettier.
+supabase/functions/**
