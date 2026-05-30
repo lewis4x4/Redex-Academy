@@ -135,6 +135,9 @@ test('browse the constellation → enroll an available course → a locked gate 
   await expect(enroll).toBeVisible();
   await enroll.click();
   await expect(page.getByText('Enrolled in FND-101.')).toBeAttached();
+  // …and the whole loop closes: POST → reload re-fetches → resolver recomputes →
+  // the node re-renders in_progress (not just a toast).
+  await expect(root).toHaveAttribute('data-state', 'in_progress');
 
   // BLOCKED ON LOCKED: selecting the locked gate offers NO enroll, shows the hint.
   await gate.click();
