@@ -3,13 +3,18 @@
  * Runtime validation for the branching scenario engine. See the JSON Schema for
  * the authoritative authoring contract.
  */
-import { z } from "zod";
-import { I18nKey, RubricDimension, ColorblindSafeState, envelopeForEngine } from "./sim-envelope.zod";
+import { z } from 'zod';
+import {
+  I18nKey,
+  RubricDimension,
+  ColorblindSafeState,
+  envelopeForEngine,
+} from './sim-envelope.zod';
 
 const MediaRef = z
   .object({
     r2_key: z.string().min(1),
-    kind: z.enum(["image", "video", "audio", "schematic"]),
+    kind: z.enum(['image', 'video', 'audio', 'schematic']),
     alt_i18n: I18nKey,
   })
   .strict();
@@ -32,32 +37,33 @@ const Edge = z
   .strict()
   // A safety_flag edge must be a safety decision (so veto wording + >=90% bar engage).
   .refine((e) => !e.safety_flag || e.is_safety_decision === true, {
-    message: "safety_flag edge must also set is_safety_decision: true",
-    path: ["is_safety_decision"],
+    message: 'safety_flag edge must also set is_safety_decision: true',
+    path: ['is_safety_decision'],
   })
-  // A safety_flag edge MUST carry a verdict in the safety_compliance dimension — so a
-  // wrong safety choice always becomes a safety result and can never silently bypass
-  // the non-overridable veto (mirrors the device-config safety_flag rule).
+  // A safety_flag edge MUST carry a verdict in the safety_compliance dimension —
+  // so a wrong safety choice always becomes a safety result and can never silently
+  // bypass the non-overridable veto (mirrors the device-config safety_flag rule).
   .refine(
-    (e) => !e.safety_flag || (e.verdict !== undefined && e.verdict.dimension === "safety_compliance"),
+    (e) =>
+      !e.safety_flag || (e.verdict !== undefined && e.verdict.dimension === 'safety_compliance'),
     {
       message: "safety_flag edge must carry a verdict with dimension 'safety_compliance'",
-      path: ["verdict"],
+      path: ['verdict'],
     },
   )
-  // A safety_flag edge IS the wrong safety choice → it must carry a negative score_delta.
+  // A safety_flag edge IS the wrong safety choice → it must carry a negative score_delta
+  // (it can never be a "correct"/non-negative outcome). The engine also forces it to fail.
   .refine((e) => !e.safety_flag || e.score_delta < 0, {
-    message: "safety_flag edge (the wrong safety choice) must have score_delta < 0",
-    path: ["score_delta"],
+    message: 'safety_flag edge (the wrong safety choice) must have score_delta < 0',
+    path: ['score_delta'],
   });
 
-const PromptNodeShape = z
-  .object({
-    prompt_i18n: I18nKey,
-    media: z.array(MediaRef).default([]),
-    is_safety_decision: z.boolean().default(false),
-    choices: z.array(Edge).min(2),
-  });
+const PromptNodeShape = z.object({
+  prompt_i18n: I18nKey,
+  media: z.array(MediaRef).default([]),
+  is_safety_decision: z.boolean().default(false),
+  choices: z.array(Edge).min(2),
+});
 
 const Replay = z
   .object({
@@ -72,13 +78,13 @@ const Replay = z
  * discriminator (no .refine() wrapper) — the cross-field rule "safety_veto =>
  * outcome must be fail" is enforced in BranchingSpec.superRefine below.
  */
-const Node = z.discriminatedUnion("type", [
-  PromptNodeShape.extend({ type: z.literal("situation") }).strict(),
-  PromptNodeShape.extend({ type: z.literal("prompt") }).strict(),
+const Node = z.discriminatedUnion('type', [
+  PromptNodeShape.extend({ type: z.literal('situation') }).strict(),
+  PromptNodeShape.extend({ type: z.literal('prompt') }).strict(),
   z
     .object({
-      type: z.literal("terminal"),
-      outcome: z.enum(["pass", "fail"]),
+      type: z.literal('terminal'),
+      outcome: z.enum(['pass', 'fail']),
       safety_veto: z.boolean().default(false),
       outcome_i18n: I18nKey,
       media: z.array(MediaRef).default([]),
@@ -90,7 +96,7 @@ const Node = z.discriminatedUnion("type", [
 
 export const BranchingSpec = z
   .object({
-    envelope: envelopeForEngine("branching_scenario"),
+    envelope: envelopeForEngine('branching_scenario'),
     start: z.string().min(1),
     nodes: z.record(Node),
   })
@@ -99,29 +105,37 @@ export const BranchingSpec = z
   .superRefine((spec, ctx) => {
     const ids = new Set(Object.keys(spec.nodes));
     if (ids.size < 2) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "a scenario needs >= 2 nodes", path: ["nodes"] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'a scenario needs >= 2 nodes',
+        path: ['nodes'],
+      });
     }
     if (!ids.has(spec.start)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `start '${spec.start}' is not a node`, path: ["start"] });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `start '${spec.start}' is not a node`,
+        path: ['start'],
+      });
     }
     for (const [nid, node] of Object.entries(spec.nodes)) {
-      if (node.type !== "terminal") {
+      if (node.type !== 'terminal') {
         node.choices.forEach((c: z.infer<typeof Edge>, i: number) => {
           if (!ids.has(c.to)) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: `node '${nid}' choice '${c.id}' points to missing node '${c.to}'`,
-              path: ["nodes", nid, "choices", i, "to"],
+              path: ['nodes', nid, 'choices', i, 'to'],
             });
           }
         });
       } else {
         // Cross-field rule: a safety_veto terminal must be a fail.
-        if (node.safety_veto && node.outcome !== "fail") {
+        if (node.safety_veto && node.outcome !== 'fail') {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `terminal '${nid}' sets safety_veto:true but outcome is '${node.outcome}' (must be 'fail')`,
-            path: ["nodes", nid, "outcome"],
+            path: ['nodes', nid, 'outcome'],
           });
         }
         if (node.replay) {
@@ -130,7 +144,7 @@ export const BranchingSpec = z
               ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 message: `terminal '${nid}' replay references missing node '${ref}'`,
-                path: ["nodes", nid, "replay"],
+                path: ['nodes', nid, 'replay'],
               });
             }
           }

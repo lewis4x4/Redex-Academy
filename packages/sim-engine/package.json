@@ -3,16 +3,35 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "The Forge runtime + shared Verdict/scoring/safety-veto hook, telemetry emitter, offline cache + i18n contracts. Stub until F5/F5b.",
+  "description": "The Forge: the shared sim runtime (engine API, Verdict + safety-veto hook, xAPI telemetry emitter, offline-cache + i18n + colorblind-safe contracts, 2D fallback, preview harness) + engines #1 branching and #2 device-config. Authors write specs; they never write a runtime.",
   "exports": {
     ".": "./src/index.ts"
   },
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@redex/i18n": "workspace:*",
+    "@redex/sim-schemas": "workspace:*",
+    "@redex/ui": "workspace:*",
+    "zod": "^3.24.1",
+    "zustand": "^5.0.2"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.2"
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^18.3.18",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
   }
 }

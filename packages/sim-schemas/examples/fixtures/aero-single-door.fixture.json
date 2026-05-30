@@ -1,0 +1,134 @@
+{
+  "$comment": "TOY SANITIZED FIXTURE — NOT A REAL RECORDING (F5 ships toy fixtures only; real AC-slice fixtures are M3/M4/S1). Hand-authored, no real customer PII and no captured live session — every value is invented for training. Establishes the device_config replay contract for aero-single-door.device-config.json. sanitized=true is the publish gate (invariant 6); a published sim may only reference a sanitized fixture. NEVER a live API.",
+  "manifest_version": "1.0.0",
+  "fixture_id": "adc-aero-x1100-create-customer-v3",
+  "source": "adc_portal",
+  "label": "ADC Aero X1100 — single-door commission (TOY sanitized fixture)",
+  "version": "create-customer v3 (toy)",
+  "sanitized": true,
+  "synthetic": true,
+  "source_citation": "Toy/illustrative only — authored from the ADC-AC-X1100 Aero install guide + Alarm.com Partner Portal create-customer workflow as described in the AC-201 course spec. No real session recorded.",
+  "platform_key": "adc_aero_x1100",
+  "platform_manifest_surface": "alarm_dot_com.partner_portal.create_customer.v3",
+  "screens": [
+    {
+      "id": "wiring",
+      "ordinal": 0,
+      "title": "Door wiring — lock output / REX / DPS",
+      "image_r2_key": "fixtures/aero/01-door-wiring.png",
+      "hotspots": [
+        {
+          "id": "hs-lock-mode",
+          "rect": { "x": 60, "y": 120, "w": 320, "h": 64 },
+          "action": "set_field",
+          "field_id": "lock_output_mode"
+        },
+        {
+          "id": "hs-rex",
+          "rect": { "x": 60, "y": 200, "w": 320, "h": 64 },
+          "action": "set_field",
+          "field_id": "rex_input"
+        },
+        {
+          "id": "hs-dps",
+          "rect": { "x": 60, "y": 280, "w": 320, "h": 64 },
+          "action": "set_field",
+          "field_id": "dps_input"
+        },
+        {
+          "id": "hs-polarity",
+          "rect": { "x": 60, "y": 360, "w": 320, "h": 64 },
+          "action": "set_field",
+          "field_id": "lock_polarity"
+        },
+        {
+          "id": "hs-to-relay",
+          "rect": { "x": 700, "y": 520, "w": 160, "h": 60 },
+          "action": "navigate",
+          "to_screen": "relay"
+        }
+      ],
+      "field_map": [
+        {
+          "field_id": "lock_output_mode",
+          "label": "Lock output mode",
+          "kind": "enum",
+          "options": ["fail_safe", "fail_locked"],
+          "recorded_value": "fail_locked"
+        },
+        {
+          "field_id": "rex_input",
+          "label": "REX input terminal",
+          "kind": "enum",
+          "options": ["rex_terminal", "dps_terminal"],
+          "recorded_value": "rex_terminal"
+        },
+        {
+          "field_id": "dps_input",
+          "label": "DPS input terminal",
+          "kind": "enum",
+          "options": ["dps_terminal", "rex_terminal"],
+          "recorded_value": "dps_terminal"
+        },
+        {
+          "field_id": "lock_polarity",
+          "label": "Lock polarity",
+          "kind": "enum",
+          "options": ["normal", "reversed"],
+          "recorded_value": "normal"
+        }
+      ]
+    },
+    {
+      "id": "relay",
+      "ordinal": 1,
+      "title": "Relay logic",
+      "image_r2_key": "fixtures/aero/02-relay-logic.png",
+      "hotspots": [
+        {
+          "id": "hs-relay",
+          "rect": { "x": 60, "y": 160, "w": 360, "h": 64 },
+          "action": "set_field",
+          "field_id": "relay_logic"
+        },
+        {
+          "id": "hs-to-portal",
+          "rect": { "x": 700, "y": 520, "w": 160, "h": 60 },
+          "action": "navigate",
+          "to_screen": "portal"
+        }
+      ],
+      "field_map": [
+        {
+          "field_id": "relay_logic",
+          "label": "Relay logic",
+          "kind": "enum",
+          "options": ["switch_lock_circuit", "power_lock_through_relay"],
+          "recorded_value": "switch_lock_circuit"
+        }
+      ]
+    },
+    {
+      "id": "portal",
+      "ordinal": 2,
+      "title": "Partner Portal — add & verify door",
+      "image_r2_key": "fixtures/aero/03-partner-portal-add-door.png",
+      "hotspots": [
+        {
+          "id": "hs-cloud",
+          "rect": { "x": 60, "y": 200, "w": 300, "h": 64 },
+          "action": "set_field",
+          "field_id": "cloud_added"
+        }
+      ],
+      "field_map": [
+        {
+          "field_id": "cloud_added",
+          "label": "Door added & verified in Partner Portal",
+          "kind": "boolean",
+          "recorded_value": false
+        }
+      ]
+    }
+  ]
+}
