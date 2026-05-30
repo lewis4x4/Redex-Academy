@@ -1,0 +1,23 @@
+{
+  "name": "@redex/sync-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The offline /sync CONTRACT (F4): append-only idempotency on client_event_uuid, server-only-field rejection (never fake a pass), signed-signoff immutability, LWW for drafts only. Shared by the client queue; mirrored by the Deno /sync function. Runtime-agnostic (Zod only).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

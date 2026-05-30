@@ -32,7 +32,7 @@ describe('App (auth-aware shell)', () => {
     expect(screen.getByRole('button', { name: /Microsoft Entra/i })).toBeTruthy();
   });
 
-  it('logged in as Marco + manager → field-first shell + role-gated manager section', async () => {
+  it('logged in as Marco + manager → field shell + manager section + sync status (F4)', async () => {
     h.session = {
       access_token: tokenWith({ sub: SUB, org_id: ORG, roles: ['manager'], persona: 'marco' }),
     };
@@ -40,6 +40,8 @@ describe('App (auth-aware shell)', () => {
     render(<App />);
     expect(await screen.findByTestId('shell')).toHaveTextContent('field'); // persona drives UI
     expect(screen.getByLabelText('Manager tools')).toBeTruthy(); // roles drive permission
+    // F4: the offline-sync indicator is present in the signed-in shell (unmissable).
+    expect(screen.getByLabelText('Sync status')).toBeTruthy();
   });
 
   it('logged in as a learner → no manager section (role gate hides it)', async () => {

@@ -122,6 +122,8 @@ jobs:
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0003_workos_fk.sql
       - name: Auth-hook claim shape + RLS under minted claims (F3)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/custom_access_token_hook_test.sql
+      - name: Offline /sync idempotency — double-flush no-double-count + no-faked-pass (F4)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/sync_idempotency_test.sql
 
   # ── Identity guard (REAL @ F3): no work_os_user_id / REDEX_WORKOS_* (one identity space).
   guard-no-workos:
@@ -240,6 +242,48 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm fixture:gate
+
+  # ── Deno type-check the /sync Edge Function (REAL @ F4). Catches a Node-only
+  # import (it would fail at runtime — Edge Functions are Deno) + type errors.
+  deno-check:
+    name: deno-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: deno check the /sync function + its integration test
+        run: deno check --config supabase/functions/deno.json supabase/functions/sync/index.ts supabase/functions/sync/sync.integration.test.ts
+
+  # ── /sync acceptance pipeline (REAL @ F4): the actual validate→plan→upsert path
+  # run against a live Postgres — proves the F4_DRY_RUN §4 signals end-to-end
+  # (idempotent double-flush, server-only rejection, immutable-after-sign via the
+  # F2 trigger, LWW). The HTTP/auth wrapper + real-hardware run remain [HUMAN-VERIFY].
+  sync-integration:
+    name: sync-integration
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
+      SYNC_TEST_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Apply academy + workos + auth migration(s)
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: /sync acceptance pipeline against live Postgres
+        run: deno test --allow-net --allow-env --config supabase/functions/deno.json supabase/functions/sync/sync.integration.test.ts
 
   # Secret scan — a live secret must never enter a tracked file (CLAUDE.md inv. §8).
   # Self-contained install (no GITLEAKS_LICENSE needed); config in .gitleaks.toml.
