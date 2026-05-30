@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/fixture-set.schema.json",
+  "title": "Redex fixture_set R2 manifest (F5 §11)",
+  "description": "The manifest a replay engine (#2 device_config, #4 panel_state_machine) loads to drive a FAITHFUL, INTERACTIVE replica of a recorded device session — NEVER a live API (invariant 6). It maps to a row in academy.fixture_sets: source -> academy.fixture_source enum, version -> the platform-surface version, r2_manifest_key -> where this JSON lives, and `sanitized: true` is the PUBLISH GATE the DB trigger enforces (production customer footage is never a training fixture). Every screen carries an R2 image key + interactive hotspots/field map so the engine can replay the device UI offline.",
+  "type": "object",
+  "$defs": {
+    "rect": {
+      "type": "object",
+      "description": "Hotspot bounding box in the fixture image's pixel space.",
+      "properties": {
+        "x": { "type": "number", "minimum": 0 },
+        "y": { "type": "number", "minimum": 0 },
+        "w": { "type": "number", "exclusiveMinimum": 0 },
+        "h": { "type": "number", "exclusiveMinimum": 0 }
+      },
+      "required": ["x", "y", "w", "h"],
+      "additionalProperties": false
+    },
+    "hotspot": {
+      "type": "object",
+      "description": "An interactive region on a fixture screen. `navigate` moves to another screen; `set_field` edits a mapped device field (the engine records the edit order for set_before/reassigned_before assertions).",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "rect": { "$ref": "#/$defs/rect" },
+        "action": { "type": "string", "enum": ["navigate", "set_field"] },
+        "to_screen": { "type": "string" },
+        "field_id": { "type": "string" }
+      },
+      "required": ["id", "rect", "action"],
+      "additionalProperties": false
+    },
+    "fieldMapEntry": {
+      "type": "object",
+      "description": "A device field exposed on this screen, with its RECORDED value from the sanitized session (the faithful default the replica shows before the learner edits it).",
+      "properties": {
+        "field_id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["enum", "integer", "number", "boolean", "text", "duration_seconds"]
+        },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "recorded_value": {}
+      },
+      "required": ["field_id", "kind"],
+      "additionalProperties": false
+    },
+    "screen": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "ordinal": { "type": "integer", "minimum": 0 },
+        "title": { "type": "string" },
+        "image_r2_key": { "type": "string", "minLength": 1 },
+        "hotspots": { "type": "array", "items": { "$ref": "#/$defs/hotspot" }, "default": [] },
+        "field_map": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/fieldMapEntry" },
+          "default": []
+        }
+      },
+      "required": ["id", "ordinal", "image_r2_key"],
+      "additionalProperties": false
+    }
+  },
+  "properties": {
+    "$schema": { "type": "string" },
+    "$comment": { "type": "string" },
+    "manifest_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "fixture_id": { "type": "string", "minLength": 3 },
+    "source": {
+      "description": "MUST equal an academy.fixture_source enum value (migrations/0001_init_academy.sql). Keep 1:1 with the DB enum — a migration + typegen for any new source, never a hand-drift.",
+      "type": "string",
+      "enum": ["adc_portal", "openeye", "iq_panel", "mercury", "dragonfruit"]
+    },
+    "label": { "type": "string" },
+    "version": { "type": "string", "minLength": 1 },
+    "sanitized": {
+      "description": "PUBLISH GATE (invariant 6). A published sim may only reference a fixture with sanitized=true; the DB trigger tg_block_unsanitized_fixture enforces it. A manifest must declare it true to be loadable for field content.",
+      "type": "boolean"
+    },
+    "synthetic": {
+      "description": "True if this fixture is hand-authored/illustrative (no real session recorded) rather than a sanitized real capture. Synthetic fixtures are still sanitized=true by construction (they contain no real data).",
+      "type": "boolean",
+      "default": false
+    },
+    "source_citation": { "type": "string" },
+    "platform_key": { "type": "string", "minLength": 1 },
+    "platform_manifest_surface": { "type": "string" },
+    "screens": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/screen" },
+      "minItems": 1
+    }
+  },
+  "required": [
+    "manifest_version",
+    "fixture_id",
+    "source",
+    "version",
+    "sanitized",
+    "platform_key",
+    "screens"
+  ],
+  "additionalProperties": false
+}

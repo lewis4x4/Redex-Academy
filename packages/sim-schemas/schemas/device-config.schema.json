@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/schemas/device-config.schema.json",
+  "title": "Device-Config State-Machine Spec (engine #2)",
+  "description": "Declarative spec for the device-config state-machine engine (engine #2, ledger §E / F5). Models a simulated device the learner programs: declared `screens` and `fields` define the valid state space, and `assertion_rules` express what a correct configuration must satisfy (e.g. 'partition entry delay > 0', 'smoke zone = 24-hour fire', 'front-door camera reassigned first'). Each rule is tagged with a §5.4 dimension and an optional safety_flag so a failed safety rule routes through the shared safety-veto hook (ledger §B). The runtime replays a SANITIZED recorded fixture (faithful interactive replica, never a live API) referenced via the envelope. engine_kind is pinned to 'device_config' (academy.sim_kind).",
+  "type": "object",
+  "required": ["envelope", "screens", "fields", "assertion_rules"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "Optional editor/CI hint pointing at this schema's $id.",
+      "type": "string"
+    },
+    "envelope": {
+      "description": "Shared sim envelope. engine_kind MUST be 'device_config'. Replay engines normally set envelope.fixture_set_ref to a sanitized fixture set.",
+      "allOf": [
+        {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope"
+        },
+        {
+          "properties": {
+            "engine_kind": { "const": "device_config" }
+          }
+        }
+      ]
+    },
+    "device": {
+      "description": "What device this spec simulates (for the learner's context + accuracy audit).",
+      "type": "object",
+      "properties": {
+        "model_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "platform_key": {
+          "description": "Normalized platform key (matches academy.course_platform_dependencies.platform_key, e.g. 'adc_aero', 'mercury_lp1502', 'iq_panel').",
+          "type": "string",
+          "minLength": 1
+        },
+        "source_citation": {
+          "description": "Datasheet / source reference for the accuracy audit (wave4 §3.6c).",
+          "type": "string"
+        }
+      },
+      "required": ["platform_key"],
+      "additionalProperties": false
+    },
+    "screens": {
+      "description": "Ordered device screens the learner navigates. Each screen references a fixture image (replay) and the fields visible on it.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/screen" }
+    },
+    "fields": {
+      "description": "The configurable fields across all screens — the declarative state space. Keyed by field id; the learner's writes to these compose the device state the assertion rules evaluate.",
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/field" }
+    },
+    "assertion_rules": {
+      "description": "The correctness rules evaluated against the final (or stepwise) device state. Each is §5.4-tagged; safety_flag rules veto on failure.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/assertionRule" }
+    }
+  },
+  "$defs": {
+    "screen": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "fixture_image_r2_key": {
+          "description": "R2 key for the sanitized recorded screenshot this screen replays. Resolved against the fixture_set manifest.",
+          "type": "string"
+        },
+        "field_ids": {
+          "description": "Which fields appear on this screen (keys of `fields`).",
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "ordinal": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["id", "title_i18n"],
+      "additionalProperties": false
+    },
+    "field": {
+      "title": "configurable field",
+      "description": "One device setting. type + constraints define its slice of the valid state space.",
+      "type": "object",
+      "properties": {
+        "label_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["enum", "integer", "number", "boolean", "text", "duration_seconds"]
+        },
+        "options": {
+          "description": "For type=enum: the allowed option values + their i18n labels.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": { "type": "string" },
+              "label_i18n": {
+                "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+              }
+            },
+            "required": ["value", "label_i18n"],
+            "additionalProperties": false
+          }
+        },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "unit": { "type": "string" },
+        "default": {},
+        "required_field": {
+          "description": "Whether the learner must set this field.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": ["label_i18n", "type"],
+      "additionalProperties": false
+    },
+    "assertionRule": {
+      "title": "assertion rule",
+      "description": "A correctness predicate over device state. `expr` is a restricted, deterministic predicate language (field refs, comparison + boolean ops, and ordering predicates like reassigned_before(a,b)) — NO arbitrary code, NO network. The engine evaluates it and the shared Verdict service scores it. A failed safety_flag rule trips the veto hook.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description_i18n": {
+          "description": "Human statement of the rule (e.g. 'Partition 1 entry delay must be greater than 0 s').",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "expr": {
+          "description": "Deterministic predicate. Grammar (whitelist): field('id'), literals, ==, !=, >, <, >=, <=, &&, ||, !, and the ordering helpers reassigned_before('a','b') / set_before('a','b'). Evaluated by the engine's rule interpreter only.",
+          "type": "string",
+          "minLength": 1
+        },
+        "dimension": {
+          "description": "§5.4 dimension this rule scores into.",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/rubricDimension"
+        },
+        "line_item_key": {
+          "description": "Mirrors academy.signoff_line_items.line_item_key for cross-system alignment.",
+          "type": "string"
+        },
+        "weight": {
+          "description": "Score weight when satisfied.",
+          "type": "number",
+          "minimum": 0,
+          "default": 1
+        },
+        "safety_flag": {
+          "description": "True if violating this rule is a SAFETY-CRITICAL failure (e.g. a smoke zone not set to 24-hour fire, an egress door's lock set fail-locked). Failure routes through the safety-veto hook → forces fail + safety_veto_triggered (ledger §B).",
+          "type": "boolean",
+          "default": false
+        },
+        "fail_feedback_i18n": {
+          "description": "Instant, specific, diagnostic feedback when the rule is violated — names the real-world consequence + the fix.",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        }
+      },
+      "required": ["id", "description_i18n", "expr", "dimension", "fail_feedback_i18n"],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "$comment": "A safety_flag rule must score into the safety_compliance dimension so the >=90% safety bar + veto engage consistently.",
+          "if": { "properties": { "safety_flag": { "const": true } }, "required": ["safety_flag"] },
+          "then": { "properties": { "dimension": { "const": "safety_compliance" } } }
+        }
+      ]
+    }
+  }
+}

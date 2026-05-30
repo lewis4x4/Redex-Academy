@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json",
+  "title": "Redex Sim Envelope (shared)",
+  "description": "The COMMON envelope every Redex sim spec embeds (ledger §E). It carries the cross-cutting contracts that are identical across all six engines: identity + engine kind, the competencies graded, the i18n string-key layer, the xAPI telemetry event contract (with client_event_uuid for idempotent offline sync, ledger §G), the scoring + safety-veto hook (how a sim reports a safety-critical failure that must block a pass, mirroring the DB trigger in 0001_init_academy.sql, ledger §B), and the colorblind-safe state contract (state is ALWAYS encoded by shape + text + color, NEVER color alone — invariant 7). Engine-specific schemas embed this via `$ref` and add only their own interaction model.",
+  "type": "object",
+  "$defs": {
+    "engineKind": {
+      "title": "engine_kind",
+      "description": "The runtime that interprets this spec. These values MUST equal the academy.sim_kind Postgres enum values in migrations/0001_init_academy.sql (the column sim_definitions.kind). Do not invent new values here without a migration + typegen (F5b §6).",
+      "type": "string",
+      "enum": [
+        "branching_scenario",
+        "device_config",
+        "webgl_install",
+        "panel_state_machine",
+        "interaction_2d",
+        "calculator"
+      ]
+    },
+    "i18nKey": {
+      "title": "i18n string key",
+      "description": "A key into the react-i18next string catalog (packages/i18n). NEVER raw display text — all learner-visible strings are keyed so EN+ES (and the non-overridable safety glossary) resolve at render. Convention: 'sim.<sim_id>.<scope>.<name>'.",
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+    },
+    "competencyId": {
+      "title": "competency id",
+      "description": "A UUID referencing academy.competencies(id) — the atomic 'can do X' this sim grades against. Maps into sim_definitions.competency_ids[].",
+      "type": "string",
+      "format": "uuid"
+    },
+    "rubricDimension": {
+      "title": "§5.4 rubric dimension",
+      "description": "One of the four sign-off rubric dimensions (academy.signoff_dimension). 'safety_compliance' is THE veto dimension: a 0 on a safety-flagged line in this dimension forces a fail (ledger §B).",
+      "type": "string",
+      "enum": [
+        "safety_compliance",
+        "technical_execution",
+        "verification_documentation",
+        "independence_judgment"
+      ]
+    },
+    "colorblindSafeState": {
+      "title": "colorblind-safe state token",
+      "description": "Invariant 7: pass/fail/neutral state is NEVER conveyed by color alone. Every state token a renderer shows must carry a redundant shape + text label alongside any color. This object is the contract the renderer consumes; authors set it (or rely on the framework default tokens) so a colorblind or grayscale-print learner reads the same state. Color is advisory only; `shape` and `label_i18n` are load-bearing.",
+      "type": "object",
+      "properties": {
+        "token": {
+          "description": "The semantic state this renders.",
+          "type": "string",
+          "enum": ["pass", "fail", "warn", "neutral", "safety_veto"]
+        },
+        "shape": {
+          "description": "Redundant non-color encoding (the primary signal for colorblind users). E.g. pass=check, fail=cross, warn=triangle, safety_veto=octagon.",
+          "type": "string",
+          "enum": ["check", "cross", "triangle", "octagon", "circle", "square", "diamond"]
+        },
+        "label_i18n": {
+          "description": "i18n key for the always-present text label (e.g. 'PASS', 'FAIL', 'SAFETY STOP'). Text is mandatory; never rely on icon alone either.",
+          "$ref": "#/$defs/i18nKey"
+        },
+        "color_role": {
+          "description": "Advisory color role only (resolved to a WCAG-AA token by the theme). The renderer MUST NOT use this as the sole differentiator.",
+          "type": "string",
+          "enum": ["success", "danger", "warning", "info", "muted"]
+        }
+      },
+      "required": ["token", "shape", "label_i18n"],
+      "additionalProperties": false
+    },
+    "safetyVetoHook": {
+      "title": "scoring + safety-veto hook",
+      "description": "How a sim reports a safety-critical failure that MUST block a pass. This is the spec-level mirror of the DB trigger academy.tg_signoff_compute_outcome (ledger §B / invariant 1): a single safety-flagged failure vetoes the whole attempt → outcome 'fail' and sim_attempts.safety_veto_triggered=true, non-overridable, regardless of other points. The shared Verdict service reads this block so veto behavior + feedback wording is identical across all six engines and is translatable.",
+      "type": "object",
+      "properties": {
+        "pass_threshold": {
+          "description": "Fractional score (0..1) required to pass NON-safety scoring. Default 0.80 (ledger §C). Safety items are governed by safety_pass_threshold, not this.",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.8
+        },
+        "safety_pass_threshold": {
+          "description": "Fractional score (0..1) required on the SAFETY-flagged subset. Default 0.90 (ledger §C: safety/egress/compliance content gates at >=90%).",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.9
+        },
+        "veto_on_any_safety_failure": {
+          "description": "When true (the contract default and the only correct setting for safety-gated content), ANY single safety-flagged failure (a wrong safety branch, a failed safety assertion, a safety threshold breach) forces outcome=fail and sets safety_veto_triggered=true — it cannot be outscored. This mirrors 'a single safety 0 => fail' in the DB. Authors MUST NOT weaken this for safety-gated sims.",
+          "type": "boolean",
+          "default": true
+        },
+        "veto_feedback_i18n": {
+          "description": "i18n key for the veto explanation shown when a safety failure trips the hook. The wording names the real-world consequence + the fix (instant, specific, diagnostic — F5 Verdict contract). E.g. 'You trapped the occupants. A mag lock must release on power loss.'",
+          "$ref": "#/$defs/i18nKey"
+        },
+        "veto_state": {
+          "description": "The colorblind-safe state token rendered on veto (should use token='safety_veto', shape='octagon').",
+          "$ref": "#/$defs/colorblindSafeState"
+        }
+      },
+      "required": ["pass_threshold", "safety_pass_threshold", "veto_on_any_safety_failure"],
+      "additionalProperties": false
+    },
+    "xapiTelemetryEvent": {
+      "title": "xAPI telemetry event contract",
+      "description": "The structured shape every meaningful sim interaction emits. The shared xAPI emitter (F5) queues these offline (Dexie) and flushes via the F4 sync path; the LRS bridge is M8. This is an xAPI 1.0.3-shaped statement (actor/verb/object/result/context) plus client_event_uuid for idempotent sync. It maps onto academy.sim_telemetry_events: client_event_uuid -> client_event_uuid (UNIQUE; /sync is ON CONFLICT DO NOTHING, ledger §G), verb.id+object.id -> event_type, the whole statement -> payload jsonb, and result.* feeds the sim_attempts summary. This $def documents the canonical event; it is referenced by the engine schemas' example/telemetry blocks rather than embedded as required runtime data (the runtime emits these; specs declare which verbs they emit via `emits_verbs`).",
+      "type": "object",
+      "properties": {
+        "client_event_uuid": {
+          "description": "Client-minted UUID v4. THE idempotency key (ledger §G). Maps to sim_telemetry_events.client_event_uuid (UNIQUE) and, for the attempt-summary event, sim_attempts.client_event_uuid. The same statement re-flushed after reconnect is deduped on this.",
+          "type": "string",
+          "format": "uuid"
+        },
+        "actor": {
+          "description": "xAPI actor — the learner. Identified by an account on the academy homepage (auth.users.id), never raw PII.",
+          "type": "object",
+          "properties": {
+            "objectType": { "const": "Agent" },
+            "account": {
+              "type": "object",
+              "properties": {
+                "homePage": { "type": "string", "format": "uri" },
+                "name": { "description": "Opaque account id = auth.users.id.", "type": "string" }
+              },
+              "required": ["homePage", "name"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["account"],
+          "additionalProperties": false
+        },
+        "verb": {
+          "description": "xAPI verb (what happened). Use the ADL/xAPI vocab where it exists; the Redex profile adds 'triggered-safety-veto'.",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "format": "uri" },
+            "display": { "type": "object", "additionalProperties": { "type": "string" } }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        },
+        "object": {
+          "description": "xAPI object — the sim, node, item, or assertion acted on. id is an IRI built from sim_id + the in-spec element id.",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "format": "uri" },
+            "objectType": { "type": "string", "enum": ["Activity"] },
+            "definition": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "format": "uri" },
+                "name": { "type": "object", "additionalProperties": { "type": "string" } }
+              },
+              "additionalProperties": true
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        },
+        "result": {
+          "description": "xAPI result. Carries scoring + the safety-veto signal. result.success is the local (advisory) verdict; the authoritative mastery gate is server-side (invariant 4 — never fake a pass offline). extensions.safety_veto_triggered is the boolean that maps to sim_attempts.safety_veto_triggered.",
+          "type": "object",
+          "properties": {
+            "success": { "type": "boolean" },
+            "completion": { "type": "boolean" },
+            "score": {
+              "type": "object",
+              "properties": {
+                "scaled": { "type": "number", "minimum": -1, "maximum": 1 },
+                "raw": { "type": "number" },
+                "min": { "type": "number" },
+                "max": { "type": "number" }
+              },
+              "additionalProperties": false
+            },
+            "response": { "type": "string" },
+            "extensions": {
+              "type": "object",
+              "properties": {
+                "https://academy.goredex.com/xapi/ext/safety_veto_triggered": {
+                  "description": "True iff a safety-flagged failure vetoed the attempt (maps to sim_attempts.safety_veto_triggered).",
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "context": {
+          "description": "xAPI context: org/tenant, the sim_definition, the attempt, offline origin, and the platform manifest surface. context.extensions carries the Redex identifiers used to reconcile on /sync.",
+          "type": "object",
+          "properties": {
+            "registration": {
+              "description": "The sim_attempts.id (one registration per attempt).",
+              "type": "string",
+              "format": "uuid"
+            },
+            "extensions": {
+              "type": "object",
+              "properties": {
+                "https://academy.goredex.com/xapi/ext/org_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "https://academy.goredex.com/xapi/ext/sim_definition_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "https://academy.goredex.com/xapi/ext/offline_origin": { "type": "boolean" },
+                "https://academy.goredex.com/xapi/ext/engine_kind": { "$ref": "#/$defs/engineKind" }
+              },
+              "additionalProperties": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["client_event_uuid", "actor", "verb", "object"],
+      "additionalProperties": false
+    },
+    "envelope": {
+      "title": "sim envelope",
+      "description": "The embedded common header. Every engine spec includes this object under the key `envelope`.",
+      "type": "object",
+      "properties": {
+        "spec_version": {
+          "description": "SemVer of THIS spec instance (authoring version), independent of the schema version.",
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "sim_id": {
+          "description": "Stable author-facing id for this sim spec. Together with version it maps to academy.sim_definitions(key, version) (UNIQUE). lowercase, dot/dash segmented.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+          "minLength": 3
+        },
+        "engine_kind": {
+          "description": "Which of the six engines runs this spec. MUST equal the academy.sim_kind enum value for the engine (see $defs/engineKind). The engine-specific schema additionally pins this to its own value via a const.",
+          "$ref": "#/$defs/engineKind"
+        },
+        "title_i18n": {
+          "description": "i18n key for the sim's display title.",
+          "$ref": "#/$defs/i18nKey"
+        },
+        "competency_ids": {
+          "description": "Competencies this sim grades against (academy.competencies ids). At least one.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/competencyId" },
+          "minItems": 1
+        },
+        "locales": {
+          "description": "Locales this spec's i18n keys are guaranteed to resolve in. EN is mandatory; ES is the MVP second locale.",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z]{2}(?:-[A-Z]{2})?$" },
+          "minItems": 1,
+          "contains": { "const": "en" },
+          "default": ["en", "es"]
+        },
+        "i18n_string_keys": {
+          "description": "The complete set of i18n keys this spec references (the translation surface). The preview harness / CI checks every key resolves in every declared locale; the safety glossary subset is non-overridable.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/i18nKey" },
+          "default": []
+        },
+        "scoring": {
+          "description": "The scoring + safety-veto hook (mirrors the DB safety rule). Required: the Verdict service reads it to compute pass/fail/veto identically across engines.",
+          "$ref": "#/$defs/safetyVetoHook"
+        },
+        "emits_verbs": {
+          "description": "The xAPI verb IRIs this sim's runtime emits (documents the telemetry surface; the runtime constructs full statements per $defs/xapiTelemetryEvent). MUST include the attempt lifecycle verbs.",
+          "type": "array",
+          "items": { "type": "string", "format": "uri" },
+          "default": [
+            "http://adlnet.gov/expapi/verbs/attempted",
+            "http://adlnet.gov/expapi/verbs/answered",
+            "http://adlnet.gov/expapi/verbs/completed",
+            "https://academy.goredex.com/xapi/verbs/triggered-safety-veto"
+          ]
+        },
+        "state_tokens": {
+          "description": "The colorblind-safe state tokens this sim renders. The framework supplies defaults; an author may override the i18n label/shape but MUST keep shape + label non-empty (no color-only).",
+          "type": "array",
+          "items": { "$ref": "#/$defs/colorblindSafeState" },
+          "default": []
+        },
+        "fixture_set_ref": {
+          "description": "Optional reference to a sanitized fixture set (academy.fixture_sets). Used by replay engines (device_config, panel_state_machine). A published sim may only reference a fixture with sanitized=true (DB publish-gate trigger).",
+          "type": ["string", "null"],
+          "default": null
+        },
+        "offline_cacheable": {
+          "description": "Whether the spec + its assets are packaged into an F4 offline field pack. Telemetry still queues offline regardless (invariant 4).",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "required": [
+        "spec_version",
+        "sim_id",
+        "engine_kind",
+        "title_i18n",
+        "competency_ids",
+        "scoring"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$comment": "This file defines reusable $defs. Engine schemas reference $defs/envelope and the other $defs by absolute $id + JSON pointer. The root object here is intentionally the envelope itself for standalone validation.",
+  "allOf": [{ "$ref": "#/$defs/envelope" }]
+}

@@ -2,6 +2,7 @@ import { initI18n } from '@redex/i18n';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { ForgePreview } from './forge/ForgePreview';
 import './index.css';
 import { startSync } from './offline/sync-manager';
 import { registerServiceWorker } from './registerSW';
@@ -22,8 +23,8 @@ if (import.meta.env.VITE_SUPABASE_URL) {
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element #root not found');
 
-createRoot(rootEl).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// Public Forge preview/sandbox route (F5 §6) — no auth, so the authoring preview
+// runs standalone; everything else goes through the auth-aware app shell.
+const isForgePreview = window.location.pathname === '/forge-preview';
+
+createRoot(rootEl).render(<StrictMode>{isForgePreview ? <ForgePreview /> : <App />}</StrictMode>);

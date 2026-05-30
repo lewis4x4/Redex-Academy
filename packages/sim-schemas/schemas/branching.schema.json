@@ -7,11 +7,16 @@
   "required": ["envelope", "start", "nodes"],
   "additionalProperties": false,
   "properties": {
-    "$schema": { "description": "Optional editor/CI hint pointing at this schema's $id.", "type": "string" },
+    "$schema": {
+      "description": "Optional editor/CI hint pointing at this schema's $id.",
+      "type": "string"
+    },
     "envelope": {
       "description": "The shared sim envelope (identity, competencies, i18n keys, scoring+safety-veto hook, telemetry surface, colorblind-safe states). engine_kind MUST be 'branching_scenario'.",
       "allOf": [
-        { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope" },
+        {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/envelope"
+        },
         {
           "properties": {
             "engine_kind": { "const": "branching_scenario" }
@@ -39,7 +44,9 @@
       "properties": {
         "r2_key": { "type": "string", "minLength": 1 },
         "kind": { "type": "string", "enum": ["image", "video", "audio", "schematic"] },
-        "alt_i18n": { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey" }
+        "alt_i18n": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        }
       },
       "required": ["r2_key", "kind", "alt_i18n"],
       "additionalProperties": false
@@ -49,7 +56,9 @@
       "description": "Maps a choice to a §5.4 rubric dimension + line item, so the shared Verdict service scores branching identically to the field rubric. line_item_key mirrors academy.signoff_line_items.line_item_key (e.g. 'ac.203.maglock_failsafe_verified').",
       "type": "object",
       "properties": {
-        "dimension": { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/rubricDimension" },
+        "dimension": {
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/rubricDimension"
+        },
         "line_item_key": { "type": "string", "minLength": 1 }
       },
       "required": ["dimension", "line_item_key"],
@@ -60,9 +69,20 @@
       "description": "A choice the learner can make at a prompt node: it leads to a next node, carries consequence text (instant, specific, diagnostic), a score delta, and — when wrong in a way that endangers life safety — a safety_flag that routes through the veto hook.",
       "type": "object",
       "properties": {
-        "id": { "description": "Unique choice id within the node (used in telemetry result.response).", "type": "string", "minLength": 1 },
-        "label_i18n": { "description": "The choice text the learner sees.", "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey" },
-        "to": { "description": "id of the next node. MUST be a key in `nodes`.", "type": "string", "minLength": 1 },
+        "id": {
+          "description": "Unique choice id within the node (used in telemetry result.response).",
+          "type": "string",
+          "minLength": 1
+        },
+        "label_i18n": {
+          "description": "The choice text the learner sees.",
+          "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+        },
+        "to": {
+          "description": "id of the next node. MUST be a key in `nodes`.",
+          "type": "string",
+          "minLength": 1
+        },
         "consequence_i18n": {
           "description": "What happens / why — shown immediately after the choice. Names the real-world consequence and (for wrong choices) the fix.",
           "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
@@ -93,7 +113,17 @@
         {
           "$comment": "A safety_flag edge must explain the consequence, be marked a safety decision, AND carry a verdict in the safety_compliance dimension — so a wrong safety choice always becomes a safety result and can never silently bypass the non-overridable veto (mirrors the device-config safety_flag rule).",
           "if": { "properties": { "safety_flag": { "const": true } }, "required": ["safety_flag"] },
-          "then": { "properties": { "is_safety_decision": { "const": true }, "score_delta": { "exclusiveMaximum": 0 }, "verdict": { "properties": { "dimension": { "const": "safety_compliance" } }, "required": ["dimension"] } }, "required": ["is_safety_decision", "consequence_i18n", "verdict", "score_delta"] }
+          "then": {
+            "properties": {
+              "is_safety_decision": { "const": true },
+              "score_delta": { "exclusiveMaximum": 0 },
+              "verdict": {
+                "properties": { "dimension": { "const": "safety_compliance" } },
+                "required": ["dimension"]
+              }
+            },
+            "required": ["is_safety_decision", "consequence_i18n", "verdict", "score_delta"]
+          }
         }
       ]
     },
@@ -111,7 +141,9 @@
           "description": "A situation + the decision the learner must make. Carries the prompt text, optional media, and the choice edges.",
           "properties": {
             "type": { "enum": ["situation", "prompt"] },
-            "prompt_i18n": { "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey" },
+            "prompt_i18n": {
+              "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+            },
             "media": { "type": "array", "items": { "$ref": "#/$defs/mediaRef" }, "default": [] },
             "is_safety_decision": {
               "description": "True if this node is a safety-critical decision point (drives the >=90% safety subset and post-mortem replay anchoring).",
@@ -139,7 +171,10 @@
               "type": "boolean",
               "default": false
             },
-            "outcome_i18n": { "description": "The ending narration (e.g. 'Everyone evacuated.' / 'Occupants were trapped behind a locked door.').", "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey" },
+            "outcome_i18n": {
+              "description": "The ending narration (e.g. 'Everyone evacuated.' / 'Occupants were trapped behind a locked door.').",
+              "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+            },
             "media": { "type": "array", "items": { "$ref": "#/$defs/mediaRef" }, "default": [] },
             "state": {
               "description": "Colorblind-safe state token to render for this ending (pass→check, fail→cross, safety fail→octagon).",
@@ -150,9 +185,20 @@
               "description": "Egress post-mortem replay (F5 §7): on a safety fail, freeze the scene at the trap, overlay the deciding choice + the cited code line, then return the learner to the deciding node to re-choose.",
               "type": "object",
               "properties": {
-                "freeze_node": { "description": "Node id whose scene is frozen as the 'trap' tableau.", "type": "string", "minLength": 1 },
-                "decided_at_node": { "description": "Node id the learner is dropped back to (the deciding prompt).", "type": "string", "minLength": 1 },
-                "overlay_i18n": { "description": "The deciding-choice + code-line overlay text (e.g. 'NFPA 101 §7.2.1.6.2: a mag lock must release on loss of power.').", "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey" }
+                "freeze_node": {
+                  "description": "Node id whose scene is frozen as the 'trap' tableau.",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at_node": {
+                  "description": "Node id the learner is dropped back to (the deciding prompt).",
+                  "type": "string",
+                  "minLength": 1
+                },
+                "overlay_i18n": {
+                  "description": "The deciding-choice + code-line overlay text (e.g. 'NFPA 101 §7.2.1.6.2: a mag lock must release on loss of power.').",
+                  "$ref": "https://academy.goredex.com/sim-contracts/shared/sim-envelope.schema.json#/$defs/i18nKey"
+                }
               },
               "required": ["freeze_node", "decided_at_node", "overlay_i18n"],
               "additionalProperties": false
@@ -163,7 +209,10 @@
           "allOf": [
             {
               "$comment": "A safety_veto terminal must be a fail and should carry a replay so failure is instructive.",
-              "if": { "properties": { "safety_veto": { "const": true } }, "required": ["safety_veto"] },
+              "if": {
+                "properties": { "safety_veto": { "const": true } },
+                "required": ["safety_veto"]
+              },
               "then": { "properties": { "outcome": { "const": "fail" } } }
             }
           ]
