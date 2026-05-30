@@ -120,6 +120,22 @@ jobs:
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0001_invariants_test.sql
       - name: Cross-schema FK + workos RLS (F2a)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0003_workos_fk.sql
+      - name: Auth-hook claim shape + RLS under minted claims (F3)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/custom_access_token_hook_test.sql
+
+  # ── Identity guard (REAL @ F3): no work_os_user_id / REDEX_WORKOS_* (one identity space).
+  guard-no-workos:
+    name: guard-no-workos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: corepack enable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm guard:no-workos
 
   # ── RLS negative matrix (REAL @ F2): cross-org actor sees ZERO rows.
   rls-negative:

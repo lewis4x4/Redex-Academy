@@ -24,6 +24,7 @@
     "dag:check": "tsx infra/dag-check.ts",
     "typegen:check": "tsx infra/typegen-drift.ts",
     "fixture:gate": "tsx infra/fixture-gate.ts",
+    "guard:no-workos": "tsx infra/no-workos-check.ts",
     "gen:types": "turbo run gen:types",
     "prepare": "husky"
   },

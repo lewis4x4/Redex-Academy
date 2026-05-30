@@ -42,6 +42,31 @@ additional_redirect_urls = ["http://localhost:5173"]
 jwt_expiry = 3600
 enable_signup = true
 
+# F3: custom access-token hook — GoTrue calls academy.custom_access_token_hook on
+# every token mint/refresh to inject org_id/roles/persona/evaluator_authorized/domains
+# (the exact claim shape F2's RLS helpers read). The function is granted to
+# supabase_auth_admin only (see the hook migration).
+[auth.hook.custom_access_token]
+enabled = true
+uri = "pg-functions://postgres/academy/custom_access_token_hook"
+
+# F3: external SSO for Redex staff + CCS-partner orgs. Secrets are NAMES ONLY here
+# (env() interpolation) — real values live in the dashboard/Vault, never committed.
+# Enable per the partner IdP once OIDC_* are configured.
+[auth.external.google]
+enabled = false # Google Workspace (OIDC) — flip true when configured
+client_id = "env(OIDC_CLIENT_ID)"
+secret = "env(OIDC_CLIENT_SECRET)"
+
+[auth.external.azure]
+enabled = false # Microsoft Entra (OIDC) — flip true when configured
+client_id = "env(OIDC_CLIENT_ID)"
+secret = "env(OIDC_CLIENT_SECRET)"
+url = "env(OIDC_ISSUER_URL)"
+
+# SAML SSO (managed partner orgs without their own OIDC) is enabled per-org via the
+# Supabase Admin SSO API / dashboard; not a static config block here.
+
 [edge_runtime]
 enabled = true
 # Edge Functions (Deno): finalize-signoff, issue-badge, xapi-bridge,
