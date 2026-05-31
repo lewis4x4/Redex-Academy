@@ -13,12 +13,8 @@
 
 begin;
 
--- Role catalog (idempotent).
-insert into academy.roles (key, label) values
-  ('learner', 'Learner'), ('evaluator', 'Evaluator'), ('manager', 'Manager'),
-  ('author', 'Author'), ('curriculum_admin', 'Curriculum Admin'),
-  ('org_admin', 'Org Admin'), ('exec', 'Exec'), ('support', 'Support')
-on conflict (key) do nothing;
+-- Role catalog is now migration-seeded (20260530120000_new_user_provisioning.sql §1)
+-- so it is present in CI/prod for the provisioning trigger — not duplicated here.
 
 -- Two tenants: Redex HQ + one CCS partner nested under it (shared catalog, isolated PII).
 insert into academy.orgs (id, name, type, parent_org_id) values

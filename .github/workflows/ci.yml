@@ -122,6 +122,8 @@ jobs:
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0003_workos_fk.sql
       - name: Auth-hook claim shape + RLS under minted claims (F3)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/custom_access_token_hook_test.sql
+      - name: New-user provisioning trigger + invitation tenant boundary (F3c)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/f3c_provisioning_test.sql
       - name: Offline /sync idempotency — double-flush no-double-count + no-faked-pass (F4)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/sync_idempotency_test.sql
 
