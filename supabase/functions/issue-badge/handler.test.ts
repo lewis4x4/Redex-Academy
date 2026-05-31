@@ -16,6 +16,7 @@ import {
   type AchievementInput,
 } from '../_shared/credential-signer.ts';
 import { isAuthorizedIssuer, readClaims, buildAndSignCredential, bodySchema } from './handler.ts';
+import { resolveIssuerEndpoints } from '../../../packages/credentials/src/issuer-config.ts';
 import {
   TEST_SEED_BYTES,
   TEST_BUILD_INPUT,
@@ -69,21 +70,22 @@ Deno.test('Deno verifier accepts a fresh signature and rejects tampering', async
 Deno.test('buildAndSignCredential self-verifies and embeds a revocation status entry', async () => {
   const secretKeyMultibase = ed25519SecretKeyMultibase(TEST_SEED);
   const { credential } = await buildAndSignCredential({
-    body: {
-      recipient_user_id: '00000000-0000-0000-0000-000000000001',
-      badge_class_id: '00000000-0000-0000-0000-000000000002',
-      recipient_did: 'did:example:recipient',
-      achievement: { id: 'https://academy.redex.education/achievements/x', name: 'X' },
+    spec: {
+      recipientId: 'did:example:recipient',
+      achievement: { id: 'https://academy.redex.education/achievements/x', type: ['Achievement'], name: 'X' },
+      evidenceUrls: ['https://academy.redex.education/evidence/so-1/ev-1'],
     },
     issuer: { did: TEST_ISSUER_DID, keyId: TEST_KEY_ID, secretKeyMultibase },
     credentialId: 'https://academy.redex.education/credentials/abc',
     statusListIndex: 42,
     created: TEST_CREATED,
+    endpoints: resolveIssuerEndpoints(TEST_ISSUER_DID),
   });
   const status = (credential as { credentialStatus: { statusListIndex: string; type: string } })
     .credentialStatus;
   assertEquals(status.type, 'BitstringStatusListEntry');
   assertEquals(status.statusListIndex, '42');
+  assertEquals((credential as { evidence: { id: string }[] }).evidence[0]!.id, 'https://academy.redex.education/evidence/so-1/ev-1');
 
   const { publicKey } = loadSigningKey(secretKeyMultibase);
   assert(await verifyCredential(credential, publicKey));
@@ -117,13 +119,23 @@ Deno.test('readClaims parses roles/org_id from a JWT payload', () => {
   assertEquals(claims.roles, ['org_admin']);
 });
 
-Deno.test('bodySchema rejects malformed issuance payloads', () => {
-  assertFalse(bodySchema.safeParse({ recipient_user_id: 'not-a-uuid' }).success);
+Deno.test('bodySchema requires a valid action and rejects malformed payloads', () => {
+  assertFalse(bodySchema.safeParse({ recipient_user_id: 'not-a-uuid' }).success); // no action
+  assertFalse(bodySchema.safeParse({ action: 'rollup', candidate_user_id: 'x' }).success); // bad uuid
   assert(
     bodySchema.safeParse({
+      action: 'issue-test',
       recipient_user_id: '00000000-0000-0000-0000-000000000001',
       badge_class_id: '00000000-0000-0000-0000-000000000002',
       achievement: { id: 'https://x/a', name: 'A' },
+    }).success,
+  );
+  assert(
+    bodySchema.safeParse({
+      action: 'rollup',
+      candidate_user_id: '00000000-0000-0000-0000-000000000001',
+      competency_id: '00000000-0000-0000-0000-000000000002',
+      signoff_id: '00000000-0000-0000-0000-000000000003',
     }).success,
   );
 });
