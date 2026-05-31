@@ -41,7 +41,24 @@
       "in_progress": "En curso — continúa donde lo dejaste.",
       "passed": "Aprobado. Obtén tu firma para alcanzar la maestría.",
       "mastered": "Dominado — firmado por un evaluador en campo."
-    }
+    },
+    "state": {
+      "locked": "Bloqueado",
+      "available": "Disponible — empieza ahora",
+      "in_progress": "En curso",
+      "passed": "Aprobado",
+      "mastered": "Dominado"
+    },
+    "domain": {
+      "FND": "Fundamentos",
+      "INT": "Integración",
+      "ADC": "Alarm.com",
+      "AC": "Control de acceso",
+      "VID": "Video / PoE",
+      "SEC": "Seguridad"
+    },
+    "legend_title": "Estados de nodo",
+    "reset_view": "Restablecer vista"
   },
   "login": {
     "magic_aria": "Inicia sesión con un enlace mágico",
