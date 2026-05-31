@@ -129,6 +129,37 @@ jobs:
       - name: M6 finalize-signoff — materialize-from-templates preserves the safety veto; no-lines cannot pass; signed immutable
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/0004_signoff_finalize_test.sql
 
+  # ── S1 MVP-slice seed (REAL @ S1): apply the authored catalog/badge/§5.4-rubric
+  # seed to a bare postgres:16, prove it is IDEMPOTENT (apply twice — every INSERT
+  # is ON CONFLICT DO NOTHING + the seed's §8 block self-asserts), then assert the
+  # data contract M1/M2/M6/M7 consume (14 courses, the §D closure edges, the AC-203
+  # 7 ⚠ critical-safety line-item keys, the stackable AC tier credential, DAG).
+  # Isolated from db-invariants so the slice rows never perturb those fixtures.
+  slice-seed:
+    name: slice-seed
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      SUPABASE_DB_URL: postgresql://postgres:postgres@localhost:5432/redex
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply academy + workos + auth migration(s)
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: Apply the S1 slice seed (run 1 — §8 self-assert)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0001_mvp_slice_seed.sql
+      - name: Apply the S1 slice seed AGAIN (idempotency — no duplicate-key errors; counts unchanged)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0001_mvp_slice_seed.sql
+      - name: Assert the slice data contract (counts / §D closure edges / AC-203 ⚠ keys / tier stack / DAG)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/s1_slice_seed_test.sql
+
   # ── Identity guard (REAL @ F3): no work_os_user_id / REDEX_WORKOS_* (one identity space).
   guard-no-workos:
     name: guard-no-workos
