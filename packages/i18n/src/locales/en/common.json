@@ -41,7 +41,24 @@
       "in_progress": "In progress — pick up where you left off.",
       "passed": "Passed. Earn your sign-off to reach mastery.",
       "mastered": "Mastered — Evaluator-signed in the field."
-    }
+    },
+    "state": {
+      "locked": "Locked",
+      "available": "Available — start now",
+      "in_progress": "In progress",
+      "passed": "Passed",
+      "mastered": "Mastered"
+    },
+    "domain": {
+      "FND": "Foundations",
+      "INT": "Integration",
+      "ADC": "Alarm.com",
+      "AC": "Access Control",
+      "VID": "Video / PoE",
+      "SEC": "Security"
+    },
+    "legend_title": "Node states",
+    "reset_view": "Reset view"
   },
   "login": {
     "magic_aria": "Sign in with a magic link",
