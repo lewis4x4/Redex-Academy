@@ -19,7 +19,12 @@ max_rows = 1000
 [db]
 port = 54322
 shadow_port = 54320
-major_version = 16
+# 17, not 16: `supabase gen types` (and the rest of the CLI) PARSES this file on
+# startup whenever run from the project dir, and rejects major_version = 16 as
+# "Invalid db.major_version" — Supabase's local stack ships supabase/postgres for
+# majors 15 and 17, not 16. 17 is the CLI default. (The bare-Postgres CI invariant
+# jobs use the official `postgres:16` image via psql and never read this value.)
+major_version = 17
 
 [db.pooler]
 enabled = false

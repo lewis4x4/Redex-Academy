@@ -44,10 +44,13 @@ pnpm test:a11y           # axe-core
 pnpm test:rls            # RLS negative / isolation tests
 pnpm dag:check           # assert course-prerequisite graph is a DAG
 
-# Supabase (run inside supabase/)
+# Supabase — types are generated/validated OFF THE MIGRATIONS (the schema source of truth), not live prod.
 supabase db diff -f <name>          # author a migration from local changes
-supabase db push                    # apply migrations
-supabase gen types typescript --schema academy,workos > ../packages/db-types/database.types.ts   # academy only at F2; academy,workos after F2a
+supabase db push                    # apply migrations to the REMOTE (a production deploy — out of scope for a PR)
+# Regenerate types: apply supabase/migrations/* to a local Postgres ($SUPABASE_DB_URL), then gen from it
+# (CI does exactly this against a bare postgres:16 — see the typegen-drift job; needs a Docker daemon):
+for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+supabase gen types typescript --db-url "$SUPABASE_DB_URL" --schema academy,workos > packages/db-types/database.types.ts   # academy,workos after F2a
 
 # Cloudflare
 wrangler deploy           # deploy a worker (from workers/<name>)
@@ -101,8 +104,8 @@ If a goal needs a package that doesn't exist, create it under `packages/` with t
 
 **Migration → typegen rule (NON-NEGOTIABLE).** After ANY schema change:
 1. write a migration in `supabase/migrations/`,
-2. run `supabase gen types typescript --schema academy,workos > packages/db-types/database.types.ts` (use `--schema academy` at F2 before the `workos` stub exists; `--schema academy,workos` after F2a),
-3. **commit both together.** Never hand-edit `database.types.ts`. CI fails if the committed types differ from a fresh generation (typegen-drift check).
+2. regenerate types **off the migrations** (not live prod): apply `supabase/migrations/*` to a local Postgres (`$SUPABASE_DB_URL`), then `supabase gen types typescript --db-url "$SUPABASE_DB_URL" --schema academy,workos > packages/db-types/database.types.ts` (use `--schema academy` at F2 before the `workos` stub exists; `--schema academy,workos` after F2a),
+3. **commit both together.** Never hand-edit `database.types.ts`. CI fails if the committed types differ from a fresh generation (typegen-drift check, which is migrations-sourced — `gen types --db-url` against a migrations-applied Postgres, NOT `--project-id`/the remote — so a schema-adding PR goes green with NO production deploy).
 
 ---
 

@@ -205,12 +205,31 @@ jobs:
           if pnpm dag:check; then echo "::error::dag:check should FAIL on a cycle"; exit 1; fi
           echo "dag:check correctly failed on the seeded cycle ✓"
 
-  # ── typegen drift (REAL @ F2): committed types == fresh `gen types --schema academy`.
-  # Uses the Management API (no Docker) — the SAME generator the committed file was
-  # produced with. Requires repo secrets SUPABASE_PROJECT_REF + SUPABASE_ACCESS_TOKEN.
+  # ── typegen drift (REAL @ F2): committed types == fresh `gen types --db-url`
+  # generated off supabase/migrations/* (the schema SOURCE OF TRUTH), NOT live prod.
+  # Applies the migrations to a bare postgres:16 (the SAME pattern as db-invariants /
+  # rls / dag — superuser apply, so the auth-stub migration works), then introspects
+  # THAT migrations-built schema via a local postgres-meta container. This decouples
+  # the gate from a production deploy — a schema-adding PR is green once its migration
+  # + regenerated types are committed (prod untouched), with NO SUPABASE_PROJECT_REF /
+  # ACCESS_TOKEN. Mirrors dag-check: it must PASS on the migrations AND FAIL on drift.
   typegen-drift:
     name: typegen-drift
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: redex
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      # 127.0.0.1 (not localhost): the CLI rewrites a loopback --db-url host to
+      # host.docker.internal for its postgres-meta container, so it reaches the
+      # published service port. psql (on the runner) uses the same loopback.
+      SUPABASE_DB_URL: postgresql://postgres:postgres@127.0.0.1:5432/redex
     steps:
       - uses: actions/checkout@v4
       - run: corepack enable
@@ -223,12 +242,28 @@ jobs:
         with:
           # do not switch back to "latest" — it resolves the newest release over the
           # network at install and the rate-limit flake fails typegen-drift (see PR #7).
+          # This same CLI version's postgres-meta produced the committed types.
           version: 2.102.0
-      - name: typegen drift (academy)
-        env:
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - name: Apply academy + workos + auth migration(s) to the bare Postgres
+        run: for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+      - name: Capture freshly generated types (debug/bootstrap artifact)
+        if: ${{ !cancelled() }}
+        # Run from a clean cwd (not the project dir) so a stray supabase/config.toml
+        # is never auto-loaded — same reason infra/typegen-drift.ts gens from tmpdir.
+        run: cd "$RUNNER_TEMP" && supabase gen types typescript --db-url "$SUPABASE_DB_URL" --schema academy,workos > "$RUNNER_TEMP/fresh.database.types.ts" || true
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: fresh-database-types
+          path: ${{ runner.temp }}/fresh.database.types.ts
+          retention-days: 7
+      - name: typegen PASSES — committed types match a fresh gen off the migrations
         run: pnpm typegen:check
+      - name: typegen FAILS on a drifted schema (negative control)
+        run: |
+          psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -c "alter table academy.courses add column __drift_probe text;"
+          if pnpm typegen:check; then echo "::error::typegen:check should FAIL on a drifted schema"; exit 1; fi
+          echo "typegen:check correctly detected drift ✓"
 
   sanitized-fixture:
     name: sanitized-fixture
