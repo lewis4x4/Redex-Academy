@@ -40,6 +40,10 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>('magic');
   const [phase, setPhase] = useState<Phase>('idle');
   const [sent, setSent] = useState(false);
+  // Set the instant a credential is accepted, so the interactive form is replaced
+  // by a "signing you in…" status (no stale code/email re-use during the brief
+  // window before SIGNED_IN swaps the whole app to the shell).
+  const [verified, setVerified] = useState(false);
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
@@ -61,11 +65,11 @@ export function LoginPage() {
   };
   const onVerifyCode = async (e: FormEvent) => {
     e.preventDefault();
-    await run(() => verifyEmailCode(email, code)); // success → SIGNED_IN → App swaps to the shell
+    if (await run(() => verifyEmailCode(email, code))) setVerified(true); // → SIGNED_IN swaps to the shell
   };
   const onPassword = async (e: FormEvent) => {
     e.preventDefault();
-    await run(() => signInWithPassword(email, password));
+    if (await run(() => signInWithPassword(email, password))) setVerified(true);
   };
 
   return (
@@ -104,14 +108,20 @@ export function LoginPage() {
             </p>
           ) : null}
 
-          {sent ? (
+          {verified ? (
+            // Credential accepted — replace the form with a calm status until the
+            // SIGNED_IN event swaps the whole app to the shell.
+            <p role="status" aria-live="polite" className="text-body text-ink-soft">
+              {t('login.signing_in_callback')}
+            </p>
+          ) : sent ? (
             // ── "Check your email" — accepts the 6-digit code inline (no app exit) ──
             <form
               onSubmit={onVerifyCode}
               className="flex flex-col gap-4"
               aria-label={t('login.verify_aria')}
             >
-              <p className="rdx-anim-seal text-body text-ink-soft" role="status">
+              <p className="rdx-anim-seal text-body text-ink-soft" role="status" aria-live="polite">
                 {t('login.sent_generic')}
               </p>
               <Input
@@ -143,6 +153,7 @@ export function LoginPage() {
                   className="text-ink-muted underline-offset-2 hover:text-white hover:underline"
                   onClick={() => {
                     setSent(false);
+                    setEmail('');
                     setCode('');
                     setError('');
                   }}
@@ -209,7 +220,7 @@ export function LoginPage() {
             </form>
           )}
 
-          {!sent ? (
+          {!sent && !verified ? (
             <div className="flex flex-col gap-3">
               <div
                 className="flex items-center gap-3 text-caption text-ink-muted"

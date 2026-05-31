@@ -121,3 +121,50 @@ test('the /auth/callback route completes a seeded session and routes to the app'
   // AuthCallback finds the session and replaces → app shell at /.
   await expect(page.getByTestId('shell')).toHaveText('dense');
 });
+
+// ── Error paths: the mapped, non-enumerating messages must actually render ──────
+
+test('an invalid / expired code surfaces a friendly error (not raw provider text)', async ({
+  page,
+}) => {
+  await mockBackend(page);
+  // Override verify → 400 expired (registered after mockBackend, so it wins).
+  await page.route('**/auth/v1/verify*', (route) => {
+    if (route.request().method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: CORS, body: '' });
+    return json(
+      route,
+      { error: 'invalid_grant', error_description: 'Token has expired or is invalid' },
+      400,
+    );
+  });
+  await page.goto('/');
+  await page.getByLabel(/work email/i).fill('tech@goredex.com');
+  await page.getByRole('button', { name: /send me a magic link/i }).click();
+  await page.getByLabel(/6-digit code/i).fill('000000');
+  await page.getByRole('button', { name: /^Verify code$/i }).click();
+  await expect(page.getByRole('alert')).toContainText(/expired/i);
+  await expect(page.getByTestId('shell')).toHaveCount(0); // not signed in
+});
+
+test('a rate-limited send surfaces "too many attempts"', async ({ page }) => {
+  await mockBackend(page);
+  await page.route('**/auth/v1/otp*', (route) => {
+    if (route.request().method() === 'OPTIONS')
+      return route.fulfill({ status: 204, headers: CORS, body: '' });
+    return json(route, { error_description: 'Email rate limit exceeded' }, 429);
+  });
+  await page.goto('/');
+  await page.getByLabel(/work email/i).fill('tech@goredex.com');
+  await page.getByRole('button', { name: /send me a magic link/i }).click();
+  await expect(page.getByRole('alert')).toContainText(/too many/i);
+});
+
+test('the /auth/callback route shows a typed error state for a denied/expired link', async ({
+  page,
+}) => {
+  await mockBackend(page);
+  await page.goto('/auth/callback?error=access_denied&error_description=The+link+has+expired');
+  await expect(page.getByText(/sign-in didn't complete/i)).toBeVisible();
+  await expect(page.getByRole('link', { name: /back to sign in/i })).toBeVisible();
+});
