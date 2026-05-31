@@ -194,3 +194,85 @@ test('the AC-203 sim screen has no axe violations (WCAG 2a/2aa)', async ({ page 
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });
+
+// M6: the Evaluator field sign-off screen (the §5.4 rubric + 0–3 score controls +
+// critical-safety marking) must pass axe — labelled radiogroups, fieldset/legend
+// dimensions, colorblind-safe state (shape+text+colour), AA contrast on the dark
+// canvas. Seeded EVALUATOR session + the rubric template intercept render it.
+test('the M6 Evaluator sign-off screen has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+  await page.addInitScript(() => {
+    const b64url = (o: unknown) =>
+      btoa(JSON.stringify(o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const claims = {
+      sub: '00000000-0000-0000-0000-0000000000d4',
+      org_id: '00000000-0000-0000-0000-0000000000a1',
+      roles: ['evaluator'],
+      persona: 'priya',
+    };
+    const token = `${b64url({ alg: 'none', typ: 'JWT' })}.${b64url(claims)}.sig`;
+    window.localStorage.setItem(
+      'sb-localhost-auth-token',
+      JSON.stringify({
+        access_token: token,
+        refresh_token: 'fake',
+        token_type: 'bearer',
+        expires_in: 3600,
+        expires_at: 4102444800,
+        user: {
+          id: claims.sub,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: 'e@e.co',
+          app_metadata: {},
+          user_metadata: {},
+          created_at: '2026-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+  });
+  const tpl = [
+    {
+      line_item_key: 'ac203.release_on_power_loss',
+      dimension: 'safety_compliance',
+      is_critical_safety: true,
+      ordinal: 1,
+      label: 'releases on power loss',
+    },
+    {
+      line_item_key: 'ac203.tech.fail_safe_wiring',
+      dimension: 'technical_execution',
+      is_critical_safety: false,
+      ordinal: 2,
+      label: 'fail-safe wiring',
+    },
+    {
+      line_item_key: 'ac203.verify.three_release_modes_logged',
+      dimension: 'verification_documentation',
+      is_critical_safety: false,
+      ordinal: 3,
+      label: 'three modes logged',
+    },
+    {
+      line_item_key: 'ac203.indep.recognize_no_maglock_escalate',
+      dimension: 'independence_judgment',
+      is_critical_safety: false,
+      ordinal: 4,
+      label: 'escalated',
+    },
+  ];
+  await page.route('**/rest/v1/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' },
+      body: new URL(route.request().url()).pathname.endsWith('/signoff_line_item_templates')
+        ? JSON.stringify(tpl)
+        : '[]',
+    }),
+  );
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?screen=signoff');
+  await page.getByTestId('candidate-input').waitFor(); // sign-off screen mounted
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+});

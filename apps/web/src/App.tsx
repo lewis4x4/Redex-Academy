@@ -1,4 +1,4 @@
-import { personaShell } from '@redex/auth';
+import { hasRole, personaShell } from '@redex/auth';
 import { AppShell, Button, NavPill, StatusBadge } from '@redex/ui';
 import { useTranslation } from 'react-i18next';
 import { LoginPage } from './auth/components/LoginPage';
@@ -7,6 +7,7 @@ import { signOut, useAuth } from './auth/useAuth';
 import { Constellation } from './catalog/Constellation';
 import { SyncStatus } from './components/SyncStatus';
 import { Ac203SimScreen } from './forge/Ac203SimScreen';
+import { SignoffScreen } from './features/signoff/SignoffScreen';
 import { useAppRoute } from './navigation';
 
 /**
@@ -44,13 +45,17 @@ export default function App() {
   // M3 — the AC-203 branching egress-fail sim is an auth-gated in-app screen,
   // entered from its Constellation boss node (?screen=sim&course=AC-203).
   const inSim = route.screen === 'sim' && route.course === 'AC-203';
+  // M6 — the Evaluator field sign-off, an auth-gated in-app screen entered from the
+  // evaluator section (?screen=signoff). Gated to the 'evaluator' role (RLS is the
+  // real boundary; this only hides UI). The signoff itself authorizes server-side.
+  const inSignoff = route.screen === 'signoff' && claims != null && hasRole(claims, 'evaluator');
 
   return (
     <AppShell
       density={density}
       proofPoints={0}
       onBackpack={() => {}}
-      screenKey={inSim ? 'sim-ac203' : 'home'}
+      screenKey={inSim ? 'sim-ac203' : inSignoff ? 'signoff' : 'home'}
       nav={
         <>
           <NavPill active>Home</NavPill>
@@ -65,6 +70,8 @@ export default function App() {
     >
       {inSim ? (
         <Ac203SimScreen onExit={() => navigate({ screen: null, course: null })} />
+      ) : inSignoff ? (
+        <SignoffScreen onExit={() => navigate({ screen: null, course: null })} />
       ) : (
         <div className="flex flex-col gap-5 pb-10">
           <div className="px-8 pt-2">
@@ -73,6 +80,21 @@ export default function App() {
 
           {/* M1 — the prerequisite-gated skill-map home (the product's first screen). */}
           <Constellation />
+
+          {/* M6 — the Evaluator "Prove one" field sign-off entry (role-gated). */}
+          <RoleGate claims={claims} anyOf={['evaluator']}>
+            <section aria-label="Evaluator tools" className="flex items-center gap-3 px-8">
+              <span className="text-body text-ink-muted">{t('signoff.entry_label')}</span>
+              <Button
+                variant="primary"
+                size="sm"
+                data-testid="open-signoff"
+                onClick={() => navigate({ screen: 'signoff', course: null })}
+              >
+                {t('signoff.entry_cta')}
+              </Button>
+            </section>
+          </RoleGate>
 
           <RoleGate claims={claims} anyOf={['manager', 'org_admin', 'exec']}>
             <section aria-label="Manager tools" className="flex items-center gap-3 px-8">

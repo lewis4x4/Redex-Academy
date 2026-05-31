@@ -226,10 +226,50 @@ begin
   reset role;
 end $$;
 
+-- ----------------------------------------------------------------------------
+-- NEGATIVE (M6): a client/evaluator may create a DRAFT sign-off but CANNOT
+-- self-transition it to 'signed' — finalizing is service-role-only (invariant 3).
+-- signoffs_update_draft_evaluator's WITH CHECK permits only draft/submitted/failed,
+-- so a client UPDATE to 'signed' is rejected by RLS. (The safety veto + immutability
+-- are proven on a live DB by 0001 + 0004; this proves the server-only sign boundary.)
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  v_org_a uuid := '00000000-0000-0000-0000-00000000aaa1'; -- Redex (org A)
+  v_cand  uuid := '00000000-0000-0000-0000-00000000ccc3'; -- org-A candidate
+  v_eval  uuid := '00000000-0000-0000-0000-00000000ddd4'; -- org-A evaluator
+  v_comp  uuid := '00000000-0000-0000-0000-00000000eee5'; -- org-A competency
+  v_signoff uuid;
+  v_blocked boolean := false;
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_eval::text, 'org_id', v_org_a::text,
+                      'roles', json_build_array('evaluator'))::text, true);
+  set local role authenticated;
+
+  -- POSITIVE: an evaluator can create a DRAFT sign-off in their own org.
+  insert into academy.signoffs (candidate_user_id, evaluator_user_id, competency_id, org_id, status)
+    values (v_cand, v_eval, v_comp, v_org_a, 'draft')
+    returning id into v_signoff;
+  perform pg_temp.assert(v_signoff is not null,
+    'POSITIVE: an evaluator CAN create a DRAFT sign-off in their own org');
+
+  -- NEGATIVE: the same client CANNOT flip it to 'signed' (WITH CHECK forbids it) —
+  -- only the service-role finalize-signoff function may sign (invariant 3).
+  begin
+    update academy.signoffs set status = 'signed' where id = v_signoff;
+  exception when insufficient_privilege then v_blocked := true;
+  end;
+  perform pg_temp.assert(v_blocked,
+    'NEGATIVE: a client/evaluator CANNOT self-transition a sign-off to signed (finalize is service-role only)');
+
+  reset role;
+end $$;
+
 do $$
 begin
   raise notice '------------------------------------------------------------';
-  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero + sim_attempt write-isolation).';
+  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero + sim_attempt write-isolation + signoff no-self-sign).';
   raise notice '------------------------------------------------------------';
 end $$;
 
