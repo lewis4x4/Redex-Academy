@@ -6,25 +6,26 @@
 // ─────────────────────────────────────────────────────────────────────────
 // ISSUER-DID RECONCILIATION (surfaced, operator-authorized bend) — READ THIS.
 // The pinned invariant text historically named `did:web:academy.goredex.com`,
-// a PLACEHOLDER from before the domain was settled. The product is actually
-// hosted at `redex.education` (see supabase/config.toml auth callbacks +
-// .env.example), so a `goredex.com` did:web would NOT resolve and a badge
-// would FAIL to verify at a public URL — the headline §J gate. The F6 hand-off
-// directs: land the domain-reconciliation goal first; if it has not landed,
-// set the issuer to `did:web:academy.redex.education` here and keep it
-// identical EVERYWHERE. That goal had not landed, so this constant is the
-// reconciled issuer and the single value every artifact derives from. See
-// adr/ADR-0005 (addendum) + CLAUDE.md.
+// a PLACEHOLDER from before the domain was settled. The product is hosted at
+// `redex.education` (see supabase/config.toml auth callbacks + .env.example),
+// so a `goredex.com` did:web would NOT resolve and a badge would FAIL to verify
+// at a public URL — the headline §J gate. The issuer is now re-hosted at the
+// APEX `did:web:redex.education` (the never-deployable subdomain Cloudflare
+// stack is dropped); this constant is the single value every artifact derives
+// from. See adr/ADR-0005 (addendum) + CLAUDE.md.
 // ─────────────────────────────────────────────────────────────────────────
 //
-// `did:web:academy.redex.education` resolves to
-//   https://academy.redex.education/.well-known/did.json   (the DID document)
+// `did:web:redex.education` resolves to
+//   https://redex.education/.well-known/did.json   (the DID document)
 // and the OB 3.0 issuer Profile + the BitstringStatusList live under the same
-// origin (served by the Cloudflare Workers in `workers/`).
+// apex origin, served by Netlify static files (the `.well-known` DID document +
+// issuer Profile under apps/web/public/.well-known/) plus two public Supabase
+// Edge Functions (hosted-assertion + status-list), proxied from /credentials/*
+// and /status/* by netlify.toml.
 // ============================================================================
 
 /** The reconciled issuer DID (see the banner above). */
-export const DEFAULT_ISSUER_DID = 'did:web:academy.redex.education';
+export const DEFAULT_ISSUER_DID = 'did:web:redex.education';
 
 /** Pinned Data Integrity proof suite (ledger §F / invariant 7). */
 export const PROOF_SUITE = 'eddsa-rdfc-2022' as const;
@@ -36,9 +37,9 @@ export const CREDENTIAL_CONTEXT = [
 ] as const;
 
 export interface IssuerEndpoints {
-  /** Issuer DID, e.g. `did:web:academy.redex.education`. */
+  /** Issuer DID, e.g. `did:web:redex.education`. */
   did: string;
-  /** Origin the did:web resolves to, e.g. `https://academy.redex.education`. */
+  /** Origin the did:web resolves to, e.g. `https://redex.education`. */
   origin: string;
   /** DID document URL (`.well-known/did.json`). */
   didDocumentUrl: string;

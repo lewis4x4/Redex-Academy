@@ -12,11 +12,11 @@ import { TEST_BUILD_INPUT, TEST_CREATED, TEST_ISSUER_DID } from './test-vector';
 
 describe('did:web endpoint resolution', () => {
   it('maps the reconciled issuer DID to its https endpoints', () => {
-    const ep = resolveIssuerEndpoints('did:web:academy.redex.education');
-    expect(ep.origin).toBe('https://academy.redex.education');
-    expect(ep.didDocumentUrl).toBe('https://academy.redex.education/.well-known/did.json');
-    expect(ep.profileUrl).toBe('https://academy.redex.education/.well-known/issuer');
-    expect(ep.statusListUrl).toBe('https://academy.redex.education/status/1');
+    const ep = resolveIssuerEndpoints('did:web:redex.education');
+    expect(ep.origin).toBe('https://redex.education');
+    expect(ep.didDocumentUrl).toBe('https://redex.education/.well-known/did.json');
+    expect(ep.profileUrl).toBe('https://redex.education/.well-known/issuer');
+    expect(ep.statusListUrl).toBe('https://redex.education/status/1');
   });
 
   it('handles a did:web with a path', () => {

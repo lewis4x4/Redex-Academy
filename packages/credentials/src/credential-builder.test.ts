@@ -9,7 +9,7 @@ describe('buildAchievementCredential', () => {
     const c = buildAchievementCredential(TEST_BUILD_INPUT);
     expect(c['@context']).toEqual([...CREDENTIAL_CONTEXT]);
     expect(c.type).toEqual(['VerifiableCredential', 'OpenBadgeCredential']);
-    expect(c.issuer.id).toBe('did:web:academy.redex.education');
+    expect(c.issuer.id).toBe('did:web:redex.education');
     expect(c.credentialSubject.type).toEqual(['AchievementSubject']);
     expect(c.credentialSubject.achievement.name).toBe(TEST_BUILD_INPUT.achievement.name);
     // VC 2.0 uses validFrom (NOT issuanceDate, which the v2 @context drops).
@@ -21,10 +21,10 @@ describe('buildAchievementCredential', () => {
 
   it('omits optional fields when not provided', () => {
     const c = buildAchievementCredential({
-      credentialId: 'https://academy.redex.education/credentials/x',
-      issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+      credentialId: 'https://redex.education/credentials/x',
+      issuer: { id: 'did:web:redex.education', type: ['Profile'] },
       achievement: {
-        id: 'https://academy.redex.education/achievements/x',
+        id: 'https://redex.education/achievements/x',
         type: ['Achievement'],
         name: 'X',
       },
@@ -37,15 +37,15 @@ describe('buildAchievementCredential', () => {
 
   it('defaults evidence[].type to ["Evidence"] (parity with the Deno builder)', () => {
     const input = {
-      credentialId: 'https://academy.redex.education/credentials/y',
-      issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+      credentialId: 'https://redex.education/credentials/y',
+      issuer: { id: 'did:web:redex.education', type: ['Profile'] },
       achievement: {
-        id: 'https://academy.redex.education/achievements/y',
+        id: 'https://redex.education/achievements/y',
         type: ['Achievement'],
         name: 'Y',
       },
       validFrom: '2026-01-01T00:00:00Z',
-      evidence: [{ id: 'https://academy.redex.education/evidence/1' }], // no type
+      evidence: [{ id: 'https://redex.education/evidence/1' }], // no type
     } as unknown as BuildCredentialInput;
     const c = buildAchievementCredential(input);
     expect(c.evidence?.[0]?.type).toEqual(['Evidence']);

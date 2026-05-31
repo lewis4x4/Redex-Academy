@@ -1,0 +1,20 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/credentials/v2",
+    "https://purl.imsglobal.org/spec/ob/v3p0/context-3.0.3.json"
+  ],
+  "id": "did:web:redex.education",
+  "type": [
+    "Profile"
+  ],
+  "name": "Redex Academy",
+  "url": "https://redex.education",
+  "verificationMethod": [
+    {
+      "id": "did:web:redex.education#key-2026-05",
+      "type": "Multikey",
+      "controller": "did:web:redex.education",
+      "publicKeyMultibase": "z6Mkfnc5M5LoWMzBmNbR78yRn8xTyp1oRHZxwuCxDt5uZC2D"
+    }
+  ]
+}

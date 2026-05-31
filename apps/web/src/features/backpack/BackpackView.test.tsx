@@ -12,7 +12,7 @@ const cred = (over: Partial<BackpackCredential>): BackpackCredential => ({
   badgeKind: 'skill',
   title: 'T',
   status: 'active',
-  hostedAssertionUrl: 'https://academy.redex.education/credentials/x',
+  hostedAssertionUrl: 'https://redex.education/credentials/x',
   expiresAt: null,
   evidenceUrls: [],
   componentBadgeKeys: [],
@@ -30,7 +30,7 @@ describe('BackpackView', () => {
       badgeKey: 'tier.ac.certified_technician',
       badgeKind: 'tier',
       title: 'Certified Technician — Access Control',
-      hostedAssertionUrl: 'https://academy.redex.education/credentials/tier-1',
+      hostedAssertionUrl: 'https://redex.education/credentials/tier-1',
       expiresAt: '2027-05-31T00:00:00Z',
       componentBadgeKeys: ['skill.ac.maglock_rex_egress'],
     });
@@ -38,7 +38,7 @@ describe('BackpackView', () => {
       id: 's1',
       badgeKey: 'skill.ac.maglock_rex_egress',
       title: 'Mag Lock + REX + Egress Wiring',
-      hostedAssertionUrl: 'https://academy.redex.education/credentials/skill-1',
+      hostedAssertionUrl: 'https://redex.education/credentials/skill-1',
       expiresAt: '2027-05-31T00:00:00Z',
     });
 
@@ -49,15 +49,9 @@ describe('BackpackView', () => {
 
     // each badge links out to its PUBLIC hosted verifiable URL
     const tierVerify = screen.getByTestId('verify-tier.ac.certified_technician');
-    expect(tierVerify).toHaveAttribute(
-      'href',
-      'https://academy.redex.education/credentials/tier-1',
-    );
+    expect(tierVerify).toHaveAttribute('href', 'https://redex.education/credentials/tier-1');
     const skillVerify = screen.getByTestId('verify-skill.ac.maglock_rex_egress');
-    expect(skillVerify).toHaveAttribute(
-      'href',
-      'https://academy.redex.education/credentials/skill-1',
-    );
+    expect(skillVerify).toHaveAttribute('href', 'https://redex.education/credentials/skill-1');
 
     // colorblind-safe status carries TEXT (not colour alone)
     expect(

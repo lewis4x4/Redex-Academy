@@ -16,7 +16,7 @@ import { verifyJsonLd } from './eddsa-rdfc-2022';
 import { TEST_SEED, TEST_VERIFICATION_METHOD, TEST_CREATED, TEST_BUILD_INPUT } from './test-vector';
 
 const REVOKE_INDEX = 7;
-const STATUS_URL = 'https://academy.redex.education/status/1';
+const STATUS_URL = 'https://redex.education/status/1';
 
 describe('issue → verify → revoke → re-verify', () => {
   it('flipping the status-list bit makes a still-signed credential read as revoked', async () => {
@@ -46,7 +46,7 @@ describe('issue → verify → revoke → re-verify', () => {
     let statusCred = await signJsonLd(
       buildStatusListCredential({
         id: STATUS_URL,
-        issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+        issuer: { id: 'did:web:redex.education', type: ['Profile'] },
         encodedList: await encodeList(bits),
         validFrom: TEST_CREATED,
       }),
@@ -61,7 +61,7 @@ describe('issue → verify → revoke → re-verify', () => {
     statusCred = await signJsonLd(
       buildStatusListCredential({
         id: STATUS_URL,
-        issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+        issuer: { id: 'did:web:redex.education', type: ['Profile'] },
         encodedList: await encodeList(bits),
         validFrom: '2026-06-01T00:00:00Z',
       }),

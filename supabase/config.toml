@@ -101,3 +101,16 @@ url = "env(OIDC_ISSUER_URL)"
 enabled = true
 # Edge Functions (Deno): finalize-signoff, issue-badge, xapi-bridge,
 # grade-open-response, sim-feedback, recert-scan, sync — added in later goals.
+
+# ── Public issuer endpoints (issuer re-host) ─────────────────────────────────
+# These two functions serve the PUBLIC OB 3.0 issuer surface on the apex
+# did:web:redex.education (Netlify proxies /credentials/* and /status/* here).
+# verify_jwt = false so an external OB 3.0 / VC verifier — which carries no
+# Supabase JWT — can fetch the hosted credential assertion + the signed status
+# list to verify a badge "at a public URL". They are read-only and return only
+# public credential data (no PII, no secrets; the signing key stays in Vault).
+[functions.hosted-assertion]
+verify_jwt = false
+
+[functions.status-list]
+verify_jwt = false

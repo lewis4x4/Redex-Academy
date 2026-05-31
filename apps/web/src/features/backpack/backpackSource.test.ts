@@ -7,7 +7,7 @@ const cred = (over: Partial<BackpackCredential>): BackpackCredential => ({
   badgeKind: 'skill',
   title: 'T',
   status: 'active',
-  hostedAssertionUrl: 'https://academy.redex.education/credentials/x',
+  hostedAssertionUrl: 'https://redex.education/credentials/x',
   expiresAt: null,
   evidenceUrls: [],
   componentBadgeKeys: [],

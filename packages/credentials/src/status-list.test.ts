@@ -72,8 +72,8 @@ describe('status-list credential + entry', () => {
     const encodedList = await encodeList(b);
     const signed = await signStatusListCredential(
       {
-        id: 'https://academy.redex.education/status/1',
-        issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+        id: 'https://redex.education/status/1',
+        issuer: { id: 'did:web:redex.education', type: ['Profile'] },
         encodedList,
         validFrom: TEST_CREATED,
       },
@@ -90,19 +90,19 @@ describe('status-list credential + entry', () => {
 
   it('buildStatusEntry points at the right index + list', () => {
     const e = buildStatusEntry({
-      statusListCredentialUrl: 'https://academy.redex.education/status/1',
+      statusListCredentialUrl: 'https://redex.education/status/1',
       index: 7,
     });
     expect(e.type).toBe('BitstringStatusListEntry');
     expect(e.statusListIndex).toBe('7');
-    expect(e.id).toBe('https://academy.redex.education/status/1#7');
+    expect(e.id).toBe('https://redex.education/status/1#7');
     expect(e.statusPurpose).toBe('revocation');
   });
 
   it('unsigned status-list credential carries the encodedList in its subject', () => {
     const c = buildStatusListCredential({
-      id: 'https://academy.redex.education/status/1',
-      issuer: { id: 'did:web:academy.redex.education', type: ['Profile'] },
+      id: 'https://redex.education/status/1',
+      issuer: { id: 'did:web:redex.education', type: ['Profile'] },
       encodedList: 'uH4sIAAAA',
       validFrom: TEST_CREATED,
     });

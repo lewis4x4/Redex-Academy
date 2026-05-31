@@ -18,6 +18,29 @@
 [context.branch-deploy]
   command = "corepack enable && pnpm install --frozen-lockfile && pnpm --filter @redex/web build"
 
+# ── OB 3.0 issuer surface (did:web:redex.education) ──────────────────────────
+# Netlify matches redirects TOP-TO-BOTTOM, first match wins, so these MUST precede
+# the SPA catch-all below (which stays LAST). The issuer is re-hosted at the apex:
+#   • /.well-known/* → the STATIC DID document + issuer Profile (apps/web/public),
+#     NOT the SPA — serve the file so a verifier resolving did:web gets JSON.
+#   • /credentials/* and /status/* → proxied (status=200, URL stays on
+#     redex.education) to the two PUBLIC Supabase Edge Functions, so a badge
+#     verifies at a public URL on the apex domain (ledger §F/§J).
+[[redirects]]
+  from = "/.well-known/*"
+  to = "/.well-known/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/credentials/*"
+  to = "https://hjzxncznmerefzbowerv.supabase.co/functions/v1/hosted-assertion/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/status/*"
+  to = "https://hjzxncznmerefzbowerv.supabase.co/functions/v1/status-list/:splat"
+  status = 200
+
 # ── SPA fallback ────────────────────────────────────────────────────────────
 [[redirects]]
   from = "/*"
@@ -61,3 +84,21 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# ── Issuer static docs media types ───────────────────────────────────────────
+# The DID document + issuer Profile are served as static files (apps/web/public/
+# .well-known/) via the /.well-known/* redirect above. Give them the correct
+# media types so a strict OB 3.0 / VC verifier accepts them (no .json extension on
+# the issuer file). Keep them no-cache so a key rotation / profile change is picked
+# up promptly (these are content, not hashed build assets).
+[[headers]]
+  for = "/.well-known/did.json"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/did+ld+json"
+
+[[headers]]
+  for = "/.well-known/issuer"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/vc+ld+json"
