@@ -178,10 +178,58 @@ begin
   reset role;
 end $$;
 
+-- ----------------------------------------------------------------------------
+-- NEGATIVE (M3): a learner cannot WRITE a sim_attempt into another org or as
+-- another user — the sim_attempts_insert_own WITH CHECK pins user_id =
+-- current_user_id() AND org_id = current_org_id(). (The cross-org SELECT
+-- isolation for sim_attempts is covered by the matrices above.) POSITIVE control:
+-- the learner CAN insert their OWN attempt in their OWN org.
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  v_org_a  uuid := '00000000-0000-0000-0000-00000000aaa1'; -- Redex
+  v_org_b  uuid := '00000000-0000-0000-0000-00000000bbb2'; -- CCS partner
+  v_cand   uuid := '00000000-0000-0000-0000-00000000ccc3'; -- a Redex (org A) learner
+  v_simdef uuid := '00000000-0000-0000-0000-00000000e0e1'; -- the __TEST__ published sim
+  v_blocked boolean;
+begin
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_cand::text, 'org_id', v_org_a::text,
+                      'roles', json_build_array('learner'))::text, true);
+  set local role authenticated;
+
+  -- cross-ORG write → rejected by WITH CHECK (new row violates RLS).
+  v_blocked := false;
+  begin
+    insert into academy.sim_attempts (user_id, org_id, sim_definition_id, outcome, client_event_uuid)
+      values (v_cand, v_org_b, v_simdef, 'pass', gen_random_uuid());
+  exception when insufficient_privilege then v_blocked := true;
+  end;
+  perform pg_temp.assert(v_blocked,
+    'NEGATIVE: a learner cannot INSERT a sim_attempt into ANOTHER org (RLS WITH CHECK)');
+
+  -- write AS ANOTHER USER → rejected (user_id must equal the caller).
+  v_blocked := false;
+  begin
+    insert into academy.sim_attempts (user_id, org_id, sim_definition_id, outcome, client_event_uuid)
+      values (gen_random_uuid(), v_org_a, v_simdef, 'pass', gen_random_uuid());
+  exception when insufficient_privilege then v_blocked := true;
+  end;
+  perform pg_temp.assert(v_blocked,
+    'NEGATIVE: a learner cannot INSERT a sim_attempt AS ANOTHER user (RLS WITH CHECK)');
+
+  -- POSITIVE: the learner CAN record their OWN attempt in their OWN org.
+  insert into academy.sim_attempts (user_id, org_id, sim_definition_id, outcome, client_event_uuid)
+    values (v_cand, v_org_a, v_simdef, 'pass', gen_random_uuid());
+  perform pg_temp.assert(true, 'POSITIVE: a learner CAN INSERT their OWN sim_attempt in their OWN org');
+
+  reset role;
+end $$;
+
 do $$
 begin
   raise notice '------------------------------------------------------------';
-  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero).';
+  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero + sim_attempt write-isolation).';
   raise notice '------------------------------------------------------------';
 end $$;
 

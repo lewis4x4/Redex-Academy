@@ -1,11 +1,11 @@
 {
   "$schema": "https://academy.goredex.com/sim-contracts/schemas/branching.schema.json",
   "envelope": {
-    "spec_version": "1.0.0",
+    "spec_version": "1.1.0",
     "sim_id": "ac203.egress-fail.maglock-door",
     "engine_kind": "branching_scenario",
     "title_i18n": "sim.ac203.egress-fail.title",
-    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000000203"],
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000f"],
     "locales": ["en", "es"],
     "scoring": {
       "pass_threshold": 0.8,
@@ -48,7 +48,6 @@
     "i18n_string_keys": [
       "sim.ac203.egress-fail.title",
       "sim.ac203.egress-fail.veto",
-      "sim.ac203.egress-fail.node.arrival.prompt",
       "sim.ac203.egress-fail.node.failstate.prompt",
       "sim.ac203.egress-fail.choice.failsafe.label",
       "sim.ac203.egress-fail.choice.failsafe.consequence",
@@ -59,17 +58,30 @@
       "sim.ac203.egress-fail.choice.pushtoexit.consequence",
       "sim.ac203.egress-fail.choice.motiononly.label",
       "sim.ac203.egress-fail.choice.motiononly.consequence",
-      "sim.ac203.egress-fail.node.fire.prompt",
+      "sim.ac203.egress-fail.node.placement.prompt",
+      "sim.ac203.egress-fail.choice.mount_reachable.label",
+      "sim.ac203.egress-fail.choice.mount_reachable.consequence",
+      "sim.ac203.egress-fail.choice.mount_high.label",
+      "sim.ac203.egress-fail.choice.mount_high.consequence",
+      "sim.ac203.egress-fail.node.firealarm.prompt",
       "sim.ac203.egress-fail.choice.facp.label",
       "sim.ac203.egress-fail.choice.facp.consequence",
       "sim.ac203.egress-fail.choice.nofacp.label",
       "sim.ac203.egress-fail.choice.nofacp.consequence",
+      "sim.ac203.egress-fail.node.closeout.prompt",
+      "sim.ac203.egress-fail.choice.document.label",
+      "sim.ac203.egress-fail.choice.document.consequence",
+      "sim.ac203.egress-fail.choice.packup.label",
+      "sim.ac203.egress-fail.choice.packup.consequence",
       "sim.ac203.egress-fail.terminal.pass.text",
       "sim.ac203.egress-fail.terminal.trapped_lock.text",
       "sim.ac203.egress-fail.terminal.trapped_motion.text",
+      "sim.ac203.egress-fail.terminal.trapped_placement.text",
       "sim.ac203.egress-fail.terminal.trapped_fire.text",
+      "sim.ac203.egress-fail.terminal.fail_docs.text",
       "sim.ac203.egress-fail.replay.faillocked.overlay",
       "sim.ac203.egress-fail.replay.motiononly.overlay",
+      "sim.ac203.egress-fail.replay.mount_high.overlay",
       "sim.ac203.egress-fail.replay.nofacp.overlay",
       "sim.common.state.pass",
       "sim.common.state.fail",
@@ -80,11 +92,12 @@
     "fixture_set_ref": null,
     "offline_cacheable": true
   },
-  "start": "arrival",
+  "start": "failstate",
   "nodes": {
-    "arrival": {
+    "failstate": {
       "type": "situation",
-      "prompt_i18n": "sim.ac203.egress-fail.node.arrival.prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.failstate.prompt",
+      "is_safety_decision": true,
       "media": [
         {
           "r2_key": "sims/ac203/storefront-maglock-door.jpg",
@@ -92,28 +105,6 @@
           "alt_i18n": "sim.ac203.media.storefront.alt"
         }
       ],
-      "is_safety_decision": false,
-      "choices": [
-        {
-          "id": "begin",
-          "label_i18n": "sim.ac203.egress-fail.choice.failsafe.label",
-          "to": "failstate",
-          "consequence_i18n": "sim.ac203.egress-fail.choice.failsafe.consequence",
-          "score_delta": 0
-        },
-        {
-          "id": "begin-alt",
-          "label_i18n": "sim.ac203.egress-fail.choice.failsafe.label",
-          "to": "failstate",
-          "consequence_i18n": "sim.ac203.egress-fail.choice.failsafe.consequence",
-          "score_delta": 0
-        }
-      ]
-    },
-    "failstate": {
-      "type": "prompt",
-      "prompt_i18n": "sim.ac203.egress-fail.node.failstate.prompt",
-      "is_safety_decision": true,
       "choices": [
         {
           "id": "failsafe",
@@ -125,7 +116,7 @@
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac.203.releases_on_power_loss"
+            "line_item_key": "ac203.release_on_power_loss"
           }
         },
         {
@@ -138,7 +129,7 @@
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac.203.releases_on_power_loss"
+            "line_item_key": "ac203.release_on_power_loss"
           }
         }
       ]
@@ -151,14 +142,12 @@
         {
           "id": "pushtoexit",
           "label_i18n": "sim.ac203.egress-fail.choice.pushtoexit.label",
-          "to": "fire",
+          "to": "placement",
           "consequence_i18n": "sim.ac203.egress-fail.choice.pushtoexit.consequence",
           "score_delta": 3,
+          "safety_flag": false,
           "is_safety_decision": true,
-          "verdict": {
-            "dimension": "safety_compliance",
-            "line_item_key": "ac.203.push_to_exit_present_30s"
-          }
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac203.push_to_exit_30s" }
         },
         {
           "id": "motiononly",
@@ -168,28 +157,59 @@
           "score_delta": -3,
           "safety_flag": true,
           "is_safety_decision": true,
+          "verdict": { "dimension": "safety_compliance", "line_item_key": "ac203.push_to_exit_30s" }
+        }
+      ]
+    },
+    "placement": {
+      "type": "prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.placement.prompt",
+      "is_safety_decision": true,
+      "choices": [
+        {
+          "id": "mount_reachable",
+          "label_i18n": "sim.ac203.egress-fail.choice.mount_reachable.label",
+          "to": "firealarm",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.mount_reachable.consequence",
+          "score_delta": 3,
+          "safety_flag": false,
+          "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac.203.push_to_exit_present_30s"
+            "line_item_key": "ac203.pte_mount_40_48in_5ft"
+          }
+        },
+        {
+          "id": "mount_high",
+          "label_i18n": "sim.ac203.egress-fail.choice.mount_high.label",
+          "to": "trapped_placement",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.mount_high.consequence",
+          "score_delta": -3,
+          "safety_flag": true,
+          "is_safety_decision": true,
+          "verdict": {
+            "dimension": "safety_compliance",
+            "line_item_key": "ac203.pte_mount_40_48in_5ft"
           }
         }
       ]
     },
-    "fire": {
+    "firealarm": {
       "type": "prompt",
-      "prompt_i18n": "sim.ac203.egress-fail.node.fire.prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.firealarm.prompt",
       "is_safety_decision": true,
       "choices": [
         {
           "id": "facp",
           "label_i18n": "sim.ac203.egress-fail.choice.facp.label",
-          "to": "pass",
+          "to": "closeout",
           "consequence_i18n": "sim.ac203.egress-fail.choice.facp.consequence",
           "score_delta": 3,
+          "safety_flag": false,
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac.203.releases_on_fire_alarm"
+            "line_item_key": "ac203.release_on_fire_alarm"
           }
         },
         {
@@ -202,7 +222,40 @@
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac.203.releases_on_fire_alarm"
+            "line_item_key": "ac203.release_on_fire_alarm"
+          }
+        }
+      ]
+    },
+    "closeout": {
+      "type": "prompt",
+      "prompt_i18n": "sim.ac203.egress-fail.node.closeout.prompt",
+      "is_safety_decision": false,
+      "choices": [
+        {
+          "id": "document",
+          "label_i18n": "sim.ac203.egress-fail.choice.document.label",
+          "to": "pass",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.document.consequence",
+          "score_delta": 3,
+          "safety_flag": false,
+          "is_safety_decision": false,
+          "verdict": {
+            "dimension": "verification_documentation",
+            "line_item_key": "ac203.verify.three_release_modes_logged"
+          }
+        },
+        {
+          "id": "packup",
+          "label_i18n": "sim.ac203.egress-fail.choice.packup.label",
+          "to": "fail_docs",
+          "consequence_i18n": "sim.ac203.egress-fail.choice.packup.consequence",
+          "score_delta": -3,
+          "safety_flag": false,
+          "is_safety_decision": false,
+          "verdict": {
+            "dimension": "verification_documentation",
+            "line_item_key": "ac203.verify.three_release_modes_logged"
           }
         }
       ]
@@ -217,6 +270,18 @@
         "shape": "check",
         "label_i18n": "sim.common.state.pass",
         "color_role": "success"
+      }
+    },
+    "fail_docs": {
+      "type": "terminal",
+      "outcome": "fail",
+      "safety_veto": false,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.fail_docs.text",
+      "state": {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
       }
     },
     "trapped_lock": {
@@ -267,6 +332,30 @@
         "overlay_i18n": "sim.ac203.egress-fail.replay.motiononly.overlay"
       }
     },
+    "trapped_placement": {
+      "type": "terminal",
+      "outcome": "fail",
+      "safety_veto": true,
+      "outcome_i18n": "sim.ac203.egress-fail.terminal.trapped_placement.text",
+      "media": [
+        {
+          "r2_key": "sims/ac203/crowd-trapped-locked-door.jpg",
+          "kind": "image",
+          "alt_i18n": "sim.ac203.media.crowd_trapped.alt"
+        }
+      ],
+      "state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      },
+      "replay": {
+        "freeze_node": "trapped_placement",
+        "decided_at_node": "placement",
+        "overlay_i18n": "sim.ac203.egress-fail.replay.mount_high.overlay"
+      }
+    },
     "trapped_fire": {
       "type": "terminal",
       "outcome": "fail",
@@ -287,7 +376,7 @@
       },
       "replay": {
         "freeze_node": "trapped_fire",
-        "decided_at_node": "fire",
+        "decided_at_node": "firealarm",
         "overlay_i18n": "sim.ac203.egress-fail.replay.nofacp.overlay"
       }
     }

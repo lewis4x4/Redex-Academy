@@ -19,16 +19,21 @@ function makeSim() {
   return { sim, events };
 }
 
+// The committed AC-203 flagship graph (start = failstate):
+//   failstate → rex → placement → firealarm → closeout → pass
+// with a safety-veto trap off each safety decision and a non-veto docs fail off closeout.
 describe('engine #1 branching — AC-203 egress-fail runs end-to-end', () => {
   it('the correct egress path → PASS, no safety veto', () => {
     const { sim, events } = makeSim();
-    sim.choose('begin'); // arrival → failstate
     sim.choose('failsafe'); // releases on power loss
-    sim.choose('pushtoexit'); // request-to-exit present
+    sim.choose('pushtoexit'); // manual push-to-exit present (≥30s)
+    sim.choose('mount_reachable'); // push-to-exit reachable (40–48in / ≤5ft)
     sim.choose('facp'); // releases on fire alarm
+    sim.choose('document'); // tested + logged + AHJ
     expect(sim.isComplete()).toBe(true);
     const v = sim.getVerdict();
     expect(v.outcome).toBe('pass');
+    expect(v.kind).toBe('pass');
     expect(v.safety_veto_triggered).toBe(false);
     expect(v.state.token).toBe('pass');
     // every emitted statement carries a client_event_uuid
@@ -40,7 +45,6 @@ describe('engine #1 branching — AC-203 egress-fail runs end-to-end', () => {
 
   it('the wrong fail-locked choice → SAFETY VETO fail + trapped-occupants terminal', () => {
     const { sim, events } = makeSim();
-    sim.choose('begin');
     sim.choose('faillocked'); // safety_flag edge → trapped_lock terminal
     expect(sim.isComplete()).toBe(true);
     expect(sim.currentNode().type).toBe('terminal');
@@ -59,9 +63,27 @@ describe('engine #1 branching — AC-203 egress-fail runs end-to-end', () => {
     ).toBe(true);
   });
 
+  it('a NON-critical miss (skip documentation) → plain FAIL, NO veto', () => {
+    // All four life-safety decisions correct, but the verification/documentation
+    // step is skipped: the non-safety subset drops below pass_threshold → fail,
+    // yet NO safety_flag fired, so it is NOT a veto (kind 'fail', not 'safety_veto').
+    const { sim } = makeSim();
+    sim.choose('failsafe');
+    sim.choose('pushtoexit');
+    sim.choose('mount_reachable');
+    sim.choose('facp');
+    sim.choose('packup'); // verification_documentation miss (not a life-safety trap)
+    expect(sim.isComplete()).toBe(true);
+    const v = sim.getVerdict();
+    expect(v.outcome).toBe('fail');
+    expect(v.kind).toBe('fail');
+    expect(v.safety_veto_triggered).toBe(false); // a docs miss never vetoes
+    expect(v.safety_score).toBe(1); // every safety line passed
+    expect(v.score.scaled).toBeLessThan(0.8); // non-safety failed the threshold
+  });
+
   it('a wrong choice mid-path (motion only) also vetoes at its trap terminal', () => {
     const { sim } = makeSim();
-    sim.choose('begin');
     sim.choose('failsafe');
     sim.choose('motiononly'); // safety_flag → trapped_motion
     expect(sim.getVerdict().safety_veto_triggered).toBe(true);
@@ -69,7 +91,6 @@ describe('engine #1 branching — AC-203 egress-fail runs end-to-end', () => {
 
   it('refuses a choice after completion (no re-scoring a finished attempt)', () => {
     const { sim } = makeSim();
-    sim.choose('begin');
     sim.choose('faillocked');
     expect(() => sim.choose('failsafe')).toThrow(/already complete/);
   });

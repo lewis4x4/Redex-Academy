@@ -290,8 +290,10 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: deno check the /sync function + its integration test
-        run: deno check --config supabase/functions/deno.json supabase/functions/sync/index.ts supabase/functions/sync/sync.integration.test.ts
+      - name: deno check the Edge Functions + their tests
+        run: deno check --config supabase/functions/deno.json supabase/functions/sync/index.ts supabase/functions/sync/sync.integration.test.ts supabase/functions/finalize-sim-attempt/index.ts supabase/functions/finalize-sim-attempt/score.ts supabase/functions/finalize-sim-attempt/score.test.ts
+      - name: deno test the finalize re-scorer (M3, pure — server Verdict == browser engine)
+        run: deno test --config supabase/functions/deno.json supabase/functions/finalize-sim-attempt/score.test.ts
 
   # ── /sync acceptance pipeline (REAL @ F4): the actual validate→plan→upsert path
   # run against a live Postgres — proves the F4_DRY_RUN §4 signals end-to-end

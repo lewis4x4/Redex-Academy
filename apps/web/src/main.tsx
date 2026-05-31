@@ -5,6 +5,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { AuthCallback } from './auth/components/AuthCallback';
+import { supabase } from './auth/supabaseClient';
 import { ForgePreview } from './forge/ForgePreview';
 import './index.css';
 import { startSync } from './offline/sync-manager';
@@ -17,10 +18,18 @@ registerServiceWorker();
 // exponential backoff on failure. The flush sends the SAME client_event_uuid
 // each time → the idempotent /sync (ON CONFLICT DO NOTHING) cannot double-count.
 // A failed POST (e.g. auth) THROWS and leaves events queued — never marked done.
-// getToken is wired to the authenticated session in main.tsx after F3 lands.
+// getToken is now wired to the authenticated session (F3 landed): the access token
+// is tracked from the live session so queued sim attempts actually reach /sync.
 const syncUrl = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/functions/v1/sync`;
+let accessToken: string | undefined;
+void supabase.auth.getSession().then(({ data }) => {
+  accessToken = data.session?.access_token;
+});
+supabase.auth.onAuthStateChange((_event, next) => {
+  accessToken = next?.access_token;
+});
 if (import.meta.env.VITE_SUPABASE_URL) {
-  startSync({ syncUrl });
+  startSync({ syncUrl, getToken: () => accessToken });
 }
 
 const rootEl = document.getElementById('root');

@@ -15,3 +15,10 @@ paths = [
   '''deno\.lock$''',
   '''packages/db-types/database\.types\.ts$''',
 ]
+regexes = [
+  # §5.4 rubric line_item_key values (academy.signoff_line_item_templates) are PUBLIC
+  # curriculum keys, not API keys. generic-api-key false-positives on the high-entropy
+  # ones (e.g. ac203.pte_mount_40_48in_5ft) because the surrounding JSON key is named
+  # "*_key". They are seeded in plain SQL and authored in the sim specs — no secrets.
+  '''^ac\d+\.[a-z0-9_.]+$''',
+]

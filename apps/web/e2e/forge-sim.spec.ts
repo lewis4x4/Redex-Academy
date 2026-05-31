@@ -10,7 +10,7 @@ test('engine #1 branching: the wrong fail-locked choice → safety-veto terminal
   page,
 }) => {
   await page.goto('/forge-preview?sim=branching&mode=rich');
-  await page.locator('[data-choice="begin"]').click();
+  // start node is `failstate`: the fail-locked egress choice is the life-safety trap
   await page.locator('[data-choice="faillocked"]').click();
   const badge = page.getByRole('status');
   await expect(badge).toHaveAttribute('data-token', 'safety_veto');
@@ -24,7 +24,6 @@ test('2D fallback is first-class: same safety-veto token as rich for the same in
 }) => {
   await page.goto('/forge-preview?sim=branching&mode=fallback2d');
   await expect(page.locator('[data-render-mode="fallback2d"]')).toBeVisible();
-  await page.locator('[data-choice="begin"]').click();
   await page.locator('[data-choice="faillocked"]').click();
   await expect(page.getByRole('status')).toHaveAttribute('data-token', 'safety_veto');
 });
@@ -42,7 +41,7 @@ test('engine #2 device-config: a fail-locked egress lock submits to a safety vet
 
 test('a reference sim passes axe (WCAG 2a/2aa) and is keyboard reachable', async ({ page }) => {
   await page.goto('/forge-preview?sim=branching&mode=rich');
-  await page.locator('[data-choice="begin"]').waitFor();
+  await page.locator('[data-choice="failsafe"]').waitFor();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
   // tabbing reaches a choice button
