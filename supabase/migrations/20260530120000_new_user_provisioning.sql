@@ -112,8 +112,11 @@ create trigger user_invitations_set_updated_at
 -- CRITICAL: §15's enable/force loop uses a HARDCODED table list that does NOT
 -- include this table, and §14 default-privileges auto-GRANT select to authenticated
 -- for new academy tables — so without this block the table would be cross-tenant
--- readable. The SECURITY DEFINER trigger (owner) bypasses RLS the same way the F3
--- hook reads academy.users under FORCE; service_role bypasses via BYPASSRLS.
+-- readable. The SECURITY DEFINER trigger runs as its owner — the migration role,
+-- which is superuser on bare CI and has BYPASSRLS on Supabase (the `postgres` role)
+-- — so it bypasses FORCE RLS to read/write here, exactly as the F3 hook reads
+-- academy.users under FORCE; service_role also bypasses via BYPASSRLS. (Plain table
+-- ownership alone does NOT bypass FORCE — the BYPASSRLS/superuser attribute does.)
 alter table academy.user_invitations enable row level security;
 alter table academy.user_invitations force row level security;
 
@@ -223,7 +226,9 @@ grant execute on function academy.handle_new_auth_user() to supabase_auth_admin;
 -- cannot reference OLD). INSERT covers magic-link/OTP/SSO (auth.users created already
 -- confirmed); UPDATE OF email_confirmed_at covers password signup confirming later.
 -- The function's "profile already exists" guard is the idempotency safety net.
--- drop-if-exists makes the migration safe to re-apply.
+-- drop-if-exists guards the trigger re-creation; the table/index/policies are
+-- forward-only (not re-apply-guarded, per repo norm — CI applies once to a fresh
+-- DB), and the single begin/commit makes any accidental re-apply abort atomically.
 drop trigger if exists on_auth_user_confirmed_insert on auth.users;
 create trigger on_auth_user_confirmed_insert
   after insert on auth.users
