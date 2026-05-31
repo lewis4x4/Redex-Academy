@@ -150,14 +150,19 @@ Every append-only event table carries **`UNIQUE (client_event_uuid)`**: `sim_att
 
 ## 7. Type generation (NON-NEGOTIABLE — CLAUDE.md §4)
 
-After applying these migrations, regenerate the shared types and commit them with the migration. The canonical output path is **`packages/db-types/database.types.ts`** (F1/F2):
+After applying these migrations, regenerate the shared types **off the migrations** (the schema source of truth — not the live remote) and commit them with the migration. The canonical output path is **`packages/db-types/database.types.ts`** (F1/F2):
 
 ```bash
-supabase gen types typescript --schema academy,workos > packages/db-types/database.types.ts
+# Apply the migrations to a local Postgres ($SUPABASE_DB_URL) as a superuser, then gen from it.
+# (These migrations are authored for bare-Postgres apply — the same path the DB CI jobs use;
+#  `supabase start` is NOT used, as its constrained migration role can't create the auth-stub.)
+for f in supabase/migrations/*.sql; do psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f "$f"; done
+supabase gen types typescript --db-url "$SUPABASE_DB_URL" --schema academy,workos > packages/db-types/database.types.ts
 ```
 
 - **Schema scope by phase:** at **F2** only `academy` exists, so generate with `--schema academy`. **After F2a** (the `workos` stub lands), generate with `--schema academy,workos` so the generated types cover both `academy.*` and `workos.*`.
 - **Never hand-edit `database.types.ts`.** CI fails if the committed types differ from a fresh generation (typegen-drift check).
+- **Migrations-sourced, not prod.** The typegen-drift check runs `gen types --db-url` against a bare `postgres:16` built purely from `supabase/migrations/*` — NOT `--project-id`/the remote. So a schema-adding PR is green once its migration + regenerated types are committed together; it does **not** require (and must not wait on) a production schema deploy. The check still catches stale types: change a migration without regenerating and the fresh gen diverges → CI fails.
 - Every goal imports this one types package (`packages/db-types`) rather than redefining row shapes.
 
 ---

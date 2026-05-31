@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   academy: {
     Tables: {
       assessment_items: {
@@ -1601,6 +1596,7 @@ export type Database = {
       }
       current_org_id: { Args: never; Returns: string }
       current_user_id: { Args: never; Returns: string }
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
       jwt_has_role: { Args: { role_keys: string[] }; Returns: boolean }
       prereq_graph_is_dag: { Args: never; Returns: boolean }
     }
@@ -2024,3 +2020,4 @@ export const Constants = {
     },
   },
 } as const
+
