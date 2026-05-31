@@ -5,6 +5,10 @@ import { StateBadge } from '../../colorblind/StateBadge';
 import { type RenderMode, SimFrame } from '../../fallback-2d/Schematic';
 import type { CalculatorInstance } from './core';
 
+// Dark-theme control styling (token classes) so native <select>/<input number> clear
+// WCAG AA contrast — the browser-default light-grey bg under the app's light ink fails axe.
+const CONTROL = 'rounded-control border border-line bg-surface-2 px-2 py-1 text-ink';
+
 export interface CalculatorSimProps {
   instance: CalculatorInstance;
   mode?: RenderMode;
@@ -55,6 +59,7 @@ export function CalculatorSim({ instance, mode = 'rich' }: CalculatorSimProps): 
                 <select
                   aria-label={label}
                   data-input={id}
+                  className={CONTROL}
                   value={typeof val === 'string' ? val : ''}
                   disabled={st.complete}
                   onChange={(e) => instance.setInput(id, e.target.value)}
@@ -93,6 +98,7 @@ export function CalculatorSim({ instance, mode = 'rich' }: CalculatorSimProps): 
                 type="number"
                 aria-label={label}
                 data-input={id}
+                className={CONTROL}
                 value={val == null ? '' : String(val)}
                 min={input.min}
                 max={input.max}

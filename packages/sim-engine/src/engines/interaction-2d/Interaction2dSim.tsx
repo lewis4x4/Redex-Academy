@@ -1,8 +1,12 @@
-import type { ReactElement } from 'react';
+import { Fragment, type ReactElement } from 'react';
 import { useStore } from 'zustand';
 import { StateBadge } from '../../colorblind/StateBadge';
 import { type RenderMode, SimFrame } from '../../fallback-2d/Schematic';
 import type { Interaction2dInstance, ItemAnswer } from './core';
+
+// Dark-theme control styling (token classes) so native <select>s clear WCAG AA
+// contrast — the browser-default light-grey bg under the app's light ink fails axe.
+const CONTROL = 'rounded-control border border-line bg-surface-2 px-2 py-1 text-ink';
 
 export interface Interaction2dSimProps {
   instance: Interaction2dInstance;
@@ -39,6 +43,7 @@ export function Interaction2dSim({ instance, mode = 'rich' }: Interaction2dSimPr
                 <select
                   aria-label={lbl}
                   data-label={lab.id}
+                  className={CONTROL}
                   value={placed[lab.id] ?? ''}
                   disabled={st.complete}
                   onChange={(e) => instance.place(item.id, lab.id, e.target.value)}
@@ -72,6 +77,7 @@ export function Interaction2dSim({ instance, mode = 'rich' }: Interaction2dSimPr
                 <select
                   aria-label={lbl}
                   data-left={l.id}
+                  className={CONTROL}
                   value={matched[l.id] ?? ''}
                   disabled={st.complete}
                   onChange={(e) => instance.place(item.id, l.id, e.target.value)}
@@ -114,6 +120,7 @@ export function Interaction2dSim({ instance, mode = 'rich' }: Interaction2dSimPr
                     type="button"
                     aria-label={`Move ${eid} up`}
                     data-up={eid}
+                    className={CONTROL}
                     disabled={st.complete || i === 0}
                     onClick={() => move(i, -1)}
                   >
@@ -123,6 +130,7 @@ export function Interaction2dSim({ instance, mode = 'rich' }: Interaction2dSimPr
                     type="button"
                     aria-label={`Move ${eid} down`}
                     data-down={eid}
+                    className={CONTROL}
                     disabled={st.complete || i === order.length - 1}
                     onClick={() => move(i, 1)}
                   >
@@ -173,7 +181,11 @@ export function Interaction2dSim({ instance, mode = 'rich' }: Interaction2dSimPr
         </figure>
       ) : null}
 
-      <div className="flex flex-col gap-4">{spec.items.map((it) => renderItem(it))}</div>
+      <div className="flex flex-col gap-4">
+        {spec.items.map((it) => (
+          <Fragment key={it.id}>{renderItem(it)}</Fragment>
+        ))}
+      </div>
 
       {!st.complete ? (
         <button
