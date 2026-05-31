@@ -42,5 +42,32 @@
       "passed": "Passed. Earn your sign-off to reach mastery.",
       "mastered": "Mastered — Evaluator-signed in the field."
     }
+  },
+  "login": {
+    "magic_aria": "Sign in with a magic link",
+    "password_aria": "Sign in with a password",
+    "verify_aria": "Enter your sign-in code",
+    "email_label": "Work email",
+    "send_link": "Send me a magic link",
+    "sending": "Sending…",
+    "sent_generic": "If an account exists for that email, we sent a sign-in link and code. Enter the 6-digit code below, or open the link.",
+    "code_label": "6-digit code",
+    "verify": "Verify code",
+    "verifying": "Verifying…",
+    "resend": "Resend",
+    "use_other_email": "Use a different email",
+    "password_label": "Password",
+    "sign_in": "Sign in",
+    "signing_in": "Signing in…",
+    "set_password": "New here? Create an account / set a password",
+    "or": "or",
+    "google": "Continue with Google Workspace",
+    "use_password": "Use a password instead",
+    "use_magic": "Use a magic link instead",
+    "signing_in_callback": "Signing you in…",
+    "callback_timeout": "We couldn't complete sign-in. The link may have expired.",
+    "callback_error_title": "Sign-in didn't complete",
+    "callback_error_desc": "That link may be expired or already used. Request a fresh one.",
+    "back_to_login": "Back to sign in"
   }
 }

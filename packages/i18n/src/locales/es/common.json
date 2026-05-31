@@ -42,5 +42,32 @@
       "passed": "Aprobado. Obtén tu firma para alcanzar la maestría.",
       "mastered": "Dominado — firmado por un evaluador en campo."
     }
+  },
+  "login": {
+    "magic_aria": "Inicia sesión con un enlace mágico",
+    "password_aria": "Inicia sesión con contraseña",
+    "verify_aria": "Ingresa tu código de inicio de sesión",
+    "email_label": "Correo de trabajo",
+    "send_link": "Envíame un enlace mágico",
+    "sending": "Enviando…",
+    "sent_generic": "Si existe una cuenta para ese correo, enviamos un enlace y un código de inicio de sesión. Ingresa el código de 6 dígitos abajo, o abre el enlace.",
+    "code_label": "Código de 6 dígitos",
+    "verify": "Verificar código",
+    "verifying": "Verificando…",
+    "resend": "Reenviar",
+    "use_other_email": "Usar otro correo",
+    "password_label": "Contraseña",
+    "sign_in": "Iniciar sesión",
+    "signing_in": "Iniciando sesión…",
+    "set_password": "¿Eres nuevo? Crea una cuenta / establece una contraseña",
+    "or": "o",
+    "google": "Continuar con Google Workspace",
+    "use_password": "Usar una contraseña",
+    "use_magic": "Usar un enlace mágico",
+    "signing_in_callback": "Iniciando tu sesión…",
+    "callback_timeout": "No pudimos completar el inicio de sesión. El enlace puede haber expirado.",
+    "callback_error_title": "El inicio de sesión no se completó",
+    "callback_error_desc": "Ese enlace puede haber expirado o ya fue usado. Solicita uno nuevo.",
+    "back_to_login": "Volver a iniciar sesión"
   }
 }

@@ -72,6 +72,10 @@ test('sync state is unmissable: synced → offline → synced (real browser, log
 test('logged-in shell with the sync indicator has no axe violations (WCAG 2a/2aa)', async ({
   page,
 }) => {
+  // Reduced motion so axe samples the final, fully-opaque paint (the shell's
+  // entrance fades otherwise read as false low contrast mid-animation; same fix as
+  // the gallery/login scans). This is also the correct a11y posture.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await page.getByLabel('Sync status').waitFor();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();

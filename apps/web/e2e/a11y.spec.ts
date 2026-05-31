@@ -6,6 +6,10 @@ import { expect, test } from '@playwright/test';
 test('app shell / login (re-skinned, dark+red) has no axe violations (WCAG 2a/2aa)', async ({
   page,
 }) => {
+  // Reduced motion so axe samples the final, fully-opaque paint (the F3b login has a
+  // starfield twinkle + entrance fades; mid-animation opacity reads as false low
+  // contrast — see the gallery test below). This is also the correct a11y posture.
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   // The shell resolves the session async (then renders the login screen when
   // logged out) — wait for stable content before scanning.
@@ -126,6 +130,16 @@ test('the M1 Constellation home has no axe violations (WCAG 2a/2aa)', async ({ p
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await page.locator('[data-course="AC-203"]').waitFor(); // constellation rendered
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+// F3b: the magic-link callback route (the link target) must be accessible in its
+// "signing you in…" state — a labelled live status on the dark canvas.
+test('the /auth/callback route has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/auth/callback'); // no session → stays on the verifying state long enough to scan
+  await page.getByText(/signing you in/i).waitFor();
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });
