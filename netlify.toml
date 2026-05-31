@@ -25,6 +25,19 @@
   status = 200
 
 # ── PWA cache headers ───────────────────────────────────────────────────────
+# Default for EVERY entrypoint, including SPA deep links like /catalog (Netlify
+# matches headers on the REQUEST path, before the /* → /index.html rewrite, so a
+# bare "/index.html" rule would miss them): the HTML must always be revalidated,
+# never served stale, so the browser re-fetches index.html on each load and
+# discovers the new sw.js → which fires the in-app "new version" update prompt.
+# The more-specific rules below override this for their paths (hashed assets stay
+# immutable; the SW is no-store). "/*" is listed FIRST so it loses to them under
+# BOTH Netlify precedence models (most-specific-wins AND last-rule-in-file-wins).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
 # Service worker must NEVER be cached (F4 ships the real Workbox SW; the exact
 # filename is finalized there — cover the common names now).
 [[headers]]
@@ -43,7 +56,7 @@
     Cache-Control = "no-cache"
     Content-Type = "application/manifest+json"
 
-# Hashed, content-addressed build assets — cache forever.
+# Hashed, content-addressed build assets — cache forever (more specific than /*).
 [[headers]]
   for = "/assets/*"
   [headers.values]

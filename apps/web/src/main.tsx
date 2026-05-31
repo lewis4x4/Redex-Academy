@@ -10,6 +10,7 @@ import { ForgePreview } from './forge/ForgePreview';
 import './index.css';
 import { startSync } from './offline/sync-manager';
 import { registerServiceWorker } from './registerSW';
+import { UpdatePrompt } from './UpdatePrompt';
 
 initI18n();
 registerServiceWorker();
@@ -51,4 +52,10 @@ const route =
     <App />
   );
 
-createRoot(rootEl).render(<StrictMode>{route}</StrictMode>);
+createRoot(rootEl).render(
+  <StrictMode>
+    {route}
+    {/* Always mounted: shows the "new version — reload" prompt on any route. */}
+    <UpdatePrompt />
+  </StrictMode>,
+);
