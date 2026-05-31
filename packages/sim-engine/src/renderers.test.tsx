@@ -27,7 +27,7 @@ describe('renderers: rich + 2D fallback drive the same instance (identical Verdi
   it('branching rich render: wrong fail-locked choice shows the safety-veto terminal', () => {
     const sim = branchingSim();
     const { container } = render(<BranchingSim instance={sim} mode="rich" />);
-    fireEvent.click(container.querySelector('[data-choice="begin"]')!);
+    // start node is `failstate`: the fail-locked choice is the wrong life-safety branch
     fireEvent.click(container.querySelector('[data-choice="faillocked"]')!);
     // colorblind-safe: state carried by shape + text, not color alone
     const badge = screen.getByRole('status');
@@ -42,7 +42,6 @@ describe('renderers: rich + 2D fallback drive the same instance (identical Verdi
     const drive = (mode: 'rich' | 'fallback2d') => {
       const sim = branchingSim();
       const { container } = render(<BranchingSim instance={sim} mode={mode} />);
-      fireEvent.click(container.querySelector('[data-choice="begin"]')!);
       fireEvent.click(container.querySelector('[data-choice="faillocked"]')!);
       const frame = container.querySelector('[data-render-mode]')!;
       expect(frame).toHaveAttribute('data-render-mode', mode);

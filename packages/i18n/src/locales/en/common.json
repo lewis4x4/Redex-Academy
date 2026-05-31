@@ -30,6 +30,7 @@
     "enrolling": "Enrolling…",
     "enrolled": "Enrolled in {{code}}.",
     "locked_hint": "Locked. Pass its prerequisite courses to unlock this node.",
+    "open_sim": "Open simulation",
     "tier": {
       "foundations": "Foundations",
       "core": "Core",
@@ -86,5 +87,28 @@
     "callback_error_title": "Sign-in didn't complete",
     "callback_error_desc": "That link may be expired or already used. Request a fresh one.",
     "back_to_login": "Back to sign in"
+  },
+  "sim": {
+    "screen": {
+      "eyebrow": "Simulation — The Forge",
+      "back": "Back to the map",
+      "lang": "Language",
+      "mode_rich": "Rich",
+      "mode_2d": "2D",
+      "objectives": "Your call",
+      "objectives_desc": "Commission the mag-lock egress door so every way out works. One wrong life-safety call traps people — and cannot be outscored.",
+      "progress": "Decision progress",
+      "feedback": "What happened",
+      "feedback_idle": "Make a call to see the consequence.",
+      "safety_meter": "Life-safety checks",
+      "run_again": "Run it again",
+      "postmortem_title": "Post-mortem — what went wrong",
+      "return_to_decision": "Return to the decision",
+      "result": "Verdict",
+      "advanced": "AC-203 unlocked — the node advanced on the map.",
+      "pending_offline": "Recorded. Your result will be confirmed when you reconnect — no pass is granted offline.",
+      "blocked": "AC-203 stays locked until you complete a safe egress build.",
+      "recording": "Recording your attempt…"
+    }
   }
 }

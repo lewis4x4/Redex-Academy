@@ -6,6 +6,8 @@ import { RoleGate } from './auth/components/RoleGate';
 import { signOut, useAuth } from './auth/useAuth';
 import { Constellation } from './catalog/Constellation';
 import { SyncStatus } from './components/SyncStatus';
+import { Ac203SimScreen } from './forge/Ac203SimScreen';
+import { useAppRoute } from './navigation';
 
 /**
  * Auth-aware shell (F3) re-skinned on the D1 design system, carrying the F4
@@ -20,6 +22,7 @@ import { SyncStatus } from './components/SyncStatus';
 export default function App() {
   const { t } = useTranslation();
   const { session, claims, loading } = useAuth();
+  const { route, navigate } = useAppRoute();
 
   if (loading) {
     return (
@@ -38,11 +41,16 @@ export default function App() {
   // persona → shell DENSITY only (never permissions).
   const density = personaShell(claims?.persona);
 
+  // M3 — the AC-203 branching egress-fail sim is an auth-gated in-app screen,
+  // entered from its Constellation boss node (?screen=sim&course=AC-203).
+  const inSim = route.screen === 'sim' && route.course === 'AC-203';
+
   return (
     <AppShell
       density={density}
       proofPoints={0}
       onBackpack={() => {}}
+      screenKey={inSim ? 'sim-ac203' : 'home'}
       nav={
         <>
           <NavPill active>Home</NavPill>
@@ -55,29 +63,33 @@ export default function App() {
         </Button>
       }
     >
-      <div className="flex flex-col gap-5 pb-10">
-        <div className="px-8 pt-2">
-          <SyncStatus />
-        </div>
+      {inSim ? (
+        <Ac203SimScreen onExit={() => navigate({ screen: null, course: null })} />
+      ) : (
+        <div className="flex flex-col gap-5 pb-10">
+          <div className="px-8 pt-2">
+            <SyncStatus />
+          </div>
 
-        {/* M1 — the prerequisite-gated skill-map home (the product's first screen). */}
-        <Constellation />
+          {/* M1 — the prerequisite-gated skill-map home (the product's first screen). */}
+          <Constellation />
 
-        <RoleGate claims={claims} anyOf={['manager', 'org_admin', 'exec']}>
-          <section aria-label="Manager tools" className="flex items-center gap-3 px-8">
-            <span className="text-body text-ink-muted">{t('app.supervisory')}</span>
-            <StatusBadge kind="pending" label={t('app.manager_dashboard')} />
+          <RoleGate claims={claims} anyOf={['manager', 'org_admin', 'exec']}>
+            <section aria-label="Manager tools" className="flex items-center gap-3 px-8">
+              <span className="text-body text-ink-muted">{t('app.supervisory')}</span>
+              <StatusBadge kind="pending" label={t('app.manager_dashboard')} />
+            </section>
+          </RoleGate>
+
+          <section aria-label="Session" className="px-8 text-caption text-ink-dim">
+            {t('app.shell_density')}:{' '}
+            <span data-testid="shell" className="font-label text-ink-soft">
+              {density}
+            </span>
+            {claims?.persona ? ` · ${claims.persona}` : ''}
           </section>
-        </RoleGate>
-
-        <section aria-label="Session" className="px-8 text-caption text-ink-dim">
-          {t('app.shell_density')}:{' '}
-          <span data-testid="shell" className="font-label text-ink-soft">
-            {density}
-          </span>
-          {claims?.persona ? ` · ${claims.persona}` : ''}
-        </section>
-      </div>
+        </div>
+      )}
     </AppShell>
   );
 }

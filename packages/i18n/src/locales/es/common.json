@@ -30,6 +30,7 @@
     "enrolling": "Inscribiendo…",
     "enrolled": "Inscrito en {{code}}.",
     "locked_hint": "Bloqueado. Aprueba sus cursos requisito para desbloquear este nodo.",
+    "open_sim": "Abrir simulación",
     "tier": {
       "foundations": "Fundamentos",
       "core": "Esencial",
@@ -86,5 +87,28 @@
     "callback_error_title": "El inicio de sesión no se completó",
     "callback_error_desc": "Ese enlace puede haber expirado o ya fue usado. Solicita uno nuevo.",
     "back_to_login": "Volver a iniciar sesión"
+  },
+  "sim": {
+    "screen": {
+      "eyebrow": "Simulación — La Forja",
+      "back": "Volver al mapa",
+      "lang": "Idioma",
+      "mode_rich": "Detallado",
+      "mode_2d": "2D",
+      "objectives": "Tu decisión",
+      "objectives_desc": "Pon en servicio la puerta de salida con cerradura magnética para que toda vía de salida funcione. Una decisión de vida o seguridad equivocada atrapa a la gente — y no se puede compensar con puntos.",
+      "progress": "Progreso de decisiones",
+      "feedback": "Qué pasó",
+      "feedback_idle": "Toma una decisión para ver la consecuencia.",
+      "safety_meter": "Verificaciones de vida y seguridad",
+      "run_again": "Vuelve a intentarlo",
+      "postmortem_title": "Análisis — qué salió mal",
+      "return_to_decision": "Volver a la decisión",
+      "result": "Veredicto",
+      "advanced": "AC-203 desbloqueado — el nodo avanzó en el mapa.",
+      "pending_offline": "Registrado. Tu resultado se confirmará al reconectar — sin conexión no se otorga aprobación.",
+      "blocked": "AC-203 permanece bloqueado hasta que completes una instalación de egreso segura.",
+      "recording": "Registrando tu intento…"
+    }
   }
 }

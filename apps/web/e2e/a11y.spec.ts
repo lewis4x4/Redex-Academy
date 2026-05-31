@@ -143,3 +143,54 @@ test('the /auth/callback route has no axe violations (WCAG 2a/2aa)', async ({ pa
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });
+
+// M3: the AC-203 branching egress-fail sim screen (the product's first playable sim)
+// must pass axe — labelled choice buttons, colorblind-safe state (shape+glyph+text),
+// the SimStage rails, the SVG tableau (role=img + alt), AA contrast on the dark
+// canvas. Seeded session + the auth-gated ?screen=sim route render it without a
+// backend (the spec is bundled). Reduced motion so axe samples the final paint.
+test('the AC-203 sim screen has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+  await page.addInitScript(() => {
+    const b64url = (o: unknown) =>
+      btoa(JSON.stringify(o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const claims = {
+      sub: '00000000-0000-0000-0000-0000000000c3',
+      org_id: '00000000-0000-0000-0000-0000000000a1',
+      roles: ['learner'],
+      persona: 'priya',
+    };
+    const token = `${b64url({ alg: 'none', typ: 'JWT' })}.${b64url(claims)}.sig`;
+    window.localStorage.setItem(
+      'sb-localhost-auth-token',
+      JSON.stringify({
+        access_token: token,
+        refresh_token: 'fake',
+        token_type: 'bearer',
+        expires_in: 3600,
+        expires_at: 4102444800,
+        user: {
+          id: claims.sub,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: 't@e.co',
+          app_metadata: {},
+          user_metadata: {},
+          created_at: '2026-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+  });
+  await page.route('**/rest/v1/**', (route) =>
+    route.fulfill({
+      status: 200,
+      headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' },
+      body: '[]',
+    }),
+  );
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?screen=sim&course=AC-203'); // auth-gated in-app sim route
+  await page.getByTestId('node-prompt').waitFor(); // sim mounted at the first decision
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+});

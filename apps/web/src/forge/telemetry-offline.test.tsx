@@ -30,8 +30,7 @@ describe('F5 telemetry queues offline via F4 (the F4↔F5 contract)', () => {
     });
     if (sim.engineKind !== 'branching_scenario') throw new Error('expected branching');
 
-    sim.choose('begin');
-    sim.choose('faillocked'); // → safety-veto terminal (emits answered + veto + completed)
+    sim.choose('faillocked'); // start node `failstate` → safety-veto terminal (answered + veto + completed)
     await Promise.all(pending);
 
     expect(await pendingXapiCount(db)).toBeGreaterThan(0);

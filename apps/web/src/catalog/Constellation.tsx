@@ -38,6 +38,10 @@ import {
   makeStars,
 } from './constellationLayout';
 import type { GatingState } from './gating';
+import { useAppRoute } from '../navigation';
+
+// Courses whose boss node opens a playable sim (M3 ships AC-203; M4/M5 extend).
+const SIM_COURSES = new Set(['AC-203']);
 
 const DOMAINS: Domain[] = ['FND', 'INT', 'ADC', 'AC', 'VID', 'SEC'];
 
@@ -220,6 +224,7 @@ const STARS = makeStars();
 export function Constellation() {
   const { t } = useTranslation();
   const { claims } = useAuth();
+  const { navigate } = useAppRoute();
   const { data, loading, error, reload } = useCatalogGating();
   const [domainFilter, setDomainFilter] = useState<Set<Domain>>(new Set());
   const [personaLens, setPersonaLens] = useState(false);
@@ -814,6 +819,19 @@ export function Constellation() {
                     {t(`catalog.state_hint.${selected.state}`)}
                   </p>
                 )}
+                {/* M3 — enter the AC-203 branching egress-fail sim once enrolled. */}
+                {SIM_COURSES.has(selected.code) &&
+                selected.state !== 'locked' &&
+                selected.state !== 'available' ? (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    data-testid="open-sim"
+                    onClick={() => navigate({ screen: 'sim', course: selected.code })}
+                  >
+                    {t('catalog.open_sim')}
+                  </Button>
+                ) : null}
               </div>
             </Card>
           ) : (
