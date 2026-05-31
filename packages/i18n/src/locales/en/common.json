@@ -16,6 +16,22 @@
       "dismiss_short": "Later"
     }
   },
+  "lesson": {
+    "no_body": "This lesson has no content yet.",
+    "error_title": "Couldn't load this lesson",
+    "toggle_locale": "Switch language",
+    "back": "Back"
+  },
+  "kc": {
+    "aria_label": "Knowledge check",
+    "safety_tag": "Safety",
+    "submit": "Check answers",
+    "retry": "Try again",
+    "passed": "Mastered",
+    "retry_needed": "Not yet — review and retry",
+    "pending_offline": "Saved offline. Your check will be graded when you reconnect.",
+    "below_threshold": "Safety items need {{safety}}% and the rest need {{nonSafety}}%. Review and try again."
+  },
   "catalog": {
     "eyebrow": "Your path",
     "title": "The",

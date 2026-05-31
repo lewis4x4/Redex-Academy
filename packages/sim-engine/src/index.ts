@@ -94,3 +94,18 @@ export {
 
 // ── Engine #4 — panel state machine (Phase-2 stub; API surface reserved) ─────
 export { createPanelStateSim, PANEL_STATE_ENGINE_KIND } from './engines/panel-state.stub';
+
+// ── Knowledge-check scorer (M2) — item-level retry-to-mastery gate (ledger §C) ─
+export {
+  gradeKnowledgeCheck,
+  gradeItem,
+  AUTO_GRADED_KINDS,
+  SAFETY_THRESHOLD,
+  NON_SAFETY_THRESHOLD,
+  type AssessmentKind,
+  type GradableItem,
+  type ItemResponse,
+  type SubsetScore,
+  type KnowledgeCheckVerdict,
+  type GradeOptions,
+} from './knowledge-check/grade-kc';

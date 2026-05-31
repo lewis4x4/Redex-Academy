@@ -10,14 +10,16 @@ import { useCallback, useEffect, useState } from 'react';
 export interface AppRoute {
   screen: string | null;
   course: string | null;
+  /** M2 — the lesson unit id when screen='lesson'. */
+  unit: string | null;
 }
 
 const NAV_EVENT = 'rdx:navigate';
 
 function parse(): AppRoute {
-  if (typeof window === 'undefined') return { screen: null, course: null };
+  if (typeof window === 'undefined') return { screen: null, course: null, unit: null };
   const p = new URLSearchParams(window.location.search);
-  return { screen: p.get('screen'), course: p.get('course') };
+  return { screen: p.get('screen'), course: p.get('course'), unit: p.get('unit') };
 }
 
 export function useAppRoute(): { route: AppRoute; navigate: (next: Partial<AppRoute>) => void } {

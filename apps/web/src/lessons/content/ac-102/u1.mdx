@@ -1,0 +1,19 @@
+# Credentials, OSDP vs Wiegand & Lock Families
+
+Readers talk to controllers over a wire protocol. **Wiegand** is the legacy one-way
+signaling; **OSDP** is the modern, supervised, encryptable replacement. Match each
+credential to the protocol its reader speaks, then spec each door's lock fail-state.
+
+<Callout tone="safety" label="Safety">
+  Lock fail-state is a life-safety decision. An egress door's lock must **fail-safe** (release on
+  power loss). A non-egress security room may be **fail-locked** (fail-secure). Get this backwards
+  and you either trap people or leave a door open.
+</Callout>
+
+<Sim spec="ac-102/spec-the-door" />
+
+## Knowledge check
+
+The fail-safe / fail-locked items are safety items — they gate at 90%.
+
+<KnowledgeCheck />

@@ -7,6 +7,10 @@ import interaction2dExample from '../examples/door-anatomy.interaction-2d.json';
 import calculatorExample from '../examples/maglock-voltage.calculator.json';
 import aeroFixture from '../examples/fixtures/aero-single-door.fixture.json';
 import iqPanelFixture from '../examples/fixtures/iq-panel.sample.json';
+// M2 — the REAL authored AC-slice specs (seeded into academy.sim_definitions).
+import ac101AnatomySpec from '../examples/ac-101.anatomy-of-a-door.interaction-2d.json';
+import ac102SpecTheDoorSpec from '../examples/ac-102.spec-the-door.interaction-2d.json';
+import ac202WillItHoldSpec from '../examples/ac-202.will-it-hold.calculator.json';
 
 export {
   branchingExample,
@@ -15,7 +19,17 @@ export {
   calculatorExample,
   aeroFixture,
   iqPanelFixture,
+  ac101AnatomySpec,
+  ac102SpecTheDoorSpec,
+  ac202WillItHoldSpec,
 };
+
+/** The real M2 AC-slice specs, keyed by their sim_definitions `key` (= units.content_ref.spec_key). */
+export const M2_AC_SPECS = {
+  'ac-101/anatomy-of-a-door': ac101AnatomySpec,
+  'ac-102/spec-the-door': ac102SpecTheDoorSpec,
+  'ac-202/will-it-hold': ac202WillItHoldSpec,
+} as const;
 
 /** The reference specs the Forge runtime must run end-to-end (F5 #1/#2, F5b #5/#6). */
 export const REFERENCE_SPECS = {

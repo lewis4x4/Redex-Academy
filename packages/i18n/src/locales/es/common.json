@@ -16,6 +16,22 @@
       "dismiss_short": "Más tarde"
     }
   },
+  "lesson": {
+    "no_body": "Esta lección aún no tiene contenido.",
+    "error_title": "No se pudo cargar la lección",
+    "toggle_locale": "Cambiar idioma",
+    "back": "Atrás"
+  },
+  "kc": {
+    "aria_label": "Comprobación de conocimientos",
+    "safety_tag": "Seguridad",
+    "submit": "Comprobar respuestas",
+    "retry": "Intentar de nuevo",
+    "passed": "Dominado",
+    "retry_needed": "Todavía no — repasa e inténtalo de nuevo",
+    "pending_offline": "Guardado sin conexión. Tu comprobación se calificará al reconectar.",
+    "below_threshold": "Los ítems de seguridad requieren {{safety}}% y el resto {{nonSafety}}%. Repasa e inténtalo de nuevo."
+  },
   "catalog": {
     "eyebrow": "Tu ruta",
     "title": "La",

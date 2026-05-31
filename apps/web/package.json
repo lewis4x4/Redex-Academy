@@ -14,6 +14,7 @@
     "test:a11y": "playwright test e2e/a11y.spec.ts"
   },
   "dependencies": {
+    "@mdx-js/mdx": "^3.1.0",
     "@redex/auth": "workspace:*",
     "@redex/i18n": "workspace:*",
     "@redex/sim-engine": "workspace:*",
@@ -23,6 +24,7 @@
     "@supabase/supabase-js": "^2.45.0",
     "dexie": "^4.0.10",
     "i18next": "^24.2.0",
+    "remark-gfm": "^4.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-i18next": "^15.4.0",

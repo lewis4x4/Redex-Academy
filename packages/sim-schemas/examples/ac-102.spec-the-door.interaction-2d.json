@@ -1,0 +1,98 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac102.spec-the-door",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac102.spec-door.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000a"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac102.spec-door.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac102.spec-door.title",
+      "sim.ac102.spec-door.veto",
+      "sim.ac102.spec-door.cred.prompt",
+      "sim.ac102.spec-door.cred.feedback",
+      "sim.ac102.spec-door.lock.prompt",
+      "sim.ac102.spec-door.lock.feedback"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "background": {
+    "schematic_id": "spec-the-door",
+    "alt_i18n": "sim.ac102.spec-door.bg.alt",
+    "width": 800,
+    "height": 600
+  },
+  "items": [
+    {
+      "id": "credential-protocol",
+      "kind": "match",
+      "prompt_i18n": "sim.ac102.spec-door.cred.prompt",
+      "feedback_i18n": "sim.ac102.spec-door.cred.feedback",
+      "scoring": { "weight": 1, "dimension": "technical_execution", "safety_flag": false },
+      "left": [
+        { "id": "c-prox", "text_i18n": "sim.ac102.spec-door.cred.prox" },
+        { "id": "c-smart", "text_i18n": "sim.ac102.spec-door.cred.smart" }
+      ],
+      "right": [
+        { "id": "p-wiegand", "text_i18n": "sim.ac102.spec-door.cred.wiegand" },
+        { "id": "p-osdp", "text_i18n": "sim.ac102.spec-door.cred.osdp" }
+      ],
+      "answer_key": { "c-prox": "p-wiegand", "c-smart": "p-osdp" }
+    },
+    {
+      "id": "lock-failstate",
+      "kind": "match",
+      "prompt_i18n": "sim.ac102.spec-door.lock.prompt",
+      "feedback_i18n": "sim.ac102.spec-door.lock.feedback",
+      "scoring": {
+        "weight": 1,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac102.lock_fail_state",
+        "safety_flag": true
+      },
+      "left": [
+        { "id": "d-egress", "text_i18n": "sim.ac102.spec-door.lock.egress_door" },
+        { "id": "d-storeroom", "text_i18n": "sim.ac102.spec-door.lock.storeroom" }
+      ],
+      "right": [
+        { "id": "f-failsafe", "text_i18n": "safety.glossary.fail_safe" },
+        { "id": "f-faillocked", "text_i18n": "safety.glossary.fail_locked" }
+      ],
+      "answer_key": { "d-egress": "f-failsafe", "d-storeroom": "f-faillocked" }
+    }
+  ]
+}
