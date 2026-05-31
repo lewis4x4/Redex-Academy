@@ -110,5 +110,49 @@
       "blocked": "AC-203 stays locked until you complete a safe egress build.",
       "recording": "Recording your attempt…"
     }
+  },
+  "signoff": {
+    "entry_label": "Field sign-off:",
+    "entry_cta": "Sign off a candidate",
+    "eyebrow": "Prove one — Field sign-off",
+    "title": "AC-203 egress sign-off",
+    "subtitle": "Score the §5.4 rubric against a real Work OS job. A single critical-safety 0 fails the sign-off — non-overridable.",
+    "back": "Back",
+    "candidate_label": "Candidate (tech)",
+    "candidate_ph": "Candidate user id",
+    "job_label": "Work OS job",
+    "job_ph": "Work OS job id",
+    "evidence_label": "Evidence (Work OS reference)",
+    "evidence_ph": "Work OS artifact ref (optional)",
+    "critical_safety": "Critical safety",
+    "preview_label": "Verdict preview",
+    "preview": {
+      "pass": "Will pass",
+      "fail": "Will fail",
+      "veto": "Safety veto — will fail",
+      "incomplete": "Score every line to preview the verdict."
+    },
+    "veto_banner": "A critical-safety line scored 0 — this sign-off will be recorded as a non-overridable FAIL. It cannot be signed as a pass.",
+    "offline_block": "Finalizing requires a connection — it completes on reconnect. No pass is granted offline.",
+    "finalize": "Sign off (finalize)",
+    "record_fail": "Record sign-off (fails)",
+    "finalizing": "Finalizing…",
+    "result": {
+      "promoted": "Passed — competency field-proven",
+      "failed": "Recorded as failed",
+      "vetoed": "Safety veto — failed",
+      "error": "Couldn't finalize"
+    },
+    "load_error": "Couldn't load the rubric",
+    "retry": "Retry",
+    "loading": "Loading the rubric…",
+    "empty_title": "No rubric for this course",
+    "empty_desc": "This course has no §5.4 sign-off rubric.",
+    "dim": {
+      "safety_compliance": "Safety & Compliance line items",
+      "technical_execution": "Technical Execution line items",
+      "verification_documentation": "Verification & Documentation line items",
+      "independence_judgment": "Independence & Judgment line items"
+    }
   }
 }

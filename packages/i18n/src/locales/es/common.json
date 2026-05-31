@@ -110,5 +110,49 @@
       "blocked": "AC-203 permanece bloqueado hasta que completes una instalación de egreso segura.",
       "recording": "Registrando tu intento…"
     }
+  },
+  "signoff": {
+    "entry_label": "Firma de campo:",
+    "entry_cta": "Firmar a un candidato",
+    "eyebrow": "Demuéstralo — Firma de campo",
+    "title": "Firma de egreso AC-203",
+    "subtitle": "Califica la rúbrica §5.4 contra un trabajo real de Work OS. Un solo 0 en una línea crítica de seguridad reprueba la firma — no se puede anular.",
+    "back": "Volver",
+    "candidate_label": "Candidato (técnico)",
+    "candidate_ph": "ID de usuario del candidato",
+    "job_label": "Trabajo de Work OS",
+    "job_ph": "ID del trabajo de Work OS",
+    "evidence_label": "Evidencia (referencia de Work OS)",
+    "evidence_ph": "Referencia del artefacto de Work OS (opcional)",
+    "critical_safety": "Crítica de seguridad",
+    "preview_label": "Vista previa del veredicto",
+    "preview": {
+      "pass": "Aprobará",
+      "fail": "Reprobará",
+      "veto": "Veto de seguridad — reprobará",
+      "incomplete": "Califica cada línea para ver el veredicto."
+    },
+    "veto_banner": "Una línea crítica de seguridad obtuvo 0 — esta firma se registrará como REPROBADA no anulable. No puede firmarse como aprobada.",
+    "offline_block": "Finalizar requiere conexión — se completa al reconectar. Sin conexión no se otorga aprobación.",
+    "finalize": "Firmar (finalizar)",
+    "record_fail": "Registrar firma (reprueba)",
+    "finalizing": "Finalizando…",
+    "result": {
+      "promoted": "Aprobado — competencia comprobada en campo",
+      "failed": "Registrado como reprobado",
+      "vetoed": "Veto de seguridad — reprobado",
+      "error": "No se pudo finalizar"
+    },
+    "load_error": "No se pudo cargar la rúbrica",
+    "retry": "Reintentar",
+    "loading": "Cargando la rúbrica…",
+    "empty_title": "No hay rúbrica para este curso",
+    "empty_desc": "Este curso no tiene rúbrica de firma §5.4.",
+    "dim": {
+      "safety_compliance": "Líneas de Seguridad y Cumplimiento",
+      "technical_execution": "Líneas de Ejecución Técnica",
+      "verification_documentation": "Líneas de Verificación y Documentación",
+      "independence_judgment": "Líneas de Independencia y Juicio"
+    }
   }
 }
