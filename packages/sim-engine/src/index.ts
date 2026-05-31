@@ -64,5 +64,33 @@ export {
 } from './engines/device-config/DeviceConfigSim';
 export { evalExpr, type ExprContext } from './engines/device-config/expr';
 
+// ── Engine #5 — declarative 2D-interaction (F5b) ────────────────────────────
+export {
+  createInteraction2dSim,
+  type Interaction2dInstance,
+  type Interaction2dState,
+  type ItemAnswer,
+} from './engines/interaction-2d/core';
+export {
+  Interaction2dSim,
+  type Interaction2dSimProps,
+} from './engines/interaction-2d/Interaction2dSim';
+
+// ── Engine #6 — parametric calculator (F5b) ─────────────────────────────────
+export {
+  createCalculatorSim,
+  type CalculatorInstance,
+  type CalculatorState,
+  type InputValue,
+} from './engines/calculator/core';
+export { CalculatorSim, type CalculatorSimProps } from './engines/calculator/CalculatorSim';
+export {
+  runCompute,
+  compareThreshold,
+  COMPUTE_INPUTS,
+  type Inputs,
+  type ThresholdOp,
+} from './engines/calculator/compute';
+
 // ── Engine #4 — panel state machine (Phase-2 stub; API surface reserved) ─────
 export { createPanelStateSim, PANEL_STATE_ENGINE_KIND } from './engines/panel-state.stub';

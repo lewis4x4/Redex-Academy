@@ -1,0 +1,140 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac101.door-anatomy.toy",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac101.door-anatomy.title",
+    "competency_ids": ["b3e7c2a1-0000-4000-8000-000000000101"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac101.door-anatomy.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac101.door-anatomy.title",
+      "sim.ac101.door-anatomy.veto",
+      "sim.ac101.door-anatomy.bg.alt",
+      "sim.ac101.door-anatomy.label.prompt",
+      "sim.ac101.door-anatomy.label.feedback",
+      "sim.ac101.door-anatomy.match.prompt",
+      "sim.ac101.door-anatomy.match.feedback",
+      "sim.ac101.door-anatomy.egress.prompt",
+      "sim.ac101.door-anatomy.egress.feedback"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "background": {
+    "schematic_id": "door-elevation",
+    "alt_i18n": "sim.ac101.door-anatomy.bg.alt",
+    "width": 800,
+    "height": 600
+  },
+  "items": [
+    {
+      "id": "label-anatomy",
+      "kind": "drag-label",
+      "prompt_i18n": "sim.ac101.door-anatomy.label.prompt",
+      "feedback_i18n": "sim.ac101.door-anatomy.label.feedback",
+      "scoring": { "weight": 1, "dimension": "technical_execution", "safety_flag": false },
+      "regions": [
+        {
+          "id": "r-strike",
+          "label_i18n": "sim.ac101.door-anatomy.region.strike",
+          "shape": "rect",
+          "rect": { "x": 600, "y": 250, "w": 80, "h": 120 }
+        },
+        {
+          "id": "r-hinge",
+          "label_i18n": "sim.ac101.door-anatomy.region.hinge",
+          "shape": "rect",
+          "rect": { "x": 120, "y": 250, "w": 60, "h": 120 }
+        },
+        {
+          "id": "r-rex",
+          "label_i18n": "sim.ac101.door-anatomy.region.rex",
+          "shape": "rect",
+          "rect": { "x": 560, "y": 120, "w": 120, "h": 60 }
+        }
+      ],
+      "labels": [
+        { "id": "l-strike", "text_i18n": "sim.ac101.door-anatomy.label.strike" },
+        { "id": "l-hinge", "text_i18n": "sim.ac101.door-anatomy.label.hinge" },
+        { "id": "l-rex", "text_i18n": "sim.ac101.door-anatomy.label.rex" }
+      ],
+      "answer_key": { "l-strike": "r-strike", "l-hinge": "r-hinge", "l-rex": "r-rex" }
+    },
+    {
+      "id": "match-spec",
+      "kind": "match",
+      "prompt_i18n": "sim.ac101.door-anatomy.match.prompt",
+      "feedback_i18n": "sim.ac101.door-anatomy.match.feedback",
+      "scoring": { "weight": 1, "dimension": "technical_execution", "safety_flag": false },
+      "left": [
+        { "id": "m-prox", "text_i18n": "sim.ac101.door-anatomy.match.prox" },
+        { "id": "m-maglock", "text_i18n": "sim.ac101.door-anatomy.match.maglock" }
+      ],
+      "right": [
+        { "id": "m-wiegand", "text_i18n": "sim.ac101.door-anatomy.match.wiegand" },
+        { "id": "m-failsafe", "text_i18n": "sim.ac101.door-anatomy.match.failsafe" }
+      ],
+      "answer_key": { "m-prox": "m-wiegand", "m-maglock": "m-failsafe" }
+    },
+    {
+      "id": "egress-hotspot",
+      "kind": "hotspot",
+      "prompt_i18n": "sim.ac101.door-anatomy.egress.prompt",
+      "feedback_i18n": "sim.ac101.door-anatomy.egress.feedback",
+      "scoring": {
+        "weight": 1,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac101.free_egress_side",
+        "safety_flag": true
+      },
+      "regions": [
+        {
+          "id": "h-egress",
+          "label_i18n": "sim.ac101.door-anatomy.egress.inside",
+          "shape": "rect",
+          "rect": { "x": 40, "y": 80, "w": 360, "h": 440 }
+        },
+        {
+          "id": "h-secure",
+          "label_i18n": "sim.ac101.door-anatomy.egress.outside",
+          "shape": "rect",
+          "rect": { "x": 400, "y": 80, "w": 360, "h": 440 }
+        }
+      ],
+      "answer_key": ["h-egress"]
+    }
+  ]
+}

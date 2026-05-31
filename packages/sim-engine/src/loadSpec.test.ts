@@ -1,12 +1,19 @@
-import { branchingExample, deviceConfigExample } from '@redex/sim-schemas';
+import {
+  branchingExample,
+  calculatorExample,
+  deviceConfigExample,
+  interaction2dExample,
+} from '@redex/sim-schemas';
 import { describe, expect, it } from 'vitest';
 import { loadSpec } from './loadSpec';
 import { isValidSpec, previewSpec } from './preview/harness';
 
 describe('loadSpec + preview harness (the public entry)', () => {
-  it('validates then dispatches by engine_kind', () => {
+  it('validates then dispatches by engine_kind (all four F5/F5b runtimes)', () => {
     expect(loadSpec(branchingExample).engineKind).toBe('branching_scenario');
     expect(loadSpec(deviceConfigExample).engineKind).toBe('device_config');
+    expect(loadSpec(interaction2dExample).engineKind).toBe('interaction_2d');
+    expect(loadSpec(calculatorExample).engineKind).toBe('calculator');
   });
 
   it('throws on an invalid spec (the gate runs before any render)', () => {
@@ -47,6 +54,8 @@ describe('loadSpec + preview harness (the public entry)', () => {
   it('isValidSpec is a cheap boolean gate for authoring (M9)', () => {
     expect(isValidSpec(branchingExample)).toBe(true);
     expect(isValidSpec(deviceConfigExample)).toBe(true);
+    expect(isValidSpec(interaction2dExample)).toBe(true);
+    expect(isValidSpec(calculatorExample)).toBe(true);
     expect(isValidSpec({ nope: true })).toBe(false);
   });
 });
