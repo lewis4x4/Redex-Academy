@@ -21,5 +21,5 @@ Pin the credential crypto:
 
 - Badges are **portable and independently verifiable** (standard proof suite + resolvable issuer profile + reachable status list), and **revocable** (the "badge earned on a retired course version flips to recert-required" rule works).
 - F6 must make and **wire** the Deno-vs-Node signing decision explicitly; the chosen path is what the human verifies — not an assumption.
-- **F6 + M7 are UltraCode + human-gate** goals: a minted badge must verify at a public URL, signing must be server-side only, and key custody / rotation must be confirmed before merge.
+- **F6 + M7 are UltraCode + human-gate** goals: a minted badge must verify at a public URL, signing must be server-side only, and key custody / rotation must be confirmed before release.
 - Server-side-only signing is a **pinned invariant** (the client never signs); it composes with ADR-0003's "server-only computations" rule (badge issuance/revocation run only in service-role Edge Functions).

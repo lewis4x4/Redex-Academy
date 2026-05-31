@@ -20,5 +20,5 @@ The credibility spine is the **Evaluator-signed field sign-off** scored against 
 
 - The veto holds even if the Edge Function is buggy or bypassed — the **DB is the backstop**, and it is the layer we trust.
 - Sign-offs become an **immutable liability record** ("this tech, this egress install, this date, this evidence, this calibrated Evaluator").
-- M6 (the sign-off goal) is an **UltraCode + human-gate** goal: the three-layer veto and the per-course §5.4 line-item data are adversarially verified and human-reviewed before merge — never agent-self-certified.
+- M6 (the sign-off goal) is an **UltraCode + human-gate** goal: the three-layer veto and the per-course §5.4 line-item data are adversarially verified and human-reviewed before release — never agent-self-certified.
 - A goal may **never** simplify, stub past, or "temporarily" relax this rule; doing so fails review by default (it is a pinned invariant).

@@ -83,8 +83,8 @@
 - **S1 gates M1/M2/M3/M4/M5/M6/M7** — without seeded catalog/prereqs/line-items/badge_classes these goals cannot run.
 - **F6 gates M7.** **M6 gates M7 and M11.** **F3 gates M6/M11/M12.**
 
-### Human-merge gates (ledger §J — never agent self-certified)
-- **F2, F3, M12** — RLS policies + tenant-isolation negative-test matrix reviewed before merge.
+### Reviewer release gates (ledger §J — release gates, not merge blockers; never agent self-certified)
+- **F2, F3, M12** — RLS policies + tenant-isolation negative-test matrix reviewed **before release** (by the security reviewer).
 - **F4** — offline "never fake a pass" + immutable-after-sign rejection on **real hardware in airplane mode** `[HUMAN-VERIFY]`.
 - **F5** — engine API + JSON Schemas signed off before any consumer (M3–M5/M9) builds against them.
 - **F6, M7** — credential signing / issuer key custody / proof suite; "badge verifies at a public URL" `[HUMAN-VERIFY]`.

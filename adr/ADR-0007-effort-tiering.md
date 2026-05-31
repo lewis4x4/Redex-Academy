@@ -17,6 +17,6 @@ The build runs through a Claude Code `/goal` workflow, one goal at a time. **Ult
 ## Consequences
 
 - Token spend is **concentrated where assurance matters** (the safety/credential/security/isolation goals and the hardest bets), keeping the overall build cost-disciplined.
-- UltraCode goals carry an **adversarial-verification report that a human reads and accepts before merge** — its output is reviewed, not blindly trusted; if the adversarial pass finds a hole, the goal returns to *build*, not to *merge*.
+- UltraCode goals carry an **adversarial-verification report that a human reads and accepts before release** — its output is reviewed, not blindly trusted; if the adversarial pass finds a hole, the goal returns to *build*, not to *merge*.
 - Effort tier is **not** a substitute for the human-verification gates (ledger §J): F4 (real-hardware offline), F6/M7 (public-URL badge verify + key custody), M6 (safety-veto behavior), F2/F3/M12 (RLS + tenant isolation) still require human sign-off regardless of tier.
 - The per-goal tier is recorded in `goals/GOALS_INDEX.md`, each goal spec, and `AGENT_ROLES_AND_ACCEPTANCE.md` §1; a goal's tier should not be silently downgraded.

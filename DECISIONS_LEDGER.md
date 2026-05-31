@@ -56,8 +56,9 @@ The canonical engine set (the wave3 "4 data shapes" and the experience-design "F
 - This **supersedes** the earlier standard/ultracode split. There is **no "standard" tier** anymore — any per-goal label or table cell still reading "standard" is overridden by this rule.
 - Trade-off acknowledged: light goals (F1, S1, simple MVP goals) burn far more tokens under UltraCode than they strictly need; that is the accepted cost of uniform rigor + adversarial verification on every goal.
 
-## J. Done-criteria that are NOT CI-automatable (human verification required)
-- **F4** offline test on **real hardware in airplane mode**; **F6** "badge verifies at a public URL"; and **all safety-/credential-critical merges**. These get an explicit **human-verification** checkbox in the acceptance rubric — never agent self-certification.
+## J. Done-criteria that are NOT CI-automatable (delegated reviewer verification at release)
+- **F4** offline test on **real hardware in airplane mode**; **F6** "badge verifies at a public URL"; and **all safety-/credential-critical work**. These get an explicit **reviewer-verification** checkbox in the acceptance rubric — never agent self-certification.
+- **These are RELEASE gates, not merge gates (de-bottlenecked 2026-05-30).** They do **not** block the PR merge into `main` — the merge is cleared by automated CI (the locked invariant suite: safety-veto, RLS isolation, signed-row immutability, no-fake-pass, no-client-secret). The human check is performed by a **designated qualified reviewer** — the **safety reviewer** for safety-veto/offline, the **security reviewer** for RLS/credential/key-custody; **any competent delegate, not necessarily the COO, never the authoring agent** — and is signed off **before the production / field release** (the deploy that puts the goal in front of real users). A goal may merge and be marked **done** with its release-verification tracked as an open item on the release checklist; it ships only after the reviewer signs.
 
 ## K. Cost / perf guardrails
 - Defer Rapier physics from MVP; budget R3F assets for mobile (LOD, lazy load, Draco). MVP LRS may be single-container/managed. AI: per-org and per-day **budget caps** in the Edge Function + aggressive caching (narration/feedback/tutor) + tiered models. Be mindful that ultracode itself burns tokens during the build — reserve per §I.

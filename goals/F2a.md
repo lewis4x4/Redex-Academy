@@ -2,7 +2,7 @@
 
 - **Effort tier:** ultracode
 - **Phase:** 0 (Foundation)
-- **HUMAN-GATE:** grants/RLS reviewed before merge (touches tenant boundary).
+- **HUMAN-GATE:** grants/RLS reviewed before release (touches tenant boundary).
 
 ## Objective
 Stand up a minimal `workos` schema **stub** in the same Supabase project — just enough (`workos.jobs` + needed columns) to satisfy the cross-schema FK `academy.signoffs.work_os_job_id → workos.jobs(id)` and to let sign-offs/recert/dashboards join against real jobs. Runs before M6.

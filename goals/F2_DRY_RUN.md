@@ -5,7 +5,7 @@ A known-good target for your first **ultracode** run. Read this before running `
 - **Goal:** apply the `academy` schema, turn on deny-by-default RLS, enforce the safety-veto + immutability triggers, wire `gen types`, and prove the invariants with committed tests.
 - **Tier:** ultracode (xhigh + dynamic workflow + adversarial verification). **Pair with auto mode.**
 - **Depends on:** F1 merged (monorepo, `supabase/`, `packages/db-types`, CI jobs as stubs).
-- **Human gate:** RLS policy review + the invariant test run on a **live Postgres** before merge. Adversarial self-verification does NOT substitute for this.
+- **Human gate:** RLS policy review + the invariant test run on a **live Postgres** before release. Adversarial self-verification does NOT substitute for this.
 
 ---
 
@@ -51,7 +51,7 @@ pnpm dag:check && pnpm typecheck && pnpm lint
 - `dag-check` **fails on a seeded cycle, passes on the acyclic graph**.
 - `rls-negative` job: a cross-org `authenticated` actor returns **zero rows** on every personal table; a Redex manager (positive control) **does** see Redex rows.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — not agent-self-certified)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — not agent-self-certified)
 - [ ] **Invariant test passed on a live Supabase/Postgres** (not just CI parse): `psql … -f supabase/tests/0001_invariants_test.sql` → `ALL INVARIANT TESTS PASSED`.
 - [ ] **Safety-veto behaves** (spot-check by hand): a sign-off with one `is_critical_safety` line `score=0` → signing **rejected / outcome `fail`**; all dimensions `≥2` and all safety lines `≥2` → `pass`; a sign-off with **no line items** → cannot pass.
 - [ ] **Immutability:** UPDATE/DELETE on a `signed` sign-off (and its line items/evidence) is **rejected**; only `signed → void` (with `void_reason`) is allowed.

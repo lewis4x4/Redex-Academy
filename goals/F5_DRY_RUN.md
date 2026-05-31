@@ -66,7 +66,7 @@ node/ts: validateSpec(require('examples/aero-single-door.device-config.json'))
 - **Telemetry carries `client_event_uuid`** and **queues offline** (verified with F4's harness); the emitter constructs `$defs/xapiTelemetryEvent` statements (LRS bridge is M8 — F5 only emits + queues).
 - The **#4 (panel_state_machine) placeholder export** exists (API surface reserved); `validateSpec` returns the permissive envelope-only guard for #3/#4 stubs.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — not agent-self-certified)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — not agent-self-certified)
 - [ ] **Engine public API reviewed & signed off** as the stable consumer contract — `loadSpec(spec, fixtureSet?) → SimInstance` and the `SimInstance` surface are what M3/M4/M5/M9/M10 will build against; the shape is right *before* anyone consumes it (ledger §J — this is the #2 risk bet).
 - [ ] **JSON Schemas reviewed & signed off:** branching, device-config, and the fixture_set manifest are correct and complete; the **shared envelope** carries the cross-cutting contracts (safety-veto, telemetry, colorblind-safe, i18n) so they're uniform across engines.
 - [ ] **Safety-veto fires for real:** hand-run a safety-flagged failure in each engine and confirm it forces `fail` + `safety_veto_triggered` and **cannot be outscored** — and that this matches the DB trigger's rule (defense in depth, never simplified).

@@ -5,7 +5,7 @@ A known-good target for your first **ultracode** run. Read this before running `
 - **Goal:** wire Supabase Auth + OIDC/SAML SSO and the **custom JWT-claim** mechanism (Supabase Auth Hook `custom_access_token_hook`) that mints `org_id`, `roles`, `persona`, and `evaluator_authorized` (+ authorized `domains`) so F2's RLS becomes live; lock the one-identity-space model (`academy.users.id = auth.users.id`, no `work_os_user_id`); add the `academy.users.id → auth.users(id)` FK; build the persona-/role-adaptive auth flow in `apps/web`/`apps/admin`; provision dev identities across two orgs.
 - **Tier:** ultracode (xhigh + dynamic workflow + adversarial verification). **Pair with auto mode.**
 - **Depends on:** **F2** merged (the `academy` schema, the three JWT-reading helpers, RLS keyed on the claims — inert until F3 populates them), generated types committed. F2a is **not** required (no `workos` claim work here).
-- **Human gate:** the identity model + the Auth-Hook claim-shaping logic + the claim→RLS interaction are reviewed on a **live Supabase** before merge (ledger §J). Adversarial self-verification does NOT substitute for this.
+- **Human gate:** the identity model + the Auth-Hook claim-shaping logic + the claim→RLS interaction are reviewed on a **live Supabase** before release (ledger §J). Adversarial self-verification does NOT substitute for this.
 
 ---
 
@@ -64,7 +64,7 @@ pnpm test:rls              # F2 RLS now LIVE under real minted claims
 - **Guard test green:** zero `work_os_user_id` and zero `REDEX_WORKOS_*` references in code or schema.
 - `typegen-drift` green; `database.types.ts` committed and in sync.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — not agent-self-certified)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — not agent-self-certified)
 - [ ] **Auth-Hook claim logic reviewed on a live Supabase:** decode a freshly-minted JWT and confirm `org_id`/`roles`/`persona`/`evaluator_authorized`/`domains` are **shaped correctly** and sourced from `academy.users`/`user_roles`/`evaluator_authorizations` (not hard-coded, not client-supplied). `roles` is a real JSON array that `jwt_has_role` intersects.
 - [ ] **Claim → RLS interaction proven with REAL claims** (not the synthetic `set request.jwt.claims` of F2's test): log in as a Redex user → own-org rows visible; log in as the CCS-partner user → **zero** Redex rows on every personal table; published catalog still cross-tenant readable; `fixture_sets` still **not** public.
 - [ ] **Role-change refresh works end-to-end:** flip a user's `user_roles`, re-mint, confirm the new claim changes access (e.g. grant `manager` → org rows appear).
