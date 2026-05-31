@@ -9,6 +9,8 @@ const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'anon-placeholder';
 
 export const supabase = createClient(url, anonKey, {
   auth: {
+    // PKCE so the magic-link / OAuth code exchange completes at /auth/callback.
+    flowType: 'pkce',
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,

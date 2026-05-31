@@ -23,13 +23,16 @@ const ORG = '00000000-0000-0000-0000-0000000000a1';
 const SUB = '00000000-0000-0000-0000-0000000000c3';
 
 describe('App (auth-aware shell)', () => {
-  it('logged out → renders the SSO login screen', async () => {
+  it('logged out → renders the magic-link-first login screen', async () => {
     h.session = null;
     initI18n();
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Redex Academy');
+    // Primary path: email field + "send me a magic link".
+    expect(screen.getByLabelText(/work email/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /magic link/i })).toBeTruthy();
+    // Tertiary: Google Workspace SSO still available.
     expect(screen.getByRole('button', { name: /Google Workspace/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /Microsoft Entra/i })).toBeTruthy();
   });
 
   it('logged in as Marco + manager → field shell + manager section + sync status (F4)', async () => {

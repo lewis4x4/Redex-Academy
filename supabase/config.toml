@@ -43,9 +43,26 @@ enabled = true
 [auth]
 enabled = true
 site_url = "http://localhost:5173"
-additional_redirect_urls = ["http://localhost:5173"]
+# F3b: the magic-link / OAuth callback target must be allow-listed. Dev localhost +
+# prod redex.education (set Site URL → https://redex.education in the dashboard for prod).
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://localhost:5173/auth/callback",
+  "https://redex.education/auth/callback",
+  "https://www.redex.education/auth/callback",
+]
 jwt_expiry = 3600
 enable_signup = true
+
+# F3b: email auth — magic link + 6-digit OTP as the PRIMARY path. Dev has no email
+# confirmation gate and routes mail to Inbucket (http://localhost:54324); PROD flips
+# enable_confirmations = true and provisions SMTP (Resend) — a release-gate dependency,
+# never hardcode keys here.
+[auth.email]
+enable_signup = true
+enable_confirmations = false
+otp_length = 6
+otp_expiry = 3600
 
 # F3: custom access-token hook — GoTrue calls academy.custom_access_token_hook on
 # every token mint/refresh to inject org_id/roles/persona/evaluator_authorized/domains

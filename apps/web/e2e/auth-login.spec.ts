@@ -1,10 +1,13 @@
 import { expect, test } from '@playwright/test';
 
-test('logged out: the SSO login screen renders both providers', async ({ page }) => {
+test('logged out: the magic-link-first login renders (email primary, Google tertiary)', async ({
+  page,
+}) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Redex Academy');
+  await expect(page.getByLabel(/work email/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: /send me a magic link/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Google Workspace/i })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Microsoft Entra/i })).toBeVisible();
 });
 
 // The full OIDC flow — log in via the IdP, the hook mints org_id/roles/persona,

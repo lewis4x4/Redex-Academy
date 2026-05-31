@@ -4,6 +4,7 @@ import { Gallery } from '@redex/ui/gallery';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import { AuthCallback } from './auth/components/AuthCallback';
 import { ForgePreview } from './forge/ForgePreview';
 import './index.css';
 import { startSync } from './offline/sync-manager';
@@ -30,7 +31,15 @@ if (!rootEl) throw new Error('Root element #root not found');
 // (/forge-preview — the authoring preview). Everything else renders the
 // auth-aware app shell.
 const path = window.location.pathname;
-const devView =
-  path === '/dev/ui' ? <Gallery /> : path === '/forge-preview' ? <ForgePreview /> : null;
+const route =
+  path === '/dev/ui' ? (
+    <Gallery />
+  ) : path === '/forge-preview' ? (
+    <ForgePreview />
+  ) : path === '/auth/callback' ? (
+    <AuthCallback />
+  ) : (
+    <App />
+  );
 
-createRoot(rootEl).render(<StrictMode>{devView ?? <App />}</StrictMode>);
+createRoot(rootEl).render(<StrictMode>{route}</StrictMode>);
