@@ -1,0 +1,20 @@
+# workers/issuer-wellknown — serves the did:web DID document + OB 3.0 issuer Profile.
+# Deploy: `wrangler deploy` from this dir (the §J release gate). Route it at the
+# issuer host so did:web:academy.redex.education resolves to /.well-known/did.json.
+name = "redex-issuer-wellknown"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Route at the issuer origin (set the real zone/route at deploy time):
+#   routes = [{ pattern = "academy.redex.education/.well-known/*", zone_name = "redex.education" }]
+
+# PUBLIC config only. The Ed25519 PRIVATE signing key NEVER lives here — it is in
+# Supabase Vault with the issue-badge Edge Function (invariant 7/8). ISSUER_KEYS is
+# the PUBLIC key list (current + retired) published in the DID document/profile.
+[vars]
+OB_ISSUER_DID = "did:web:academy.redex.education"
+OB_ISSUER_NAME = "Redex Academy"
+# Set ISSUER_KEYS at deploy (public, not secret) — a JSON array, e.g.:
+# ISSUER_KEYS = '[{"id":"key-2026-05","publicKeyMultibase":"z6Mk...","status":"current"}]'
+ISSUER_KEYS = "[]"

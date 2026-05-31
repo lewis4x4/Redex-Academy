@@ -183,7 +183,7 @@ supabase gen types typescript --db-url "$SUPABASE_DB_URL" --schema academy,worko
 | **M1** | Reads `courses`/`course_prerequisites`/`competency_state` for the prerequisite-gated skill-tree; relies on the DAG check. |
 | **M2** | `units` (MDX/`content_ref`), `assessment_items` (`is_safety_item` → ≥90% safety gate / ≥80% else), `assessment_responses` (retry-to-mastery). |
 | **M6** | The credibility spine: `finalize-signoff` reads **`signoff_line_item_templates`** to materialize `signoff_line_items`, writes `signoffs`/`signoff_line_items` (the trigger enforces the veto + immutability), `signoff_evidence`, joins `work_os_job_id → workos.jobs`, promotes `competency_state` to `field_proven`, writes `audit_log`. **All as the service role.** |
-| **M7** | `issue-badge` reads `badge_classes`/`competency_state`, writes `credentials` + `credential_status_list` (revocation), signs server-side (proof suite `eddsa-rdfc-2022`/Ed25519, `did:web:academy.goredex.com` — invariant 7). |
+| **M7** | `issue-badge` reads `badge_classes`/`competency_state`, writes `credentials` + `credential_status_list` (revocation), signs server-side (proof suite `eddsa-rdfc-2022`/Ed25519, issuer `did:web:academy.redex.education` — F6, invariant 7; the merged `0001` table comment still reads the placeholder `goredex.com` — cosmetic, reconciled by the domain-reconciliation goal). |
 | **F4** | `UNIQUE(client_event_uuid)` on the event tables + idempotent `/sync`. |
 | Dashboards | Manager pipeline board reads `signoffs(org_id,status)`; exec KPIs join `academy.competency_state`/`credentials` to `workos.jobs`. |
 

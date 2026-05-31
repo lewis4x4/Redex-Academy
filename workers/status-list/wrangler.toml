@@ -1,0 +1,15 @@
+# workers/status-list — serves the hosted BitstringStatusList credential for revocation.
+# Deploy: `wrangler deploy` from this dir (the §J release gate). Route it at
+# academy.redex.education/status/* (must match statusListCredential URLs).
+name = "redex-status-list"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# routes = [{ pattern = "academy.redex.education/status/*", zone_name = "redex.education" }]
+
+# KV store of published, signed status-list credentials, keyed by list id ("1").
+# The issuer re-publishes the re-signed list here on every revocation. Short cache
+# (60s, set in hosting.ts) so revocations propagate. Set the real namespace id:
+[[kv_namespaces]]
+binding = "STATUS_LIST"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

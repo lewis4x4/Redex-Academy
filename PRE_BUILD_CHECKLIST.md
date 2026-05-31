@@ -43,7 +43,7 @@
 ### A5. Credential issuer prerequisites
 
 - [ ] **Issuer Ed25519 keypair generated**; private key placed in **Supabase Vault only** (never Cloudflare Secrets, never a client bundle — ADR-0005 / CLAUDE.md invariant 7).
-- [ ] **Issuer profile URL reserved** — `did:web:academy.goredex.com` (or a stable hosted issuer profile to be served by a Worker); `VITE_OB_ISSUER_PROFILE_URL` set.
+- [ ] **Issuer profile URL reserved** — `did:web:academy.redex.education` (reconciled in F6 from `goredex.com`; resolves to `https://academy.redex.education/.well-known/did.json`, served by the `issuer-wellknown` Worker); `VITE_OB_ISSUER_PROFILE_URL` set.
 - [ ] Proof suite / revocation / rotation plan acknowledged: **`eddsa-rdfc-2022` / Ed25519**, **hosted status list** (BitstringStatusList / StatusList2021), issuer profile lists current + retired keys. (The Deno-vs-Node signing-runtime decision is made *in* goal F6 — not now.)
 
 ### A6. LRS reachable
