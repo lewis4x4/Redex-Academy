@@ -10,6 +10,18 @@ import { supabase } from './supabaseClient';
 
 export type AuthResult = { ok: true } | { ok: false; error: string };
 
+/**
+ * The email OTP length — the SINGLE source the login code input derives from, so
+ * the box count can never drift below the emailed code again (the bug: prod sent
+ * an 8-digit code but the input was hard-capped at 6, so the code path could not
+ * succeed). This MUST stay in lockstep with the server in THREE places:
+ *   1. `supabase/config.toml` → [auth.email] otp_length            (local dev)
+ *   2. the prod project's Auth → Email OTP Length (`mailer_otp_length`)
+ *   3. this constant (drives the input's maxLength + validation + placeholder).
+ * `otp-length.test.ts` parses (1) and fails CI if it diverges from this constant.
+ */
+export const EMAIL_OTP_LENGTH = 6;
+
 const callbackUrl = () => `${window.location.origin}/auth/callback`;
 
 // Never reveal whether an email exists; never echo raw provider internals.
@@ -25,9 +37,10 @@ function friendly(error: AuthError | null): string {
   return 'Something went wrong. Please try again.';
 }
 
-/** Primary: send a magic link + 6-digit code. The same OTP works as a clickable
- *  link (→ /auth/callback) OR an inline code (verifyEmailCode). First-time email
- *  = first login (shouldCreateUser unifies sign-up + log-in). */
+/** Primary: send a magic link + email OTP code ({@link EMAIL_OTP_LENGTH} digits).
+ *  The same OTP works as a clickable link (→ /auth/callback) OR an inline code
+ *  (verifyEmailCode). First-time email = first login (shouldCreateUser unifies
+ *  sign-up + log-in). */
 export async function sendMagicLink(email: string): Promise<AuthResult> {
   const { error } = await supabase.auth.signInWithOtp({
     email,
@@ -36,7 +49,7 @@ export async function sendMagicLink(email: string): Promise<AuthResult> {
   return error ? { ok: false, error: friendly(error) } : { ok: true };
 }
 
-/** Verify the 6-digit email OTP inline (no need to leave the app). */
+/** Verify the email OTP inline (no need to leave the app); whitespace-trimmed. */
 export async function verifyEmailCode(email: string, token: string): Promise<AuthResult> {
   const { error } = await supabase.auth.verifyOtp({ email, token: token.trim(), type: 'email' });
   return error ? { ok: false, error: friendly(error) } : { ok: true };

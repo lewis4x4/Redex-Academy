@@ -2,6 +2,7 @@ import { BrandMark, Button, Card, Input, cx } from '@redex/ui';
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  EMAIL_OTP_LENGTH,
   sendMagicLink,
   signInWithGoogle,
   signInWithPassword,
@@ -30,7 +31,7 @@ const STARS = [
 /**
  * F3b — the flagship, magic-link-first login (the product's first impression).
  * Dark/red branded canvas (vignette + core-glow + starfield, all reduced-motion
- * safe), a glassmorphic card, and the auth priority order: magic link + 6-digit
+ * safe), a glassmorphic card, and the auth priority order: magic link + email OTP
  * code (primary) → password (fallback) → Google Workspace SSO (tertiary). No
  * credentials or permissions are decided here — the F3 hook mints claims server-
  * side and RLS enforces them. Built on @redex/ui tokens only (no raw hex, Inv 9).
@@ -115,28 +116,34 @@ export function LoginPage() {
               {t('login.signing_in_callback')}
             </p>
           ) : sent ? (
-            // ── "Check your email" — accepts the 6-digit code inline (no app exit) ──
+            // ── "Check your email" — accepts the email OTP code inline (no app exit).
+            // Length follows EMAIL_OTP_LENGTH (the configured server OTP length), so
+            // the input can never be shorter than the emailed code. ──
             <form
               onSubmit={onVerifyCode}
               className="flex flex-col gap-4"
               aria-label={t('login.verify_aria')}
             >
               <p className="rdx-anim-seal text-body text-ink-soft" role="status" aria-live="polite">
-                {t('login.sent_generic')}
+                {t('login.sent_generic', { length: EMAIL_OTP_LENGTH })}
               </p>
               <Input
-                label={t('login.code_label')}
+                label={t('login.code_label', { length: EMAIL_OTP_LENGTH })}
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                // Keep only digits and cap at the configured length — paste-safe
+                // ("123 456" → "123456") and never longer than the code.
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, '').slice(0, EMAIL_OTP_LENGTH))
+                }
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 pattern="[0-9]*"
-                maxLength={6}
-                placeholder="000000"
+                maxLength={EMAIL_OTP_LENGTH}
+                placeholder={'0'.repeat(EMAIL_OTP_LENGTH)}
                 required
                 autoFocus
               />
-              <Button type="submit" variant="cta" disabled={busy || code.length < 6}>
+              <Button type="submit" variant="cta" disabled={busy || code.length < EMAIL_OTP_LENGTH}>
                 {busy ? t('login.verifying') : t('login.verify')}
               </Button>
               <div className="flex items-center justify-between text-caption">
