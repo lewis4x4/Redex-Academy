@@ -49,3 +49,50 @@ test('a reference sim passes axe (WCAG 2a/2aa) and is keyboard reachable', async
   const tag = await page.evaluate(() => document.activeElement?.tagName);
   expect(tag).toBe('BUTTON');
 });
+
+// ── F5b engine #5 — 2D-interaction ─────────────────────────────────────────
+test('engine #5 interaction-2d: tapping the WRONG free-egress side → safety veto', async ({
+  page,
+}) => {
+  await page.goto('/forge-preview?sim=interaction-2d&mode=rich');
+  await page.locator('[data-region="h-secure"]').click(); // the wrong (secured) side
+  await page.getByTestId('i2d-submit').click();
+  const badge = page.getByTestId('i2d-verdict').getByRole('status');
+  await expect(badge).toHaveAttribute('data-token', 'safety_veto');
+  await expect(badge).toHaveAttribute('data-shape', 'octagon'); // shape, not color alone
+  await expect(page.getByTestId('veto-feedback')).toBeVisible();
+});
+
+test('engine #5 interaction-2d passes axe (WCAG 2a/2aa); controls are keyboard reachable', async ({
+  page,
+}) => {
+  await page.goto('/forge-preview?sim=interaction-2d&mode=rich');
+  await page.getByTestId('i2d-submit').waitFor();
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+  await page.keyboard.press('Tab');
+  const tag = await page.evaluate(() => document.activeElement?.tagName);
+  expect(['SELECT', 'BUTTON']).toContain(tag);
+});
+
+// ── F5b engine #6 — calculator ──────────────────────────────────────────────
+test('engine #6 calculator: a long, thin run drops below hold voltage → safety veto', async ({
+  page,
+}) => {
+  await page.goto('/forge-preview?sim=calculator&mode=rich');
+  // the budget meter shows the NUMERIC value (colorblind-safe), not color alone
+  await expect(page.getByRole('meter')).toContainText('11.76');
+  await page.fill('[data-input="length_ft"]', '500');
+  await page.fill('[data-input="ohms_per_1000ft"]', '6.4');
+  await page.getByTestId('calculator-submit').click();
+  const badge = page.getByTestId('calculator-verdict').getByRole('status');
+  await expect(badge).toHaveAttribute('data-token', 'safety_veto');
+  await expect(page.getByTestId('veto-feedback')).toBeVisible();
+});
+
+test('engine #6 calculator passes axe (WCAG 2a/2aa)', async ({ page }) => {
+  await page.goto('/forge-preview?sim=calculator&mode=rich');
+  await page.getByTestId('calculator-submit').waitFor();
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+});

@@ -1,7 +1,14 @@
 import Ajv2020 from 'ajv/dist/2020';
 import addFormats from 'ajv-formats';
 import { describe, expect, it, beforeAll } from 'vitest';
-import { SIM_JSON_SCHEMAS, branchingExample, deviceConfigExample, aeroFixture } from './index';
+import {
+  SIM_JSON_SCHEMAS,
+  branchingExample,
+  calculatorExample,
+  deviceConfigExample,
+  interaction2dExample,
+  aeroFixture,
+} from './index';
 
 // One Ajv with every schema registered by $id so cross-file $refs (engine → the
 // shared envelope) resolve. ajv-formats covers uuid/uri/date-time.
@@ -68,6 +75,29 @@ describe('@redex/sim-schemas: published JSON Schemas (AJV authoring/CI contract)
     );
     const exploit = JSON.parse(JSON.stringify(branchingExample));
     delete exploit.nodes.failstate.choices[1].verdict; // faillocked is the safety_flag edge
+    expect(validate(exploit)).toBe(false);
+  });
+
+  // ── F5b engines #5/#6 ──────────────────────────────────────────────────────
+  it('the interaction-2d + calculator reference specs validate against their schemas', () => {
+    const i2d = getValidator(
+      'https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json',
+    );
+    expect(i2d(interaction2dExample), JSON.stringify(i2d.errors)).toBe(true);
+    const calc = getValidator(
+      'https://academy.goredex.com/sim-contracts/schemas/calculator.schema.json',
+    );
+    expect(calc(calculatorExample), JSON.stringify(calc.errors)).toBe(true);
+  });
+
+  it('the JSON Schema rejects a calculator safety_flag warn band (veto-bypass parity with Zod)', () => {
+    const validate = getValidator(
+      'https://academy.goredex.com/sim-contracts/schemas/calculator.schema.json',
+    );
+    const exploit = JSON.parse(JSON.stringify(calculatorExample));
+    // demoting the safety threshold to an advisory warn band would drop it from
+    // scoring and bypass the non-overridable veto — the schema must reject it.
+    exploit.thresholds.find((t: { safety_flag?: boolean }) => t.safety_flag).band = 'warn';
     expect(validate(exploit)).toBe(false);
   });
 });

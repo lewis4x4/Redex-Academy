@@ -1,10 +1,20 @@
-import { aeroFixture, branchingExample, deviceConfigExample } from '@redex/sim-schemas';
+import {
+  aeroFixture,
+  branchingExample,
+  calculatorExample,
+  deviceConfigExample,
+  interaction2dExample,
+} from '@redex/sim-schemas';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { BranchingSim } from './engines/branching/BranchingSim';
 import type { BranchingInstance } from './engines/branching/core';
 import { DeviceConfigSim } from './engines/device-config/DeviceConfigSim';
 import type { DeviceConfigInstance } from './engines/device-config/core';
+import { Interaction2dSim } from './engines/interaction-2d/Interaction2dSim';
+import type { Interaction2dInstance } from './engines/interaction-2d/core';
+import { CalculatorSim } from './engines/calculator/CalculatorSim';
+import type { CalculatorInstance } from './engines/calculator/core';
 import { loadSpec } from './loadSpec';
 
 const det = {
@@ -20,6 +30,16 @@ const branchingSim = (): BranchingInstance => {
 const deviceSim = (): DeviceConfigInstance => {
   const s = loadSpec(deviceConfigExample, { ...det, fixture: aeroFixture });
   if (s.engineKind !== 'device_config') throw new Error('expected device_config');
+  return s;
+};
+const interaction2dSim = (): Interaction2dInstance => {
+  const s = loadSpec(interaction2dExample, det);
+  if (s.engineKind !== 'interaction_2d') throw new Error('expected interaction_2d');
+  return s;
+};
+const calculatorSim = (): CalculatorInstance => {
+  const s = loadSpec(calculatorExample, det);
+  if (s.engineKind !== 'calculator') throw new Error('expected calculator');
   return s;
 };
 
@@ -79,6 +99,68 @@ describe('renderers: rich + 2D fallback drive the same instance (identical Verdi
     const badge = within(screen.getByTestId('verdict')).getByRole('status');
     expect(badge).toHaveAttribute('data-token', 'safety_veto');
     expect(badge).toHaveAttribute('data-shape', 'octagon');
+    expect(screen.getByTestId('veto-feedback')).toBeInTheDocument();
+  });
+
+  // ── Engine #5 — 2D-interaction (F5b) ───────────────────────────────────────
+  it('interaction-2d render: all items correct → PASS (keyboard-native controls)', () => {
+    const sim = interaction2dSim();
+    const { container } = render(<Interaction2dSim instance={sim} mode="rich" />);
+    // native <select>s + buttons — keyboard-navigable, gloved-friendly (no mouse drag)
+    const setSel = (attr: string, id: string, val: string) =>
+      fireEvent.change(container.querySelector(`[${attr}="${id}"]`)!, { target: { value: val } });
+    setSel('data-label', 'l-strike', 'r-strike');
+    setSel('data-label', 'l-hinge', 'r-hinge');
+    setSel('data-label', 'l-rex', 'r-rex');
+    setSel('data-left', 'm-prox', 'm-wiegand');
+    setSel('data-left', 'm-maglock', 'm-failsafe');
+    fireEvent.click(container.querySelector('[data-region="h-egress"]')!);
+    fireEvent.click(screen.getByTestId('i2d-submit'));
+    const badge = within(screen.getByTestId('i2d-verdict')).getByRole('status');
+    expect(badge).toHaveAttribute('data-token', 'pass'); // shape + text + color
+    expect(badge).toHaveAttribute('data-shape', 'check');
+  });
+
+  it('interaction-2d render: tapping the WRONG egress side → safety-veto', () => {
+    const sim = interaction2dSim();
+    const { container } = render(<Interaction2dSim instance={sim} mode="rich" />);
+    const hotspot = container.querySelector('[data-region="h-secure"]')!;
+    expect(hotspot).toHaveAttribute('aria-pressed', 'false'); // toggle state exposed to AT
+    fireEvent.click(hotspot);
+    expect(container.querySelector('[data-region="h-secure"]')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    fireEvent.click(screen.getByTestId('i2d-submit'));
+    const badge = within(screen.getByTestId('i2d-verdict')).getByRole('status');
+    expect(badge).toHaveAttribute('data-token', 'safety_veto');
+    expect(screen.getByTestId('veto-feedback')).toBeInTheDocument();
+  });
+
+  // ── Engine #6 — calculator (F5b) ───────────────────────────────────────────
+  it('calculator render: default inputs PASS; the budget meter shows the numeric value (colorblind-safe)', () => {
+    const sim = calculatorSim();
+    render(<CalculatorSim instance={sim} mode="rich" />);
+    // colorblind-safe: a role=meter that shows the NUMERIC value, never color alone
+    const meter = screen.getByRole('meter');
+    expect(meter.textContent ?? '').toMatch(/11\.76/);
+    fireEvent.click(screen.getByTestId('calculator-submit'));
+    const badge = within(screen.getByTestId('calculator-verdict')).getByRole('status');
+    expect(badge).toHaveAttribute('data-token', 'pass');
+  });
+
+  it('calculator render: a long, thin run drops below hold voltage → safety-veto', () => {
+    const sim = calculatorSim();
+    const { container } = render(<CalculatorSim instance={sim} mode="rich" />);
+    fireEvent.change(container.querySelector('[data-input="length_ft"]')!, {
+      target: { value: '500' },
+    });
+    fireEvent.change(container.querySelector('[data-input="ohms_per_1000ft"]')!, {
+      target: { value: '6.4' },
+    });
+    fireEvent.click(screen.getByTestId('calculator-submit'));
+    const badge = within(screen.getByTestId('calculator-verdict')).getByRole('status');
+    expect(badge).toHaveAttribute('data-token', 'safety_veto');
     expect(screen.getByTestId('veto-feedback')).toBeInTheDocument();
   });
 });

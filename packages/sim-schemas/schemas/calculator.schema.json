@@ -133,7 +133,12 @@
       "allOf": [
         {
           "if": { "properties": { "safety_flag": { "const": true } }, "required": ["safety_flag"] },
-          "then": { "properties": { "dimension": { "const": "safety_compliance" } } }
+          "then": {
+            "properties": {
+              "dimension": { "const": "safety_compliance" },
+              "band": { "enum": ["pass", "fail"] }
+            }
+          }
         },
         {
           "if": { "properties": { "op": { "const": "between" } } },
