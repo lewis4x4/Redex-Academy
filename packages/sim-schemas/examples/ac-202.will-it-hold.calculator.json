@@ -1,0 +1,170 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/calculator.schema.json",
+  "$computeContract": {
+    "compute_ref": "voltage_drop_will_it_hold",
+    "formula": "V_load = V_supply - I * (2 * length_ft/1000 * ohms_per_1000ft)",
+    "note": "Round-trip home-run drop to a mag lock. Below the lock's minimum hold voltage the lock chatters / releases (AC-202 life-safety). 18AWG ≈ 6.4 Ω/1000ft; 14AWG ≈ 2.5; 12AWG ≈ 1.6.",
+    "worked_example": "V=12, I=0.5A, len=150ft, 1.6 Ω/1000ft → drop 0.24V → 11.76V (holds, healthy margin)."
+  },
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac202.will-it-hold",
+    "engine_kind": "calculator",
+    "title_i18n": "sim.ac202.maglock.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000e"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac202.maglock.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac202.maglock.title",
+      "sim.ac202.maglock.veto",
+      "sim.ac202.maglock.meter",
+      "sim.ac202.maglock.input.v_supply",
+      "sim.ac202.maglock.input.current_a",
+      "sim.ac202.maglock.input.length_ft",
+      "sim.ac202.maglock.input.ohms",
+      "sim.ac202.maglock.t.holds",
+      "sim.ac202.maglock.t.margin",
+      "sim.ac202.maglock.t.near"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "inputs": {
+    "v_supply": {
+      "label_i18n": "sim.ac202.maglock.input.v_supply",
+      "type": "number",
+      "unit": "V",
+      "min": 0,
+      "max": 48,
+      "step": 0.1,
+      "default": 12
+    },
+    "current_a": {
+      "label_i18n": "sim.ac202.maglock.input.current_a",
+      "type": "number",
+      "unit": "A",
+      "min": 0,
+      "max": 5,
+      "step": 0.05,
+      "default": 0.5
+    },
+    "length_ft": {
+      "label_i18n": "sim.ac202.maglock.input.length_ft",
+      "type": "number",
+      "unit": "ft",
+      "min": 0,
+      "max": 1000,
+      "step": 5,
+      "default": 150
+    },
+    "ohms_per_1000ft": {
+      "label_i18n": "sim.ac202.maglock.input.ohms",
+      "type": "number",
+      "unit": "ohm_per_1000ft",
+      "min": 0,
+      "max": 20,
+      "step": 0.1,
+      "default": 1.6
+    }
+  },
+  "compute_ref": "voltage_drop_will_it_hold",
+  "result_unit": "V",
+  "thresholds": [
+    {
+      "id": "lock-holds",
+      "band": "fail",
+      "op": "<",
+      "value": 10.5,
+      "dimension": "safety_compliance",
+      "line_item_key": "ac202.maglock_hold_voltage",
+      "safety_flag": true,
+      "feedback_i18n": "sim.ac202.maglock.t.holds",
+      "state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    {
+      "id": "good-margin",
+      "band": "pass",
+      "op": ">=",
+      "value": 11.4,
+      "dimension": "technical_execution",
+      "feedback_i18n": "sim.ac202.maglock.t.margin"
+    },
+    {
+      "id": "near-limit",
+      "band": "warn",
+      "op": "<",
+      "value": 11.4,
+      "dimension": "technical_execution",
+      "feedback_i18n": "sim.ac202.maglock.t.near",
+      "state": {
+        "token": "warn",
+        "shape": "triangle",
+        "label_i18n": "sim.common.state.warn",
+        "color_role": "warning"
+      }
+    }
+  ],
+  "meter": {
+    "label_i18n": "sim.ac202.maglock.meter",
+    "min": 0,
+    "max": 14,
+    "unit": "V",
+    "show_numeric_value": true,
+    "band_markers": [
+      {
+        "at": 10.5,
+        "state": {
+          "token": "fail",
+          "shape": "cross",
+          "label_i18n": "sim.common.state.fail",
+          "color_role": "danger"
+        }
+      },
+      {
+        "at": 11.4,
+        "state": {
+          "token": "warn",
+          "shape": "triangle",
+          "label_i18n": "sim.common.state.warn",
+          "color_role": "warning"
+        }
+      }
+    ]
+  }
+}

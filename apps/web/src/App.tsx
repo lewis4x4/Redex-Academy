@@ -9,6 +9,7 @@ import { SyncStatus } from './components/SyncStatus';
 import { Ac203SimScreen } from './forge/Ac203SimScreen';
 import { SignoffScreen } from './features/signoff/SignoffScreen';
 import { BackpackScreen } from './features/backpack/BackpackScreen';
+import { LessonScreen } from './lessons/LessonScreen';
 import { useAppRoute } from './navigation';
 
 /**
@@ -54,13 +55,25 @@ export default function App() {
   // stack), each with its public hosted verifiable URL. Read-only (issuance is
   // server-only); RLS scopes the read to the signed-in learner's own credentials.
   const inBackpack = route.screen === 'backpack';
+  // M2 — an MDX lesson + retry-to-mastery knowledge check, entered with a unit id.
+  const inLesson = route.screen === 'lesson' && route.unit != null;
 
   return (
     <AppShell
       density={density}
       proofPoints={0}
       onBackpack={() => navigate({ screen: 'backpack', course: null })}
-      screenKey={inSim ? 'sim-ac203' : inSignoff ? 'signoff' : inBackpack ? 'backpack' : 'home'}
+      screenKey={
+        inSim
+          ? 'sim-ac203'
+          : inSignoff
+            ? 'signoff'
+            : inBackpack
+              ? 'backpack'
+              : inLesson
+                ? 'lesson'
+                : 'home'
+      }
       nav={
         <>
           <NavPill active>Home</NavPill>
@@ -73,7 +86,12 @@ export default function App() {
         </Button>
       }
     >
-      {inSim ? (
+      {inLesson ? (
+        <LessonScreen
+          unitId={route.unit as string}
+          onExit={() => navigate({ screen: null, course: null, unit: null })}
+        />
+      ) : inSim ? (
         <Ac203SimScreen onExit={() => navigate({ screen: null, course: null })} />
       ) : inSignoff ? (
         <SignoffScreen onExit={() => navigate({ screen: null, course: null })} />

@@ -1,0 +1,23 @@
+# LP1501 vs LP1502, PoE & Reader Wiring
+
+The Mercury LP1501 (single door) and LP1502 (two door) are powered over PoE — but
+**PoE powers the controller, not the lock load**. The lock draws from its own supply,
+and a long, thin home-run can drop the voltage below the lock's hold threshold.
+
+<Callout tone="safety" label="Safety">
+  Below its minimum hold voltage a mag lock chatters and can release unexpectedly — a life-safety
+  failure. Always run the **will-it-hold** math before you commit a gauge and a run length.
+</Callout>
+
+Compute the voltage at the lock. Below 10.5&nbsp;V it will not hold:
+
+<Sim spec="ac-202/will-it-hold" />
+
+<Checklist
+  ariaLabel="Before energizing"
+  items={[
+    { id: 'a', label: 'Lock supply sized for the run length and gauge' },
+    { id: 'b', label: 'Voltage at the lock is above the hold threshold' },
+    { id: 'c', label: 'Fail-safe release verified' },
+  ]}
+/>

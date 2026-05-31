@@ -1,0 +1,33 @@
+# The Five Components & the Access Event
+
+Every electronic access-controlled door is built from five parts working together:
+the **credential**, the **reader**, the **controller**, the **electric lock**, and the
+**door-position sensor (DPS)**.
+
+<Callout tone="safety" label="Safety">
+  A magnetically locked door on an egress path must **fail-safe** — it releases on loss of power so
+  people can always get out. Never wire an egress door **fail-locked**. Free egress is
+  non-negotiable.
+</Callout>
+
+When a credential is presented, the **access event** runs in a fixed order. Label the
+hardware, put the event steps in sequence, then tap the side that must always allow
+free egress without a credential:
+
+<Sim spec="ac-101/anatomy-of-a-door" />
+
+<Checklist
+  ariaLabel="Anatomy review"
+  items={[
+    { id: 'a', label: 'Reader is on the secure (non-egress) side' },
+    { id: 'b', label: 'Free egress works from the inside with no credential' },
+    { id: 'c', label: 'The DPS reports the real door state' },
+  ]}
+/>
+
+## Knowledge check
+
+Mastery here gates on the safety items at 90%. Review the call-out above before you
+submit.
+
+<KnowledgeCheck />

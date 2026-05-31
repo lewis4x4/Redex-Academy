@@ -276,3 +276,92 @@ test('the M6 Evaluator sign-off screen has no axe violations (WCAG 2a/2aa)', asy
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });
+
+// M2: an MDX lesson with its embedded 2D sim + retry-to-mastery knowledge check must
+// pass axe — labelled radio inputs, the colorblind-safe Callout (glyph+word+color),
+// the verdict StatusBadge (shape+text+color), AA contrast on the dark canvas. Seeded
+// session + a units/assessment_items fixture render it without a backend.
+test('the M2 lesson + knowledge check has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+  await page.addInitScript(() => {
+    const b64url = (o: unknown) =>
+      btoa(JSON.stringify(o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    const claims = {
+      sub: '00000000-0000-0000-0000-0000000000c3',
+      org_id: '00000000-0000-0000-0000-0000000000a1',
+      roles: ['learner'],
+      persona: 'priya',
+    };
+    const token = `${b64url({ alg: 'none', typ: 'JWT' })}.${b64url(claims)}.sig`;
+    window.localStorage.setItem(
+      'sb-localhost-auth-token',
+      JSON.stringify({
+        access_token: token,
+        refresh_token: 'fake',
+        token_type: 'bearer',
+        expires_in: 3600,
+        expires_at: 4102444800,
+        user: {
+          id: claims.sub,
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: 't@e.co',
+          app_metadata: {},
+          user_metadata: {},
+          created_at: '2026-01-01T00:00:00.000Z',
+        },
+      }),
+    );
+  });
+  const CV = '000000c2-0000-0000-0000-000000000009';
+  const item = (id: string, safety: boolean) => ({
+    id,
+    kind: 'mcq',
+    is_safety_item: safety,
+    mastery_weight: 1,
+    answer_key: { correct: 'a' },
+    prompt: { text: `Question ${id}` },
+    options: {
+      choices: [
+        { id: 'a', text: 'Correct' },
+        { id: 'b', text: 'Wrong' },
+      ],
+    },
+    locale_variants: {},
+  });
+  await page.route('**/rest/v1/**', (route) => {
+    if (route.request().method() === 'OPTIONS')
+      return route.fulfill({
+        status: 204,
+        headers: { 'access-control-allow-origin': '*' },
+        body: '',
+      });
+    const url = new URL(route.request().url());
+    const headers = { 'access-control-allow-origin': '*', 'content-type': 'application/json' };
+    let body = '[]';
+    if (url.pathname.endsWith('/assessment_items'))
+      body = JSON.stringify([item('s1', true), item('n1', false)]);
+    else if (url.pathname.endsWith('/units'))
+      body = url.search.includes('knowledge_check')
+        ? JSON.stringify({
+            id: '000000c3-0009-0000-0000-000000000003',
+            course_version_id: CV,
+            title: 'Check',
+            kind: 'knowledge_check',
+            content_ref: {},
+          })
+        : JSON.stringify({
+            id: '000000c3-0009-0000-0000-000000000001',
+            course_version_id: CV,
+            title: 'Anatomy of a Door',
+            kind: 'lesson',
+            content_ref: { mdx_key: 'ac-101/u1' },
+          });
+    return route.fulfill({ status: 200, headers, body });
+  });
+
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/?screen=lesson&unit=000000c3-0009-0000-0000-000000000001');
+  await page.getByTestId('knowledge-check').waitFor(); // lesson + embedded check mounted
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(results.violations).toEqual([]);
+});

@@ -159,6 +159,12 @@ jobs:
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0001_mvp_slice_seed.sql
       - name: Assert the slice data contract (counts / §D closure edges / AC-203 ⚠ keys / tier stack / DAG)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/s1_slice_seed_test.sql
+      - name: Apply the M2 content seed (AC-101/102/202 sim_definitions — run 1)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0002_m2_content.sql
+      - name: Apply the M2 content seed AGAIN (idempotency — ON CONFLICT (key,version) DO NOTHING)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0002_m2_content.sql
+      - name: Assert the M2 sim_definitions landed (3 AC specs, published, valid kinds)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/m2_content_test.sql
 
   # ── Identity guard (REAL @ F3): no work_os_user_id / REDEX_WORKOS_* (one identity space).
   guard-no-workos:
@@ -324,9 +330,11 @@ jobs:
         with:
           deno-version: v2.x
       - name: deno check the Edge Functions + their tests
-        run: deno check --config supabase/functions/deno.json supabase/functions/sync/index.ts supabase/functions/sync/sync.integration.test.ts supabase/functions/finalize-sim-attempt/index.ts supabase/functions/finalize-sim-attempt/score.ts supabase/functions/finalize-sim-attempt/score.test.ts supabase/functions/finalize-signoff/index.ts supabase/functions/finalize-signoff/handler.ts supabase/functions/finalize-signoff/handler.test.ts supabase/functions/_shared/rubric.ts supabase/functions/_shared/rubric.test.ts supabase/functions/_shared/authz.ts supabase/functions/_shared/authz.test.ts supabase/functions/issue-badge/index.ts supabase/functions/issue-badge/handler.ts supabase/functions/issue-badge/handler.test.ts supabase/functions/issue-badge/rollup.test.ts supabase/functions/_shared/credential-signer.ts supabase/functions/_shared/stackability.ts supabase/functions/_shared/stackability.test.ts supabase/functions/_shared/status-republish.ts
+        run: deno check --config supabase/functions/deno.json supabase/functions/sync/index.ts supabase/functions/sync/sync.integration.test.ts supabase/functions/finalize-sim-attempt/index.ts supabase/functions/finalize-sim-attempt/score.ts supabase/functions/finalize-sim-attempt/score.test.ts supabase/functions/finalize-signoff/index.ts supabase/functions/finalize-signoff/handler.ts supabase/functions/finalize-signoff/handler.test.ts supabase/functions/_shared/rubric.ts supabase/functions/_shared/rubric.test.ts supabase/functions/_shared/authz.ts supabase/functions/_shared/authz.test.ts supabase/functions/issue-badge/index.ts supabase/functions/issue-badge/handler.ts supabase/functions/issue-badge/handler.test.ts supabase/functions/issue-badge/rollup.test.ts supabase/functions/_shared/credential-signer.ts supabase/functions/_shared/stackability.ts supabase/functions/_shared/stackability.test.ts supabase/functions/_shared/status-republish.ts supabase/functions/grade-knowledge-check/index.ts supabase/functions/grade-knowledge-check/grade-kc.ts supabase/functions/grade-knowledge-check/grade-kc.test.ts
       - name: deno test the finalize re-scorer (M3, pure — server Verdict == browser engine)
         run: deno test --config supabase/functions/deno.json supabase/functions/finalize-sim-attempt/score.test.ts
+      - name: deno test the M2 knowledge-check scorer (item-level gate + server↔client lockstep)
+        run: deno test --config supabase/functions/deno.json supabase/functions/grade-knowledge-check/grade-kc.test.ts
       - name: deno test the M6 §5.4 pass-rule + evaluator authz (Edge-Fn veto layer == DB trigger)
         run: deno test --config supabase/functions/deno.json supabase/functions/_shared/rubric.test.ts supabase/functions/_shared/authz.test.ts
       - name: deno test the M6 finalize idempotent branch (replay can't promote an arbitrary user — adversarial HIGH fix)
