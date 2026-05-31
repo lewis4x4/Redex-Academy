@@ -63,6 +63,13 @@ const Threshold = z
     message: "safety_flag threshold must use dimension 'safety_compliance'",
     path: ['dimension'],
   })
+  // A 'warn' band is advisory (renderer-only) and excluded from scoring, so a
+  // safety_flag 'warn' band would silently bypass the non-overridable veto. A
+  // safety-critical threshold must use a scored band. (Closes the veto-bypass hole.)
+  .refine((t) => !t.safety_flag || t.band !== 'warn', {
+    message: "safety_flag threshold must use a scored band ('pass'/'fail'), not advisory 'warn'",
+    path: ['band'],
+  })
   .refine((t) => t.op !== 'between' || typeof t.value_high === 'number', {
     message: "op 'between' requires `value_high`",
     path: ['value_high'],

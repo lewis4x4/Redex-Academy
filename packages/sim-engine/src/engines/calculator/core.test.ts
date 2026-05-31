@@ -39,6 +39,25 @@ describe('calculator engine — Verdict + thresholds + telemetry', () => {
     expect(v.outcome).toBe('fail');
   });
 
+  it('fail-closed: a safety_flag threshold in a warn band STILL vetoes (defense in depth)', () => {
+    // The schema forbids authoring a safety_flag 'warn' band, but the runtime must
+    // ALSO never silently drop a safety threshold by band — a warn band is otherwise
+    // advisory/excluded from scoring. A misconfigured spec that reached the engine
+    // must fail closed rather than bypass the non-overridable veto.
+    const mutated = JSON.parse(JSON.stringify(SPEC)) as CalculatorSpec;
+    const safety = mutated.thresholds.find((t) => t.safety_flag)!;
+    safety.band = 'warn'; // demote the lock-holds safety threshold to advisory
+    const inst = createCalculatorSim(mutated, {
+      genUuid: () => 'uuid-0',
+      now: () => '2026-05-31T00:00:00.000Z',
+    });
+    inst.setInput('length_ft', 500);
+    inst.setInput('ohms_per_1000ft', 6.4); // → 8.8V, below the 10.5 hold
+    const v = inst.submit();
+    expect(v.safety_veto_triggered).toBe(true);
+    expect(v.outcome).toBe('fail');
+  });
+
   it('a thin-but-holding run (≥10.5 < 11.4) fails on margin but does NOT veto', () => {
     const { inst } = harness();
     // 12V, 1.2A, 300ft, 6.4Ω → drop = 1.2*2*0.3*6.4 = 4.608 → 7.39V (veto) — pick a milder one:

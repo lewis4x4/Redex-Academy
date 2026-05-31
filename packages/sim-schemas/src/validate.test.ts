@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { branchingExample, deviceConfigExample } from './examples';
+import {
+  branchingExample,
+  calculatorExample,
+  deviceConfigExample,
+  interaction2dExample,
+} from './examples';
 import { validateSpec, specValidatorByKind } from '../zod/index';
 
 describe('@redex/sim-schemas: validateSpec (Zod runtime gate)', () => {
@@ -54,6 +59,35 @@ describe('@redex/sim-schemas: validateSpec (Zod runtime gate)', () => {
     const exploit = JSON.parse(JSON.stringify(branchingExample));
     exploit.nodes.failstate.choices[1].score_delta = 0;
     expect(() => validateSpec(exploit)).toThrow(/score_delta/);
+  });
+
+  // ── F5b engines #5/#6 ──────────────────────────────────────────────────────
+  it('accepts the interaction-2d and calculator reference specs', () => {
+    expect(
+      (validateSpec(interaction2dExample) as { envelope: { engine_kind: string } }).envelope
+        .engine_kind,
+    ).toBe('interaction_2d');
+    expect(
+      (validateSpec(calculatorExample) as { envelope: { engine_kind: string } }).envelope
+        .engine_kind,
+    ).toBe('calculator');
+  });
+
+  it('REJECTS a calculator safety_flag threshold authored as an advisory warn band (closes the veto-bypass hole)', () => {
+    const exploit = JSON.parse(JSON.stringify(calculatorExample));
+    // lock-holds is the safety_flag threshold (band 'fail'). Demoting it to 'warn'
+    // would drop it from scoring — a warn band is advisory — and silently bypass
+    // the non-overridable safety veto. The schema must reject it.
+    const safety = exploit.thresholds.find((t: { safety_flag?: boolean }) => t.safety_flag);
+    safety.band = 'warn';
+    expect(() => validateSpec(exploit)).toThrow(/warn|scored band|band/);
+  });
+
+  it('REJECTS a calculator safety_flag threshold whose dimension is not safety_compliance', () => {
+    const exploit = JSON.parse(JSON.stringify(calculatorExample));
+    const safety = exploit.thresholds.find((t: { safety_flag?: boolean }) => t.safety_flag);
+    safety.dimension = 'technical_execution';
+    expect(() => validateSpec(exploit)).toThrow(/safety_compliance|dimension/);
   });
 
   it('the #3/#4 stubs validate envelope-only (permissive guard, expanded later)', () => {

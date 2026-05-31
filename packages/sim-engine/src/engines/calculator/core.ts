@@ -67,13 +67,16 @@ export function createCalculatorSim(spec: Spec, opts: LoadSpecOptions = {}): Cal
 
   const compute = (): number => runCompute(spec.compute_ref, store.getState().inputs as Inputs);
 
-  // Each non-`warn` threshold → one RubricResult. A 'pass' band asserts a good
-  // condition (passed = matched); a 'fail' band asserts a bad one (passed = NOT
-  // matched), so a safety_flag fail band the result lands in is a failed safety
-  // result → the Verdict service vetoes. 'warn' bands are advisory (renderer only).
+  // Each scored threshold → one RubricResult. A 'pass' band asserts a good
+  // condition (passed = matched); a 'fail'/'warn' band asserts a bad one (passed =
+  // NOT matched), so a safety band the result lands in is a failed safety result →
+  // the Verdict service vetoes. 'warn' bands are normally advisory (renderer only)
+  // and excluded from scoring — but a safety_flag threshold is NEVER dropped,
+  // whatever its band, so a safety condition always reaches the non-overridable
+  // veto (fail-closed; the schema also forbids a safety_flag 'warn' band).
   const evaluate = (result: number): RubricResult[] =>
     spec.thresholds
-      .filter((t) => t.band !== 'warn')
+      .filter((t) => t.band !== 'warn' || t.safety_flag)
       .map((t) => {
         const matched = compareThreshold(result, t.op, t.value, t.value_high);
         const passed = t.band === 'pass' ? matched : !matched;
