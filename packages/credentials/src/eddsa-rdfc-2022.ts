@@ -95,7 +95,7 @@ async function computeHashData(
 export interface SignOptions {
   /** Raw 32-byte Ed25519 private seed. NEVER leaves the server / Vault. */
   privateKey: Uint8Array;
-  /** Full verificationMethod id, e.g. `did:web:academy.redex.education#key-2026-05`. */
+  /** Full verificationMethod id, e.g. `did:web:redex.education#key-2026-05`. */
   verificationMethod: string;
   /** ISO 8601 proof creation time (passed in → deterministic + testable). */
   created: string;

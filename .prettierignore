@@ -35,3 +35,9 @@ supabase/tests/**
 
 # Deno Edge Functions — separate runtime/toolchain (deno fmt / deno check), not prettier.
 supabase/functions/**
+
+# Issuer static identity docs — hand-authored published artifacts served verbatim
+# by Netlify (the DID document + OB 3.0 issuer Profile). Their exact bytes are the
+# did:web resolution target + the signed-over identity; do NOT let prettier reflow
+# them (the `issuer` file is intentionally extensionless, mirroring the served URL).
+apps/web/public/.well-known/**

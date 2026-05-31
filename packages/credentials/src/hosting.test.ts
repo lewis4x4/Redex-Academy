@@ -14,11 +14,11 @@ import {
 
 describe('public hosting responses', () => {
   it('serves the DID document with the did media type, long cache, and open CORS', async () => {
-    const res = didDocumentResponse({ id: 'did:web:academy.redex.education' });
+    const res = didDocumentResponse({ id: 'did:web:redex.education' });
     expect(res.headers.get('content-type')).toBe(DID_MEDIA_TYPE);
     expect(res.headers.get('access-control-allow-origin')).toBe('*');
     expect(res.headers.get('cache-control')).toContain('max-age=3600');
-    expect((await res.json()).id).toBe('did:web:academy.redex.education');
+    expect((await res.json()).id).toBe('did:web:redex.education');
   });
 
   it('serves the issuer profile + assertion with the VC media type', () => {

@@ -1,0 +1,18 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/multikey/v1"
+  ],
+  "id": "did:web:redex.education",
+  "verificationMethod": [
+    {
+      "id": "did:web:redex.education#key-2026-05",
+      "type": "Multikey",
+      "controller": "did:web:redex.education",
+      "publicKeyMultibase": "z6Mkfnc5M5LoWMzBmNbR78yRn8xTyp1oRHZxwuCxDt5uZC2D"
+    }
+  ],
+  "assertionMethod": [
+    "did:web:redex.education#key-2026-05"
+  ]
+}
