@@ -76,8 +76,21 @@ export default function App() {
       }
       nav={
         <>
-          <NavPill active>Home</NavPill>
-          <NavPill>Catalog</NavPill>
+          {/* The Constellation IS the catalog/skill-map home. Both pills were dead
+              (no onClick) — "Catalog" rendered nothing on click. Wire them to the
+              home/catalog view (clearing any sub-screen route). */}
+          <NavPill
+            active={!inSim && !inSignoff && !inBackpack && !inLesson}
+            onClick={() => navigate({ screen: null, course: null, unit: null })}
+          >
+            Home
+          </NavPill>
+          <NavPill
+            active={!inSim && !inSignoff && !inBackpack && !inLesson}
+            onClick={() => navigate({ screen: null, course: null, unit: null })}
+          >
+            Catalog
+          </NavPill>
         </>
       }
       actions={
