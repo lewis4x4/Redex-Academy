@@ -232,6 +232,14 @@ end $$;
 -- signoffs_update_draft_evaluator's WITH CHECK permits only draft/submitted/failed,
 -- so a client UPDATE to 'signed' is rejected by RLS. (The safety veto + immutability
 -- are proven on a live DB by 0001 + 0004; this proves the server-only sign boundary.)
+--
+-- IMPORTANT ordering: a BEFORE-UPDATE to status='signed' fires the safety-veto
+-- trigger (tg_signoff_compute_outcome) BEFORE the RLS WITH CHECK is evaluated. On a
+-- draft with no/failing line items the trigger RAISEs the veto first, masking the RLS
+-- denial we want to prove. So we materialize a VALID PASS rubric on the draft AS THE
+-- OWNER (bypasses RLS; the veto then does NOT fire) — isolating the RLS WITH CHECK as
+-- the sole reason the client's sign is rejected. Even a legitimately-passing sign-off
+-- cannot be self-signed by a client; only the service role may flip it to 'signed'.
 -- ----------------------------------------------------------------------------
 do $$
 declare
@@ -254,8 +262,21 @@ begin
   perform pg_temp.assert(v_signoff is not null,
     'POSITIVE: an evaluator CAN create a DRAFT sign-off in their own org');
 
-  -- NEGATIVE: the same client CANNOT flip it to 'signed' (WITH CHECK forbids it) —
-  -- only the service-role finalize-signoff function may sign (invariant 3).
+  -- Materialize a VALID PASS rubric on the draft AS THE OWNER (RLS-bypassing) so the
+  -- veto trigger will NOT fire on the sign attempt below — leaving RLS as the only gate.
+  reset role;
+  insert into academy.signoff_line_items (signoff_id, dimension, line_item_key, score, is_critical_safety) values
+    (v_signoff, 'safety_compliance',         'rls.safety',  2, true),
+    (v_signoff, 'technical_execution',        'rls.tech',    2, false),
+    (v_signoff, 'verification_documentation', 'rls.verif',   2, false),
+    (v_signoff, 'independence_judgment',      'rls.indep',   2, false);
+
+  -- Back to the client (evaluator) role — the JWT claims set above persist for the txn.
+  set local role authenticated;
+
+  -- NEGATIVE: the same client CANNOT flip the (now valid-pass) draft to 'signed' —
+  -- the RLS WITH CHECK rejects it (insufficient_privilege); only the service-role
+  -- finalize-signoff function may sign (invariant 3). The veto does NOT fire here.
   begin
     update academy.signoffs set status = 'signed' where id = v_signoff;
   exception when insufficient_privilege then v_blocked := true;
