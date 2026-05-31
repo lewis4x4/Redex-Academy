@@ -29,6 +29,14 @@ major_version = 17
 [db.pooler]
 enabled = false
 
+[db.seed]
+enabled = true
+# Applied by `supabase db reset` / `supabase start` (local dev). CI applies the
+# slice seed directly via psql in the `slice-seed` job (bare postgres:16, which
+# never reads this file). Order matters: the catalog/badge seed (S1) seeds
+# academy.orgs FIRST, before the dev identities (academy.users → orgs FK).
+sql_paths = ["./seed/0001_mvp_slice_seed.sql", "./seed/20260529210648_dev_identities.sql"]
+
 [studio]
 enabled = true
 port = 54323
