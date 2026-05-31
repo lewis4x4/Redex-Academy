@@ -1481,6 +1481,73 @@ export type Database = {
           },
         ]
       }
+      user_invitations: {
+        Row: {
+          consumed_at: string | null
+          consumed_user_id: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string | null
+          org_id: string
+          persona: Database["academy"]["Enums"]["persona"] | null
+          role_key: Database["academy"]["Enums"]["role_key"]
+          status: Database["academy"]["Enums"]["invitation_status"]
+          updated_at: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          consumed_user_id?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          org_id: string
+          persona?: Database["academy"]["Enums"]["persona"] | null
+          role_key?: Database["academy"]["Enums"]["role_key"]
+          status?: Database["academy"]["Enums"]["invitation_status"]
+          updated_at?: string
+        }
+        Update: {
+          consumed_at?: string | null
+          consumed_user_id?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string | null
+          org_id?: string
+          persona?: Database["academy"]["Enums"]["persona"] | null
+          role_key?: Database["academy"]["Enums"]["role_key"]
+          status?: Database["academy"]["Enums"]["invitation_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_consumed_user_id_fkey"
+            columns: ["consumed_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_invitations_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "orgs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           granted_at: string
@@ -1653,6 +1720,7 @@ export type Database = {
         | "mercury"
         | "dragonfruit"
       graded_by: "auto" | "ai" | "sme"
+      invitation_status: "pending" | "accepted" | "revoked"
       org_type: "redex" | "ccs_partner"
       persona: "nova" | "marco" | "priya" | "dana"
       prereq_kind: "hard_gate" | "soft"
@@ -1949,6 +2017,7 @@ export const Constants = {
         "dragonfruit",
       ],
       graded_by: ["auto", "ai", "sme"],
+      invitation_status: ["pending", "accepted", "revoked"],
       org_type: ["redex", "ccs_partner"],
       persona: ["nova", "marco", "priya", "dana"],
       prereq_kind: ["hard_gate", "soft"],
