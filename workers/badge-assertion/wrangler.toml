@@ -1,0 +1,14 @@
+# workers/badge-assertion — serves the public, verifiable hosted credential assertion.
+# Deploy: `wrangler deploy` from this dir (the §J release gate). Route it at
+# academy.redex.education/credentials/* so a badge verifies "at a public URL".
+name = "redex-badge-assertion"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+
+# routes = [{ pattern = "academy.redex.education/credentials/*", zone_name = "redex.education" }]
+
+# KV store of published assertions, keyed by credential id. The issue-badge Edge
+# Function writes each signed credential here. Set the real namespace id at deploy:
+[[kv_namespaces]]
+binding = "ASSERTIONS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
