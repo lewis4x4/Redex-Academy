@@ -5,7 +5,7 @@ A known-good target for your first **ultracode** run. Read this before running `
 - **Goal:** build the offline-first PWA spine — a Workbox service worker (precache app shell + on-demand "field pack"), a Dexie/IndexedDB durable local store (in-progress attempts, telemetry, sign-off **drafts** + evidence Blobs, queued xAPI), and the **idempotent `/sync` Edge Function (Deno)** that reconciles on reconnect **without losing work or faking a pass**. This is the program's **#1 risk bet** (wave3 §12.6).
 - **Tier:** ultracode (xhigh + dynamic workflow + adversarial verification). **Pair with auto mode.**
 - **Depends on:** **F2** merged — the event tables with `UNIQUE(client_event_uuid)` (`sim_attempts`, `sim_telemetry_events`, `assessment_responses`), `competency_state`/`signoffs` server-authoritative, the immutable-signed trigger, generated types.
-- **Human gate — [HUMAN-VERIFY], ledger §J:** the offline run is verified on **REAL hardware in airplane mode** before merge. The Playwright `setOffline(true)` harness is a **proxy only** — it does NOT substitute. Mark the goal **"pending human verification," not "done."** **Never fake a pass.**
+- **Human gate — [HUMAN-VERIFY], ledger §J:** the offline run is verified on **REAL hardware in airplane mode** before release. The Playwright `setOffline(true)` harness is a **proxy only** — it does NOT substitute. Mark the goal **"pending human verification," not "done."** **Never fake a pass.**
 
 ---
 
@@ -65,7 +65,7 @@ pnpm test:a11y     # sync-status surfaces are accessible
 - **Video is not force-cached:** the field pack caches sim assets/specs/images/captions/checklists/rubric; video is offered as an **explicit per-video** "download for offline" only.
 - `pnpm typecheck && pnpm lint && pnpm build` green; types committed and in sync; **`/sync` contains no Node-only import**.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — not agent-self-certified) — [HUMAN-VERIFY]
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — not agent-self-certified) — [HUMAN-VERIFY]
 - [ ] **REAL hardware, airplane mode (the gate that matters):** on an actual phone, **download a field pack**, enable airplane mode, **run a sim offline** (stub or real), generate telemetry, re-enable network, and confirm **reconciliation with no lost work**. The Playwright proxy passing is **not** sufficient.
 - [ ] **Idempotent on real reconnect:** trigger a **double flush** (e.g. background sync fires twice on a flaky network) and confirm **no double-count** of attempts/telemetry/responses (`client_event_uuid` dedupe holds end-to-end, not just in the unit test).
 - [ ] **Never faked a pass:** confirm by hand that an offline attempt did **not** mint competency promotion / a sign-off `outcome` / a badge — the server computed every verdict; the device only **queued** raw events.

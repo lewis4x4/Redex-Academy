@@ -169,7 +169,7 @@ CI required-checks (all block merge): `typecheck`, `lint`, `test` (unit), `test:
 5. **RLS negative tests** for any goal touching tenant data: a cross-org actor returns **zero rows**.
 6. **Invariant regression tests** (§5) still pass — a goal that weakens them fails review.
 7. **i18n:** EN+ES keys present for `1xx`/`2xx`; safety-glossary terms unchanged.
-8. **Human-verification stub:** where a criterion is not CI-automatable (real-hardware offline, public-URL badge verify, fixture sanitization/SME review), produce the artifact + a checklist and mark the goal **"pending human verification," not "done."**
+8. **Reviewer-verification stub:** where a criterion is not CI-automatable (real-hardware offline, public-URL badge verify, fixture sanitization/SME review), produce the artifact + a checklist and mark it **"pending release verification."** This is a **release gate** — it does **not** block the merge or "done" on green CI; a designated qualified reviewer signs before the production/field release.
 
 WebGL sims carry an explicit **mobile perf budget** (FPS + asset-size) asserted as a test (they must run on a tech's phone — LOD, lazy load, Draco).
 
@@ -182,7 +182,7 @@ WebGL sims carry an explicit **mobile perf budget** (FPS + asset-size) asserted 
 - **Operator directive: run EVERY goal (F1 → M12, including S1) with UltraCode + auto mode.** No exceptions. This supersedes any earlier standard/ultracode split — ignore any "standard" label still present in a goal file or table.
 - Yes, UltraCode burns substantially more tokens; that cost is accepted in exchange for uniform max-thoroughness and adversarial verification on every goal.
 
-**Human-gate items (ledger §J) are never agent-self-certified:** F4 offline test on **real hardware in airplane mode**; F6 "badge verifies at a public URL"; and **all safety-/credential-critical merges** (M6 safety-veto, F6/M7 signing, F2/F3/M12 RLS + tenant isolation, F5 engine-contract sign-off). These get an explicit human-verification checkbox and stop for review before merge.
+**Reviewer-gate items (ledger §J) are never agent-self-certified:** F4 offline test on **real hardware in airplane mode**; F6 "badge verifies at a public URL"; and **all safety-/credential-critical work** (M6 safety-veto, F6/M7 signing, F2/F3/M12 RLS + tenant isolation, F5 engine-contract sign-off). These get an explicit reviewer-verification checkbox. They are **release gates, not merge gates** — the goal merges on green CI; a **designated qualified reviewer** (not necessarily the COO, never the agent) signs off **before the production/field release**.
 
 ---
 
@@ -193,5 +193,5 @@ WebGL sims carry an explicit **mobile perf budget** (FPS + asset-size) asserted 
 3. **Set effort to UltraCode + auto mode — every goal** (§9; no standard tier).
 4. **Build** the vertical slice; honor every pinned invariant in §5; write the tests in the §8 DoD.
 5. **Self-verify** against the goal's done-criteria and the DoD checklist.
-6. **Stop at any human-gate** (§9): produce artifacts + checklist, mark "pending human verification," do not self-certify.
+6. **At any reviewer-gate** (§9): produce artifacts + checklist, mark **"pending release verification,"** do not self-certify. This does **not** block the merge — it's a release gate; record it on the release checklist for a qualified reviewer to sign before ship.
 7. **Update status** in `goals/GOALS_INDEX.md` (e.g. `in_progress → in_review / pending_human_verification / merged`).

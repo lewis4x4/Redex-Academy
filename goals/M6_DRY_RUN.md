@@ -5,7 +5,7 @@ A known-good target for the **single most liability-critical ultracode run** in 
 - **Goal:** build the Evaluator field sign-off against a **Work OS job id** + the `finalize-signoff` Edge Function, wiring the §5.4 four-dimension / 0–3 / safety-veto rubric (incl. AC-203's ⚠ lines) so the veto is enforced at **three layers** (DB trigger + Edge Fn + UI). On pass: attach evidence, promote `competency_state` to `field_proven`, trigger badge issuance (hand to M7), and write `audit_log` — **all as the service role**.
 - **Tier:** ultracode (xhigh + dynamic workflow + **adversarial verification**). **Pair with auto mode.** (Ledger §I.)
 - **Depends on:** **F2a merged** (the cross-schema FK `academy.signoffs.work_os_job_id → workos.jobs(id)` — without it the job join fails), **F3** (the `evaluator_authorized`/`domains` JWT claim), **F4** (offline draft path + `/sync` rejection of server-only writes), **S1** (the AC-201/202/203 line-item templates in `academy.signoff_line_item_templates` + `is_critical_safety` flags + competencies; the rubric-template table `0003` is applied in F2 before the seed).
-- **Human gate (HARD, ledger §J / M6 spec):** a human reviews the **three-layer veto + the rubric line-item data + the Work OS evidence binding** on a **live Postgres** before merge. Adversarial self-verification does NOT substitute.
+- **Human gate (HARD, ledger §J / M6 spec):** a human reviews the **three-layer veto + the rubric line-item data + the Work OS evidence binding** on a **live Postgres** before release. Adversarial self-verification does NOT substitute.
 
 ---
 
@@ -63,7 +63,7 @@ pnpm typecheck && pnpm lint
 - **Audit:** every finalize AND every void writes an **append-only** `audit_log` row (UPDATE/DELETE on `audit_log` is blocked by `tg_audit_append_only`).
 - **The adversarial-verification report** the ultracode run produced is present and its findings are addressed.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — HARD GATE, not agent-self-certified)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — HARD GATE, not agent-self-certified)
 - [ ] **Safety-veto behaves on a LIVE Postgres** (by hand, not just CI parse): create a draft AC-203 sign-off, set every safety line `≥2` and every dimension `≥2` → finalizing yields `outcome='pass'`; then set **one** safety line (e.g. `ac203.release_on_power_loss`) to `0` → finalizing is **rejected / `fail`, non-overridable**; a sign-off with **no line items** cannot pass.
 - [ ] **Signed row is immutable on the live DB:** `UPDATE` a `signed` sign-off's `outcome` or a line-item `score` → rejected; `DELETE` → rejected; only `signed → void` (with `void_reason`) succeeds.
 - [ ] **The function re-checks the caller's JWT/role + evaluator domain** — it does NOT trust the client; confirm an unauthorized/wrong-domain/expired Evaluator is refused **inside the function** (service_role bypasses RLS, so the function IS the access-control boundary).

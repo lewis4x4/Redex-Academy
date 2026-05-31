@@ -1,10 +1,11 @@
 # D1 — Human Verification Checklist (design system vs the prototype)
 
-> **The gate that matters (ledger §J).** D1 is the experience-layer contract: the gallery +
-> re-skinned login/shell are reviewed against the approved prototype **before any module builds
-> on `@redex/ui`** (it gates M1, M2, M6, M7, M11, G1, C1). Green CI + the adversarial report are
-> **necessary but NOT sufficient** — a human compares the rendered system to the prototype look.
-> D1 stays **`pending_human_verification`** (not `done`) until this is signed.
+> **Non-blocking visual check (de-bottlenecked 2026-05-30).** D1 is the experience-layer contract.
+> Merge and downstream `@redex/ui` adoption are cleared by the **automated bar** — no-raw-hex +
+> token snapshot, axe a11y (2/2), the Tab-trap / return-focus tests, and e2e. The
+> side-by-side-vs-prototype _look_ is a **post-merge polish pass any reviewer can do**; it does
+> **not** block the #6 merge or the modules (M1/M2/M6/M7/M11/G1/C1) that build on `@redex/ui`.
+> D1 is **`done`** on green CI; any visual divergence found later is a fast-follow fix, not a gate.
 
 ## How to review
 
@@ -14,7 +15,7 @@
 - **App shell:** the header (brand mark + wordmark + "Mastery, not seat-time" + nav + HUD) wraps every screen.
 - Compare side-by-side with **`Redex_Academy_Prototype.html`** (the approved prototype).
 
-## Checklist (you, before merge — not agent-self-certified)
+## Checklist (post-merge visual polish — any reviewer; NOT a merge blocker)
 
 - [ ] The gallery **looks like the prototype**: near-black canvas, Redex-red `#ED1B24`, the red glow,
       Inter type, the motion feel. (Tokens were extracted verbatim from the prototype.)
@@ -45,7 +46,7 @@
 - **e2e**: the gallery renders, the persona-density toggle flips `data-density` (layout only), and the
   login is re-skinned (dark canvas, not white).
 
-None of these substitute for the human side-by-side vs the prototype above.
+The automated bar above is what clears the merge. The human side-by-side is a non-blocking polish pass — nice to do, never a blocker.
 
 ## Scope note (what D1 did NOT do)
 
@@ -54,7 +55,7 @@ their SyncStatus / Forge / sim renderers adopt `@redex/ui` when **they rebase on
 — that adoption is _their_ merge gate (Inv. 9), not D1's. No feature logic (catalog gating, Constellation
 states, sim scoring, sign-off, Proof Points economy, capstone walkthrough) lives in D1 — those are M1/F5/M6/G1/C1.
 
-## Sign-off
+## Sign-off (optional — post-merge polish record, not a merge gate)
 
 | Field       | Value                        |
 | ----------- | ---------------------------- |

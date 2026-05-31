@@ -5,7 +5,7 @@ A known-good target for your first **ultracode** run. Read this before running `
 - **Goal:** build the **Open Badges 3.0 / W3C Verifiable Credentials issuer** — construct + **sign** a credential server-side, publish a hosted verifiable assertion + the issuer `.well-known`/DID profile, maintain a hosted **status list** for revocation, and define key rotation. **Resolve the Deno-vs-Node signing decision explicitly** (ledger §F) before wiring the signer.
 - **Tier:** ultracode (xhigh + dynamic workflow + adversarial verification). **Pair with auto mode.**
 - **Depends on:** **F2** merged (`badge_classes` with `requires`, `credentials` with `open_badge_json`/`proof`/`hosted_assertion_url`/`status`, `credential_status_list`, generated types).
-- **Human gate — [HUMAN-VERIFY], ledger §J:** a human confirms a real issued badge **verifies at a public URL**, and reviews **key custody + the proof suite + the rotation runbook** before merge. **The Deno-vs-Node signing-lib decision must be explicitly resolved and recorded.** Adversarial self-verification does NOT substitute.
+- **Human gate — [HUMAN-VERIFY], ledger §J:** a human confirms a real issued badge **verifies at a public URL**, and reviews **key custody + the proof suite + the rotation runbook** before release. **The Deno-vs-Node signing-lib decision must be explicitly resolved and recorded.** Adversarial self-verification does NOT substitute.
 
 ---
 
@@ -69,7 +69,7 @@ pnpm test:e2e      # issue → fetch → verify → revoke → re-verify(revoked
 - A **key-rotation runbook** exists: generate/retire keys, the issuer profile carries both, **old proofs still verify against the retired key**.
 - `typecheck`/`lint`/`build` green; types committed and in sync.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — not agent-self-certified) — [HUMAN-VERIFY]
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — not agent-self-certified) — [HUMAN-VERIFY]
 - [ ] **A real issued badge verifies at a PUBLIC URL** (the gate that matters, ledger §J): fetch the hosted assertion from its public endpoint and run it through an independent OB 3.0 / VC verifier — it reports **valid**, with a resolvable issuer profile.
 - [ ] **The Deno-vs-Node decision is explicitly resolved and recorded** in `CLAUDE.md` + the PR, with rationale — and the implementation **matches** it (no Node-only lib silently imported into a Deno Edge Function; if Path B, the Node context is a real separate service, not a fiction).
 - [ ] **Key custody reviewed:** the Ed25519 **private key lives in Supabase Vault ONLY** — not in Cloudflare Secrets, not in both, not in the repo, not in any `VITE_`/client bundle. Confirm by hand.

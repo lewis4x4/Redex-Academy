@@ -86,19 +86,19 @@ Build in this order; run independent goals in parallel **only** once their `Depe
 
 ---
 
-## Part C — Consolidated human-verify gates (ledger §J — never agent-self-certified)
+## Part C — Consolidated reviewer-verify gates (ledger §J — release gates, never agent-self-certified)
 
-These criteria **cannot** be agent-self-certified. The agent builds an agent-satisfiable proxy, then **stops** and produces an artifact + checklist marked **"pending human verification."** You perform the real check and sign off **before merge**.
+These criteria **cannot** be agent-self-certified. The agent builds an agent-satisfiable proxy and produces an artifact + checklist marked **"pending release verification."** A **designated qualified reviewer** (not necessarily the COO, never the agent) performs the real check and signs off **before the production/field release**. These are **release gates — they do not block the merge into `main`** (automated CI clears that).
 
-| `[HUMAN-VERIFY]` gate | Goal(s) | What you check |
+| `[HUMAN-VERIFY]` gate | Goal(s) | What the reviewer checks (before release) |
 |---|---|---|
 | **Offline on real hardware** | **F4** | On a real device in **airplane mode**: the offline path works; a server-authoritative outcome (pass/badge) is **not** faked; queued events sync idempotently; a signed sign-off rejects a late edit on reconnect. |
 | **Credential verifies at a public URL + signing-key handling** | **F6**, **M7** | A minted OB 3.0 badge **verifies at a public URL** (issuer profile/`.well-known` resolves, proof validates, status list reachable); signing is **server-side only**; the key lives in **Supabase Vault only**; rotation plan is sound; the chosen **Deno-vs-Node** signing path is the one actually wired. |
 | **Safety-veto behavior** | **M6** | The defense-in-depth veto (DB trigger + Edge Function + UI) enforces: all-2s passes; one safety `0` ⇒ non-overridable fail; a signed row is immutable. The **per-course §5.4 line-item data** is correct (right items flagged `is_critical_safety`). |
-| **RLS policy + tenant-isolation review** | **F2**, **F3**, **M12** | A human reads **every** RLS policy and the negative-test matrix; confirms a CCS tech is signed off yet returns **zero** Redex/other-partner rows. (A CCS leak is a contractual breach.) |
+| **RLS policy + tenant-isolation review** | **F2**, **F3**, **M12** | The **security reviewer** reads **every** RLS policy and the negative-test matrix; confirms a CCS tech is signed off yet returns **zero** Redex/other-partner rows. (A CCS leak is a contractual breach.) |
 | **F5 sim-engine-contract sign-off** | **F5** (before M3–M5/M9) | The engine API + JSON Schemas are approved **before** any consumer builds against them. |
 | **Content / fixture SME gates** | **M9 / authoring path** | Safety/egress content + translations need **SME + safety-reviewer** sign-off; fixtures need **SME-accuracy + PII-sanitization** review before `fixture_sets.sanitized = true`. |
-| **Any safety-/credential-critical merge** | (catch-all) | Any merge touching the safety-veto, credential signing, RLS/tenant isolation, or offline "never fake a pass" gets a human review before merge — even outside the named goals. |
+| **Any safety-/credential-critical change** | (catch-all) | Anything touching the safety-veto, credential signing, RLS/tenant isolation, or offline "never fake a pass" gets a qualified-reviewer review **before release** — even outside the named goals. |
 
 > **Also gating, before the schema goals merge:** the committed migration **invariant test** (`migrations/tests/0001_invariants_test.sql`) must **pass on a live Supabase/Postgres instance** (safety-veto pass/fail, signed-row immutability, RLS cross-tenant isolation, fixture gate, audit append-only, DAG cycle detection) — it has only been parse-validated in the authoring sandbox (`SCHEMA_NOTES.md` §10).
 

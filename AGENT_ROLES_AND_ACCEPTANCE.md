@@ -58,7 +58,7 @@ Run **one goal at a time.** For each goal:
 4. **Build** the vertical slice; honor every pinned invariant in §5; write the tests the Definition of Done requires.
 5. **Self-verify** against the goal's done-criteria **and** the shared Definition of Done (§3).
 6. **Run the invariant tests** (§4) — the locked safety-veto / immutability / RLS / idempotency / no-fake-pass / no-client-secret suite must pass.
-7. **Stop at any `[HUMAN-VERIFY]` gate** (§6): produce the artifact + checklist, mark the goal **"pending human verification,"** and do **not** self-certify.
+7. **At any `[HUMAN-VERIFY]` gate** (§6): produce the artifact + checklist, mark the goal **"pending release verification,"** and do **not** self-certify. This is a **release gate, not a merge blocker** — the goal still merges on green CI; the reviewer sign-off is recorded for ship-time.
 8. **Human review / merge** — the reviewer applies the acceptance rubric (§4). For UltraCode/critical goals, the **adversarial-verification report is reviewed first** (§7).
 9. **Update the goal status** in `goals/GOALS_INDEX.md` (e.g. `in_progress → in_review → pending_human_verification → merged`).
 
@@ -79,13 +79,13 @@ Every goal must satisfy this checklist before it can enter review. (Mirrors `CLA
 - [ ] **i18n** — EN+ES keys present for `1xx`/`2xx`; locked safety-glossary terms unchanged.
 - [ ] **Docs / goal-status updated** — `goals/GOALS_INDEX.md` reflects the new state; any contract the goal publishes is documented.
 
-> **Non-CI-automatable criteria** (real-hardware offline, public-URL badge verify, fixture sanitization/SME review) do **not** count as "done" by the agent. The goal produces the artifact + checklist and marks itself **"pending human verification"** (see §6).
+> **Non-CI-automatable criteria** (real-hardware offline, public-URL badge verify, fixture sanitization/SME review) are **not agent-self-certified.** The goal produces the artifact + checklist and marks itself **"pending release verification"** (see §6). This does **not** block the merge or "done" on green CI — it is a **release gate**: a designated qualified reviewer signs before the production/field ship.
 
 ---
 
 ## 4. The acceptance / merge rubric
 
-A goal **may not merge** until **all** of the following hold. This is the gate.
+A goal **may not merge** until items **1–4** (all automated) hold — that is the **merge** gate. Item **5** is a **release** gate: it does not block the merge (it blocks the ship). (De-bottlenecked 2026-05-30, ledger §J.)
 
 1. **Done-criteria ✓** — the goal's acceptance-test list passes.
 2. **Definition of Done ✓** — every box in §3 is checked.
@@ -97,7 +97,7 @@ A goal **may not merge** until **all** of the following hold. This is the gate.
    - [ ] **"No pass faked offline"** — server-authoritative outcomes (competency promotion, mastery verdict, sign-off finalize, badge issuance/revocation, recert) never resolve on the client/offline; offline shows a "will complete on reconnect" state.
    - [ ] **No client secrets** — the client bundle contains no service-role key or signing key; the lint/test that asserts "client never imports a service-role key and never writes a state table" passes.
 4. **Adversarial-verification report reviewed** — for **UltraCode / critical** goals, the independent/adversarial pass's report (§7) is **read and accepted by the human** before merge. Its output is reviewed, not blindly trusted.
-5. **Human gate cleared** — if the goal hits any `[HUMAN-VERIFY]` gate in §6, that human check is signed off before merge.
+5. **Reviewer gate scheduled (release, not merge)** — if the goal hits any `[HUMAN-VERIFY]` gate in §6, the artifact + checklist are produced and the gate is recorded on the release checklist for a designated qualified reviewer to sign **before the production/field release**. Per ledger §J this does **not** block the merge — automated CI (items 1–4) clears the merge.
 
 A goal that **weakens any locked invariant test fails review by default** — there is no "temporary" relaxation.
 
@@ -120,15 +120,15 @@ Restated from ledger §A–§G / `CLAUDE.md` §5 as a hard **pre-merge** checkli
 
 ## 6. Human-verification gates (ledger §J)
 
-These criteria **cannot be agent-self-certified.** The agent builds an agent-satisfiable proxy (e.g. Playwright offline mode, a conformance fixture) and then **stops**, producing an artifact + checklist marked **"pending human verification."** The human performs the real check and signs off before merge.
+These criteria **cannot be agent-self-certified.** The agent builds an agent-satisfiable proxy (e.g. Playwright offline mode, a conformance fixture) and produces an artifact + checklist marked **"pending release verification."** A **designated qualified reviewer** (safety reviewer for safety/offline; security reviewer for RLS/credential — any competent delegate, not necessarily the COO) performs the real check and signs off **before the production/field release**. These are **release gates: they do not block the merge into `main`** (automated CI clears that); they block the ship.
 
-| Gate `[HUMAN-VERIFY]` | Goal(s) | What the human checks |
+| Gate `[HUMAN-VERIFY]` | Goal(s) | What the reviewer checks (before release) |
 |---|---|---|
 | **Offline on real hardware** | **F4** | On a real device in **airplane mode**: the offline path works; a server-authoritative outcome (pass/badge) is **not** faked; queued events sync idempotently and a signed sign-off rejects a late edit on reconnect. |
 | **Credential verifies at a public URL + signing-key handling** | **F6** + **M7** | A minted OB 3.0 badge **verifies at a public URL** (issuer profile / `.well-known` resolves, proof validates, status list reachable). Signing runs **server-side only**; the key lives in Supabase Vault only; key-rotation plan is sound; the chosen Deno-vs-Node signing path is the one actually wired. |
 | **Safety-veto behavior** | **M6** | The three-layer veto (CHECK + trigger + Edge Function) enforces: all-2s passes; one safety `0` ⇒ non-overridable fail; a signed row is immutable. The **per-course §5.4 rubric line-item data** is correct (correct items flagged `is_critical_safety`). |
-| **RLS policy + tenant-isolation review** | **F2** / **F3** / **M12** | A human reads **every** RLS policy and the negative-test matrix; confirms a CCS tech is signed off yet returns **zero** Redex/other-partner rows. (A CCS leak is a contractual breach.) |
-| **Any safety-/credential-critical merge** | (catch-all) | Any merge touching the safety-veto, credential signing, RLS/tenant isolation, or offline never-fake-a-pass logic gets a human review before merge — even outside the named goals above. |
+| **RLS policy + tenant-isolation review** | **F2** / **F3** / **M12** | The **security reviewer** reads **every** RLS policy and the negative-test matrix; confirms a CCS tech is signed off yet returns **zero** Redex/other-partner rows. (A CCS leak is a contractual breach.) |
+| **Any safety-/credential-critical change** | (catch-all) | Anything touching the safety-veto, credential signing, RLS/tenant isolation, or offline never-fake-a-pass logic gets a qualified-reviewer review **before release** — even outside the named goals above. |
 
 > **Review-flagged additions (carry as gates):** the build-readiness review (`wave4_review_buildreadiness.md` §6) and `CLAUDE.md` §9 also require **(a) an F5 sim-engine-contract sign-off** — a human approves the engine API + JSON Schemas before M3–M5/M9 consume them — and **(b) content/fixture SME gates** in the M9/authoring path: safety/egress content + translations need SME + safety-reviewer sign-off, and fixtures need SME-accuracy + PII-sanitization review before `sanitized = true`. Treat both as `[HUMAN-VERIFY]` gates.
 
@@ -152,6 +152,6 @@ On UltraCode goals, the effort mode spins an **independent/adversarial verificat
 
 **Actor model.** Three actors: **Claude Code — standard effort** (routine goals: CRUD, content, app-of-engine, read-side UI), **Claude Code — UltraCode mode** (an `xhigh` + dynamic-workflow effort mode with parallel subagents and adversarial verification — *not* a separate agent — reserved for the token-heavy critical goals **F2, F2a, F3, F4, F5, F5b, F6, M5, M6, M7, M12**, always paired with auto mode), and the **human reviewer (Brian)** for Phase 0 and every gated merge.
 
-**Merge-gate essentials.** A goal merges only when: (1) its done-criteria pass, (2) the shared Definition of Done is fully checked (types regenerated if schema touched, unit/e2e/offline/a11y green, no client secrets, lint/typecheck clean, docs/status updated), (3) the **locked invariant suite passes** — safety-veto trigger behavior, RLS cross-tenant isolation, idempotent `/sync`, signed-signoff immutability, no-pass-faked-offline, no client secrets, (4) for UltraCode/critical goals the **adversarial-verification report is reviewed and accepted**, and (5) any human gate is cleared. Weakening any locked invariant fails review by default.
+**Merge-gate essentials.** A goal merges when: (1) its done-criteria pass, (2) the shared Definition of Done is fully checked (types regenerated if schema touched, unit/e2e/offline/a11y green, no client secrets, lint/typecheck clean, docs/status updated), (3) the **locked invariant suite passes** — safety-veto trigger behavior, RLS cross-tenant isolation, idempotent `/sync`, signed-signoff immutability, no-pass-faked-offline, no client secrets, and (4) for UltraCode/critical goals the **adversarial-verification report is reviewed and accepted**. Items 1–4 are all automated / CI-checkable. **Any `[HUMAN-VERIFY]` reviewer gate is a RELEASE gate, not part of this merge rubric** (ledger §J): it is recorded for a designated qualified reviewer to sign before the production/field release. Weakening any locked invariant fails review by default.
 
-**Human-verification gates (cannot be agent-self-certified):** **F4** (offline on real hardware in airplane mode), **F6 + M7** (credential verifies at a public URL; signing-key handling), **M6** (safety-veto behavior + §5.4 line-item data), **F2 / F3 / M12** (RLS policy + tenant-isolation review), and **any safety-/credential-critical merge** as a catch-all. Plus the review-flagged **F5 engine-contract sign-off** and the **content/fixture SME** gates in the authoring path.
+**Reviewer release gates (cannot be agent-self-certified; signed before release, not a merge blocker):** **F4** (offline on real hardware in airplane mode), **F6 + M7** (credential verifies at a public URL; signing-key handling), **M6** (safety-veto behavior + §5.4 line-item data), **F2 / F3 / M12** (RLS policy + tenant-isolation review), and **any safety-/credential-critical change** as a catch-all. Plus the review-flagged **F5 engine-contract sign-off** and the **content/fixture SME** gates in the authoring path.

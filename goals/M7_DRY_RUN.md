@@ -5,7 +5,7 @@ A known-good target for the **credential-issuance ultracode run**. Read this bef
 - **Goal:** issue the slice's Open Badges 3.0 credentials from real sign-offs. On a `field_proven` event (from M6), the **stackability rollup** issues the matching **skill badge** with evidence URLs pointing at the real `signoff_evidence`/job records, and when all component skill badges are `field_proven` it **auto-issues the tier credential "Certified Technician — Access Control"**. All credentials are constructed + **signed server-side** by F6's issuer, written to `credentials` (+ `credential_status_list`), and published at a hosted verifiable URL.
 - **Tier:** ultracode (xhigh + dynamic workflow + **adversarial verification**). **Pair with auto mode.** (Ledger §I.)
 - **Depends on:** **F6** (the issuer: proof suite `eddsa-rdfc-2022`/Ed25519, `did:web:academy.goredex.com`, the status list, the credential builder, the **Deno-vs-Node `issue-badge` decision**, key custody in Supabase Vault), **M6** (the `finalize-signoff` path that flips `field_proven` and triggers issuance), **S1** (the slice `badge_classes` + the `requires` stackability chain).
-- **Human gate (HARD, ledger §J / M7 spec):** a human confirms a slice badge **verifies at a public URL**, and reviews the **stackability rollup + key custody + server-only signing** before merge.
+- **Human gate (HARD, ledger §J / M7 spec):** a human confirms a slice badge **verifies at a public URL**, and reviews the **stackability rollup + key custody + server-only signing** before release.
 
 ---
 
@@ -56,7 +56,7 @@ pnpm typecheck && pnpm lint
 - **Revocation works:** flipping `credentials.status` to `revoked`/`recert_required` (via F6's path) updates `credential_status_list` (`revoked=true` at the credential's `list_index`), and the verifier subsequently reports the credential **revoked**.
 - **The adversarial-verification report** is present; its findings are addressed.
 
-## 5. HUMAN-VERIFY checklist (you, before merge — HARD GATE, not agent-self-certified)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release — HARD GATE, not agent-self-certified)
 - [ ] **A slice badge verifies at a PUBLIC URL** (the headline ledger-§J check): open the issued skill badge's `hosted_assertion_url` in a real OB 3.0 / VC verifier and confirm it reports **valid + signed by `did:web:academy.goredex.com`**, not just a 200 / a pretty image.
 - [ ] **Revocation via the status list works end-to-end:** revoke the credential → the published status list flips the bit at its `list_index` → re-verifying the same URL now reports **revoked**.
 - [ ] **The signing key is Vault-only:** confirm `OB_ISSUER_PRIVATE_KEY` lives in Supabase Vault (co-located with the signer), is **not** in the repo, `.env` committed files, or any client bundle, and is **not** duplicated to CF Secrets (single custody location, per F6).

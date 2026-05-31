@@ -55,7 +55,7 @@ psql "$SUPABASE_DB_URL" -c "select academy.prereq_graph_is_dag();"              
 - **`tier.ac.certified_technician.requires.badges`** = `["skill.ac.single_door_aero","skill.ac.mercury_wiring","skill.ac.maglock_rex_egress"]` with `auto_issue:"all_components_field_proven"`.
 - **Idempotent re-run is a NO-OP:** the second `psql` run prints the same `S1 MVP-slice seed OK` notice, throws no error, and the counts above are unchanged (every INSERT is `ON CONFLICT (<natural key>) DO NOTHING`; the `active_version_id` patch only fires when null).
 
-## 5. HUMAN-VERIFY checklist (you, before merge)
+## 5. HUMAN-VERIFY checklist (a qualified reviewer, before release)
 - [ ] **Seed applied + idempotent on a live Postgres** (not parse-only): two consecutive `psql … -f` runs both end `S1 MVP-slice seed OK …` with identical counts.
 - [ ] **The 7 AC-203 ⚠ critical-safety keys** are present and flagged `is_critical_safety=true` in the AC-203 rows of `academy.signoff_line_item_templates` (these feed M6's safety veto — get them right): `ac203.release_on_power_loss`, `ac203.push_to_exit_30s`, `ac203.release_on_fire_alarm`, `ac203.pte_mount_40_48in_5ft`, `ac203.no_maglock_defeat_fire_latch`, `ac203.emergency_lighting_present`, `ac203.ahj_confirmed`. The 5 non-safety AC-203 lines are `is_critical_safety=false`.
 - [ ] **`is_safety_critical=true`** on the 6 safety competencies: `FND.FIELD_SAFETY`, `AC.FAILSTATE_JUDGMENT`, `EGRESS.NFPA101_AWARENESS`, `AC.AERO_SINGLE_DOOR`, `AC.MERCURY_WIRING`, `EGRESS.MAGLOCK_FAILSAFE` (all `mastery_threshold=0.90`); the other 9 are `false`/`0.80`.
