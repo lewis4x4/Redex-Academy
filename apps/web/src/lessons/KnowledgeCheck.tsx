@@ -150,7 +150,10 @@ export function KnowledgeCheck({
               <span aria-hidden="true">{idx + 1}. </span>
               {localized(item, locale).prompt}
               {item.is_safety_item ? (
-                <span className="ml-2 text-label uppercase text-redex"> {t('kc.safety_tag')}</span>
+                <span className="ml-2 text-label uppercase text-redex-bright">
+                  {' '}
+                  {t('kc.safety_tag')}
+                </span>
               ) : null}
             </p>
             <ItemInput
@@ -335,7 +338,7 @@ function ItemInput({ item, locale, answer, disabled, onChange }: ItemInputProps)
             }
             className="flex items-center gap-2 rounded-control border border-line bg-surface-2 px-3 py-2 text-left text-ink hover:bg-surface-hover"
           >
-            <span aria-hidden="true" className="font-label text-redex">
+            <span aria-hidden="true" className="font-label text-redex-bright">
               {pos >= 0 ? pos + 1 : '·'}
             </span>
             <span>{el.text}</span>

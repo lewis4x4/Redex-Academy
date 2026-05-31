@@ -16,7 +16,14 @@ interface ToneSpec {
 const TONES: Record<CalloutTone, ToneSpec> = {
   info: { glyph: 'ⓘ', defaultLabel: 'Note', frame: 'border-line', accent: 'text-ink' },
   warning: { glyph: '▲', defaultLabel: 'Caution', frame: 'border-amber', accent: 'text-amber' },
-  safety: { glyph: '⛔', defaultLabel: 'Safety', frame: 'border-redex', accent: 'text-redex' },
+  // redex-bright (#ff3b43), not redex (#ed1b24): the small tone WORD must clear AA
+  // (4.5:1) on the dark surface — #ed1b24 is only 3.94:1. The red border carries the tone too.
+  safety: {
+    glyph: '⛔',
+    defaultLabel: 'Safety',
+    frame: 'border-redex',
+    accent: 'text-redex-bright',
+  },
 };
 
 export interface CalloutProps extends Omit<HTMLAttributes<HTMLElement>, 'title'> {
