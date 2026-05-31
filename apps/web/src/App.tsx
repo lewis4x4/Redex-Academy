@@ -8,6 +8,7 @@ import { Constellation } from './catalog/Constellation';
 import { SyncStatus } from './components/SyncStatus';
 import { Ac203SimScreen } from './forge/Ac203SimScreen';
 import { SignoffScreen } from './features/signoff/SignoffScreen';
+import { BackpackScreen } from './features/backpack/BackpackScreen';
 import { useAppRoute } from './navigation';
 
 /**
@@ -49,13 +50,17 @@ export default function App() {
   // evaluator section (?screen=signoff). Gated to the 'evaluator' role (RLS is the
   // real boundary; this only hides UI). The signoff itself authorizes server-side.
   const inSignoff = route.screen === 'signoff' && claims != null && hasRole(claims, 'evaluator');
+  // M7 — the Digital Backpack: the learner's issued credentials (skill → tier
+  // stack), each with its public hosted verifiable URL. Read-only (issuance is
+  // server-only); RLS scopes the read to the signed-in learner's own credentials.
+  const inBackpack = route.screen === 'backpack';
 
   return (
     <AppShell
       density={density}
       proofPoints={0}
-      onBackpack={() => {}}
-      screenKey={inSim ? 'sim-ac203' : inSignoff ? 'signoff' : 'home'}
+      onBackpack={() => navigate({ screen: 'backpack', course: null })}
+      screenKey={inSim ? 'sim-ac203' : inSignoff ? 'signoff' : inBackpack ? 'backpack' : 'home'}
       nav={
         <>
           <NavPill active>Home</NavPill>
@@ -72,6 +77,10 @@ export default function App() {
         <Ac203SimScreen onExit={() => navigate({ screen: null, course: null })} />
       ) : inSignoff ? (
         <SignoffScreen onExit={() => navigate({ screen: null, course: null })} />
+      ) : inBackpack ? (
+        <div className="px-8 pt-2 pb-10">
+          <BackpackScreen recipientUserId={session.user.id} />
+        </div>
       ) : (
         <div className="flex flex-col gap-5 pb-10">
           <div className="px-8 pt-2">

@@ -154,5 +154,35 @@
       "verification_documentation": "Líneas de Verificación y Documentación",
       "independence_judgment": "Líneas de Independencia y Juicio"
     }
+  },
+  "backpack": {
+    "eyebrow": "Credenciales",
+    "title": "Mochila digital",
+    "subtitle": "Tus Open Badges verificables — las insignias de habilidad se acumulan en credenciales de nivel.",
+    "components": "Insignias de habilidad que la componen",
+    "skills": "Insignias de habilidad",
+    "expires": "Vence",
+    "verify": "Verificar",
+    "verify_aria": "Verifica esta credencial en su URL pública",
+    "not_published": "Aún no publicada",
+    "loading": "Cargando tus insignias",
+    "kind": {
+      "tier": "Credencial de nivel",
+      "skill": "Insignia de habilidad"
+    },
+    "status": {
+      "active": "Activa",
+      "expired": "Vencida",
+      "revoked": "Revocada",
+      "recert": "Recertificación requerida"
+    },
+    "empty": {
+      "title": "Aún no hay insignias",
+      "desc": "Aprueba una firma de campo de un evaluador para ganar tu primera insignia de habilidad."
+    },
+    "error": {
+      "title": "No se pudo cargar tu mochila",
+      "retry": "Reintentar"
+    }
   }
 }

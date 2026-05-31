@@ -154,5 +154,35 @@
       "verification_documentation": "Verification & Documentation line items",
       "independence_judgment": "Independence & Judgment line items"
     }
+  },
+  "backpack": {
+    "eyebrow": "Credentials",
+    "title": "Digital Backpack",
+    "subtitle": "Your verifiable Open Badges — skill badges stack into tier credentials.",
+    "components": "Component skill badges",
+    "skills": "Skill badges",
+    "expires": "Expires",
+    "verify": "Verify",
+    "verify_aria": "Verify this credential at its public URL",
+    "not_published": "Not yet published",
+    "loading": "Loading your badges",
+    "kind": {
+      "tier": "Tier credential",
+      "skill": "Skill badge"
+    },
+    "status": {
+      "active": "Active",
+      "expired": "Expired",
+      "revoked": "Revoked",
+      "recert": "Recert required"
+    },
+    "empty": {
+      "title": "No badges yet",
+      "desc": "Pass an Evaluator field sign-off to earn your first skill badge."
+    },
+    "error": {
+      "title": "Could not load your backpack",
+      "retry": "Retry"
+    }
   }
 }
