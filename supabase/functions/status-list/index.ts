@@ -84,12 +84,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (req.method !== "GET") return methodNotAllowedResponse();
 
   const { pathname } = new URL(req.url);
-  // Netlify proxies the apex path (/status/:listId) onto this function's route,
-  // so tolerate any leading prefix and capture the trailing list id.
-  const match = /^.*\/status\/([A-Za-z0-9._-]+)$/.exec(pathname);
-  if (!match) return notFoundResponse();
-  const listId = match[1]!;
-  if (listId !== VALID_LIST_ID) {
+  // Netlify proxies the apex path onto this function (status=200), so the route
+  // prefix differs: `.../status-list/<id>` via the /status/* proxy, or a direct
+  // `.../status-list/<id>`. The list id is the trailing segment either way — match
+  // that rather than a literal `/status/` prefix the proxy strips. Only '1' is valid.
+  const segments = pathname.split("/").filter(Boolean);
+  const listId = segments[segments.length - 1];
+  if (!listId || listId !== VALID_LIST_ID) {
     return notFoundResponse("status_list_not_found");
   }
 

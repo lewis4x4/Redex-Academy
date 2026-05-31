@@ -73,9 +73,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
   const { pathname } = new URL(req.url);
   // Netlify proxies the apex path (/credentials/:id) onto this function's route,
   // so tolerate any leading prefix and capture the trailing credential id.
-  const match = /^.*\/credentials\/([A-Za-z0-9._-]+)$/.exec(pathname);
-  if (!match) return notFoundResponse();
-  const id = match[1]!;
+  // Netlify proxies the apex path onto this function (status=200), so the route
+  // prefix differs: `.../hosted-assertion/<id>` via the /credentials/* proxy, or a
+  // direct `.../hosted-assertion/<id>`. The credential id is the trailing segment
+  // either way — match that rather than a literal `/credentials/` prefix the proxy
+  // strips. Reject the bare function root (no id).
+  const segments = pathname.split("/").filter(Boolean);
+  const id = segments[segments.length - 1];
+  if (!id || id === "hosted-assertion") return notFoundResponse();
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
