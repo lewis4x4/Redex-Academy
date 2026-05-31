@@ -8,6 +8,14 @@
     "manager_dashboard": "Panel de gerente",
     "shell_density": "Densidad de interfaz"
   },
+  "pwa": {
+    "update": {
+      "available": "Hay una nueva versión disponible.",
+      "reload": "Recargar",
+      "dismiss": "Más tarde, descartar aviso de actualización",
+      "dismiss_short": "Más tarde"
+    }
+  },
   "catalog": {
     "eyebrow": "Tu ruta",
     "title": "La",

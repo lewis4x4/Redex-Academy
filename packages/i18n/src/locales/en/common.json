@@ -8,6 +8,14 @@
     "manager_dashboard": "Manager dashboard",
     "shell_density": "Shell density"
   },
+  "pwa": {
+    "update": {
+      "available": "A new version is available.",
+      "reload": "Reload",
+      "dismiss": "Later, dismiss update notice",
+      "dismiss_short": "Later"
+    }
+  },
   "catalog": {
     "eyebrow": "Your path",
     "title": "The",
