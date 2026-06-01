@@ -103,15 +103,14 @@ export function HomeScreen() {
   // First-run name prompt: shown until the learner saves a name (or skips this
   // session). Never shown once a real name exists on the profile.
   const [skippedNamePrompt, setSkippedNamePrompt] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
+  // Prefill the draft once with the humanized email handle as a friendly suggestion
+  // (lazy init — runs at mount, when the authed session/email is already present).
+  const [nameDraft, setNameDraft] = useState(() =>
+    !hasName && emailHandle ? humanizeHandle(emailHandle) : '',
+  );
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const showNamePrompt = !hasName && !skippedNamePrompt;
-
-  useEffect(() => {
-    // Prefill the draft with the humanized email handle as a friendly suggestion.
-    if (!hasName && emailHandle) setNameDraft((d) => d || humanizeHandle(emailHandle));
-  }, [hasName, emailHandle]);
 
   const onSaveName = useCallback(
     async (e: FormEvent) => {
