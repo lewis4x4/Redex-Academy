@@ -361,7 +361,16 @@ test('the M2 lesson + knowledge check has no axe violations (WCAG 2a/2aa)', asyn
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/?screen=lesson&unit=000000c3-0009-0000-0000-000000000001');
-  await page.getByTestId('knowledge-check').waitFor(); // lesson + embedded check mounted
+  // The paced step runner opens on the teaching step (the 2D sim + Callout + the outline
+  // rail); scan it, then walk Next to the terminal knowledge-check step and scan that too.
+  await page.getByTestId('i2d-submit').waitFor(); // teaching step mounted
+  const teaching = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(teaching.violations).toEqual([]);
+  const kc = page.getByTestId('knowledge-check');
+  for (let i = 0; i < 8 && (await kc.count()) === 0; i += 1) {
+    await page.getByTestId('lesson-next').click();
+  }
+  await kc.waitFor(); // embedded check mounted on the terminal step
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });

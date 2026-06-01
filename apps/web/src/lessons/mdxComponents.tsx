@@ -6,7 +6,7 @@ import {
   loadSpec,
   type TelemetrySink,
 } from '@redex/sim-engine';
-import { Callout, Checklist } from '@redex/ui';
+import { Callout, Checklist, SimulatorPanel } from '@redex/ui';
 import { M2_AC_SPECS } from '@redex/sim-schemas';
 import { useMemo, type ReactElement } from 'react';
 import { enqueueXapi } from '../offline/xapi-queue';
@@ -47,11 +47,22 @@ function Sim({
       </p>
     );
   }
+  // The engine renderer is unchanged (scoring / safety-veto / verdict role="status" /
+  // i2d-submit testid all intact); SimulatorPanel is a DOM-only frame that elevates it
+  // to the step's centerpiece. No vertical margin — the step container supplies the gap.
   if (instance.engineKind === 'interaction_2d') {
-    return <Interaction2dSim instance={instance as Interaction2dInstance} mode={mode} />;
+    return (
+      <SimulatorPanel>
+        <Interaction2dSim instance={instance as Interaction2dInstance} mode={mode} />
+      </SimulatorPanel>
+    );
   }
   if (instance.engineKind === 'calculator') {
-    return <CalculatorSim instance={instance as CalculatorInstance} mode={mode} />;
+    return (
+      <SimulatorPanel>
+        <CalculatorSim instance={instance as CalculatorInstance} mode={mode} />
+      </SimulatorPanel>
+    );
   }
   return (
     <p role="alert" data-testid="sim-unsupported">

@@ -27,6 +27,8 @@ export * from './components/Toggle';
 export * from './components/States';
 export * from './components/Callout';
 export * from './components/Checklist';
+export * from './components/LessonOutlineRail';
+export * from './components/SimulatorPanel';
 
 // Folded in from F1 — the colorblind-safe verdict indicator.
 export { StatusBadge } from './StatusBadge';
