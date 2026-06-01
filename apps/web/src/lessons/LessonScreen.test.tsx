@@ -1,5 +1,5 @@
-import { initI18n } from '@redex/i18n';
-import { render, screen, waitFor } from '@testing-library/react';
+import { i18n, initI18n } from '@redex/i18n';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { RenderableItem } from './lessonSource';
 
@@ -39,9 +39,12 @@ const safetyMcq: RenderableItem = {
   },
 };
 
-describe('LessonScreen — MDX lesson renders embedded components (AC-101)', () => {
+describe('LessonScreen — paced step runner (AC-101 MDX)', () => {
   beforeEach(() => {
     initI18n('en');
+    // initI18n is idempotent — reset the shared singleton to EN so a prior test's
+    // EN↔ES toggle doesn't leak into the next test.
+    void i18n.changeLanguage('en');
     h.loadLesson.mockResolvedValue({
       unitId: 'ac101-u1',
       courseVersionId: 'cv-ac101',
@@ -51,19 +54,71 @@ describe('LessonScreen — MDX lesson renders embedded components (AC-101)', () 
     });
   });
 
-  it('compiles the MDX body and renders the Callout, the 2D Sim, and the KnowledgeCheck', async () => {
+  it('renders step 1 with the Callout + the 2D Sim, paced behind the step runner', async () => {
     render(<LessonScreen unitId="ac101-u1" />);
-    // the MDX compiles asynchronously → wait for the body
-    await waitFor(() => expect(screen.getByTestId('lesson-body')).toBeInTheDocument());
-    // <Callout tone="safety"> from the MDX prose
-    const note = screen.getByRole('note');
-    expect(note).toHaveAttribute('data-tone', 'safety');
-    // <Sim spec="ac-101/anatomy-of-a-door" /> → the interaction-2d renderer mounted
+    // the runner frame + the first step compile asynchronously
+    await waitFor(() => expect(screen.getByTestId('lesson-screen')).toBeInTheDocument());
+    const step1 = await screen.findByTestId('step-content');
+    expect(step1).toHaveAttribute('data-step', '1');
+    // <Callout tone="safety"> from the intro prose, now step 1
+    expect(within(step1).getByRole('note')).toHaveAttribute('data-tone', 'safety');
+    // <Sim spec="ac-101/anatomy-of-a-door" /> → the interaction-2d renderer mounted,
+    // framed by the SimulatorPanel centerpiece
     expect(screen.getByTestId('i2d-submit')).toBeInTheDocument();
-    // <KnowledgeCheck /> resolved from lesson context
-    expect(screen.getByTestId('knowledge-check')).toBeInTheDocument();
-    // the locale toggle is present (EN↔ES)
+    expect(screen.getByTestId('simulator-panel')).toBeInTheDocument();
+    // the KC is NOT on screen yet (it is the terminal step)
+    expect(screen.queryByTestId('knowledge-check')).not.toBeInTheDocument();
+    // the locale toggle is in the header (EN↔ES)
     expect(screen.getByTestId('lesson-locale-toggle')).toHaveTextContent('en');
+  });
+
+  it('walks Next to the terminal Knowledge-check step', async () => {
+    render(<LessonScreen unitId="ac101-u1" />);
+    await screen.findByTestId('i2d-submit');
+    // advance to the KC step (last step)
+    screen.getByTestId('lesson-next').click();
+    await waitFor(() =>
+      expect(screen.getByTestId('step-content')).toHaveAttribute('data-step', '2'),
+    );
+    expect(await screen.findByTestId('knowledge-check')).toBeInTheDocument();
+    // on the last step the primary button flips to "Continue the course"
+    expect(screen.getByTestId('lesson-next')).toHaveTextContent('Continue the course');
+  });
+
+  it('ArrowDown / ArrowUp page between steps (suppressed inside form controls)', async () => {
+    render(<LessonScreen unitId="ac101-u1" />);
+    await screen.findByTestId('i2d-submit');
+    // ArrowDown advances to the KC step
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    await waitFor(() =>
+      expect(screen.getByTestId('step-content')).toHaveAttribute('data-step', '2'),
+    );
+    // ArrowUp goes back to step 1
+    fireEvent.keyDown(window, { key: 'ArrowUp' });
+    await waitFor(() =>
+      expect(screen.getByTestId('step-content')).toHaveAttribute('data-step', '1'),
+    );
+    // with focus inside a KC radio (a form control), Arrow keys are NOT stolen for nav
+    fireEvent.keyDown(window, { key: 'ArrowDown' });
+    await screen.findByTestId('knowledge-check');
+    const radio = document.querySelector('[data-item="s1"] [data-choice="a"]') as HTMLElement;
+    radio.focus();
+    fireEvent.keyDown(window, { key: 'ArrowUp' });
+    // still on the KC step — the form control kept the arrow key
+    expect(screen.getByTestId('step-content')).toHaveAttribute('data-step', '2');
+  });
+
+  it('the header locale toggle flips the KC chrome EN↔ES on the current step', async () => {
+    render(<LessonScreen unitId="ac101-u1" />);
+    await screen.findByTestId('i2d-submit');
+    screen.getByTestId('lesson-next').click();
+    await screen.findByTestId('knowledge-check');
+    expect(screen.getByTestId('kc-submit')).toHaveTextContent('Check answers');
+    screen.getByTestId('lesson-locale-toggle').click();
+    // the current step re-evaluates in ES
+    await waitFor(() =>
+      expect(screen.getByTestId('kc-submit')).toHaveTextContent('Comprobar respuestas'),
+    );
   });
 
   it('shows a graceful error when the lesson has no committed MDX body', async () => {

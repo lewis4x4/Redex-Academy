@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Route } from '@playwright/test';
 
 // M2 — the FLAGSHIP AC-203 MDX lesson with an embedded retry-to-mastery knowledge
@@ -130,24 +131,50 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+// The paced step runner shows ONE step at a time. Opening the lesson lands on step 1
+// ("Two locks, opposite rules" — its embedded mag-vs-strike <Sim> + the safety <Callout>).
 const openLesson = async (page: import('@playwright/test').Page) => {
   await page.goto(`/?screen=lesson&unit=${LESSON_UNIT}`);
-  await expect(page.getByTestId('lesson-body')).toBeVisible();
+  await expect(page.getByTestId('step-content')).toHaveAttribute('data-step', '1');
 };
 
-test('lesson renders via MDX with the embedded 2D sims + knowledge check', async ({ page }) => {
+// Walk Next from any step until the terminal Knowledge-check step is on screen. The KC
+// is the last of the 7 `## ` sections, so we never need more than 6 clicks; loop on the
+// observable KC instead of a hard count so it stays robust to step-count changes.
+const walkToKnowledgeCheck = async (page: import('@playwright/test').Page) => {
+  const kc = page.getByTestId('knowledge-check');
+  for (let i = 0; i < 8 && (await kc.count()) === 0; i += 1) {
+    await page.getByTestId('lesson-next').click();
+  }
+  await expect(kc).toBeVisible();
+};
+
+test('the runner renders MDX step-by-step: step 1 has the embedded 2D sim, the last step has the check', async ({
+  page,
+}) => {
   await openLesson(page);
+  // Step 1 is "Two locks, opposite rules": the safety <Callout> + the mag-vs-strike <Sim>.
   await expect(page.getByRole('note').first()).toHaveAttribute('data-tone', 'safety'); // <Callout tone="safety">
-  // All 4 embedded sims are ac-203/* interaction_2d specs (in M2_AC_SPECS) → they
-  // mount the Interaction2dSim engine (i2d-submit), NOT sim-missing / sim-unsupported.
+  // The embedded ac-203/* specs are all interaction_2d (in M2_AC_SPECS) → they mount the
+  // Interaction2dSim engine (i2d-submit), NEVER sim-missing / sim-unsupported — on any step.
   await expect(page.getByTestId('sim-missing')).toHaveCount(0);
   await expect(page.getByTestId('sim-unsupported')).toHaveCount(0);
-  await expect(page.getByTestId('i2d-submit').first()).toBeVisible(); // <Sim> mounted
-  await expect(page.getByTestId('knowledge-check')).toBeVisible();
+  await expect(page.getByTestId('i2d-submit').first()).toBeVisible(); // step-1 <Sim> mounted
+  // the embedded sim is framed by the SimulatorPanel centerpiece
+  await expect(page.getByTestId('simulator-panel').first()).toBeVisible();
+  // the KC is the terminal step, not on screen yet
+  await expect(page.getByTestId('knowledge-check')).toHaveCount(0);
+  // walk Next to the terminal Knowledge-check step
+  await walkToKnowledgeCheck(page);
+  await expect(page.getByTestId('lesson-next')).toHaveText('Continue the course');
+  // no sim placeholder appeared anywhere along the walk
+  await expect(page.getByTestId('sim-missing')).toHaveCount(0);
+  await expect(page.getByTestId('sim-unsupported')).toHaveCount(0);
 });
 
 test('retry-to-mastery: a safety miss is BLOCKED; fixing it PASSES', async ({ page }) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   const kc = page.getByTestId('knowledge-check');
   // miss one safety item (s1 = 'b'), everything else correct → safety 8/9 = 88.9% < 90%
   await kc.locator('[data-item="s1"] [data-choice="b"]').click();
@@ -165,12 +192,16 @@ test('retry-to-mastery: a safety miss is BLOCKED; fixing it PASSES', async ({ pa
   await expect(page.getByTestId('kc-verdict')).toContainText('Mastered');
 });
 
-test('EN↔ES locale toggle flips the check chrome; the lesson still renders', async ({ page }) => {
+test('EN↔ES locale toggle (on the KC step) flips the check chrome; the step still renders', async ({
+  page,
+}) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   await expect(page.getByTestId('kc-submit')).toHaveText('Check answers');
   await page.getByTestId('lesson-locale-toggle').click();
+  // the header toggle re-evaluates the CURRENT step → the check chrome flips to ES
   await expect(page.getByTestId('kc-submit')).toHaveText('Comprobar respuestas');
-  await expect(page.getByTestId('lesson-body')).toBeVisible();
+  await expect(page.getByTestId('step-content')).toBeVisible();
 });
 
 test('OFFLINE: a submitted check queues + shows "completes on reconnect", never a faked pass', async ({
@@ -178,12 +209,47 @@ test('OFFLINE: a submitted check queues + shows "completes on reconnect", never 
   context,
 }) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   await context.setOffline(true);
   const kc = page.getByTestId('knowledge-check');
   for (const id of [...SAFETY_IDS, ...NON_SAFETY_IDS])
     await kc.locator(`[data-item="${id}"] [data-choice="a"]`).click();
   await page.getByTestId('kc-submit').click();
   await expect(page.getByTestId('kc-verdict')).toContainText('offline'); // pending, not a pass
+});
+
+test('a11y: a teaching step AND the KC step have no axe violations; the rail is keyboard-navigable', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' }); // sample the final, fully-opaque paint
+  await openLesson(page);
+
+  // (1) axe on a TEACHING step (step 1 — the embedded sim + safety Callout + the rail).
+  await expect(page.getByTestId('i2d-submit').first()).toBeVisible();
+  const teaching = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(teaching.violations).toEqual([]);
+
+  // The outline rail is a semantic nav>ol>li>button — colorblind-safe state (number +
+  // glyph + color + aria), the active step carries aria-current="page".
+  const rail = page.getByRole('navigation', { name: 'In this lesson' });
+  await expect(rail).toBeVisible();
+  await expect(rail.locator('button[aria-current="page"]')).toHaveAttribute('data-step', '1');
+
+  // (2) the rail is keyboard-operable: walk to the KC step, then Tab to a completed
+  // rail step and Enter to JUMP back to it — proving the rail buttons are real, focusable
+  // controls (not color-only, not div-onclick).
+  await walkToKnowledgeCheck(page);
+  const step1Button = rail.locator('button[data-step="1"]');
+  await step1Button.focus();
+  await expect(step1Button).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('step-content')).toHaveAttribute('data-step', '1');
+
+  // (3) axe on the KC step itself (the radio inputs + verdict StatusBadge).
+  await walkToKnowledgeCheck(page);
+  await expect(page.getByTestId('knowledge-check')).toBeVisible();
+  const kcAxe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  expect(kcAxe.violations).toEqual([]);
 });
 
 // ── ROUTING (the AC-203 entry-point fix) ─────────────────────────────────────
@@ -301,8 +367,9 @@ test.describe('AC-203 entry points land on the ordinal-1 lesson, not the sim', (
   // the ac-203/u1 MDX body mounted with its embedded interaction_2d sims, and NOT a
   // single sim-missing / sim-unsupported placeholder.
   const expectOnLesson = async (page: import('@playwright/test').Page) => {
-    await expect(page.getByTestId('lesson-body')).toBeVisible();
-    await expect(page.getByTestId('i2d-submit').first()).toBeVisible(); // an embedded <Sim> mounted
+    // The lesson opens on step 1 of the paced runner (NOT the single-scroll body, NOT the sim).
+    await expect(page.getByTestId('step-content')).toHaveAttribute('data-step', '1');
+    await expect(page.getByTestId('i2d-submit').first()).toBeVisible(); // step-1 <Sim> mounted
     await expect(page.getByTestId('sim-missing')).toHaveCount(0);
     await expect(page.getByTestId('sim-unsupported')).toHaveCount(0);
     // and we are NOT on the branching sim screen.
@@ -355,6 +422,6 @@ test.describe('AC-203 entry points land on the ordinal-1 lesson, not the sim', (
     await expect(openSim).toBeVisible();
     await openSim.click();
     await expect(page.getByTestId('node-prompt')).toBeVisible(); // the sim screen mounted
-    await expect(page.getByTestId('lesson-body')).toHaveCount(0); // and NOT the lesson
+    await expect(page.getByTestId('step-content')).toHaveCount(0); // and NOT the lesson runner
   });
 });

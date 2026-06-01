@@ -122,20 +122,37 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+// The paced step runner shows ONE step at a time. AC-101 u1 splits into 2 steps: the
+// teaching overview (the embedded anatomy <Sim> + the safety <Callout>) and the terminal
+// Knowledge check. Opening the lesson lands on step 1 (the overview).
 const openLesson = async (page: import('@playwright/test').Page) => {
   await page.goto(`/?screen=lesson&unit=${LESSON_UNIT}`);
-  await expect(page.getByTestId('lesson-body')).toBeVisible();
+  await expect(page.getByTestId('step-content')).toHaveAttribute('data-step', '1');
 };
 
-test('lesson renders via MDX with the embedded 2D sim + knowledge check', async ({ page }) => {
+const walkToKnowledgeCheck = async (page: import('@playwright/test').Page) => {
+  const kc = page.getByTestId('knowledge-check');
+  for (let i = 0; i < 8 && (await kc.count()) === 0; i += 1) {
+    await page.getByTestId('lesson-next').click();
+  }
+  await expect(kc).toBeVisible();
+};
+
+test('the runner renders MDX step-by-step: the teaching step has the 2D sim, the last step has the check', async ({
+  page,
+}) => {
   await openLesson(page);
   await expect(page.getByRole('note')).toHaveAttribute('data-tone', 'safety'); // <Callout>
   await expect(page.getByTestId('i2d-submit')).toBeVisible(); // <Sim> mounted
-  await expect(page.getByTestId('knowledge-check')).toBeVisible();
+  await expect(page.getByTestId('simulator-panel')).toBeVisible(); // framed as the centerpiece
+  await expect(page.getByTestId('knowledge-check')).toHaveCount(0); // terminal step, not yet
+  await walkToKnowledgeCheck(page);
+  await expect(page.getByTestId('lesson-next')).toHaveText('Continue the course');
 });
 
 test('retry-to-mastery: a safety miss is BLOCKED; fixing it PASSES', async ({ page }) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   const kc = page.getByTestId('knowledge-check');
   // miss one safety item (s1 = 'b'), everything else correct → safety 50% < 90%
   await kc.locator('[data-item="s1"] [data-choice="b"]').click();
@@ -153,12 +170,15 @@ test('retry-to-mastery: a safety miss is BLOCKED; fixing it PASSES', async ({ pa
   await expect(page.getByTestId('kc-verdict')).toContainText('Mastered');
 });
 
-test('EN↔ES locale toggle flips the check chrome; the lesson still renders', async ({ page }) => {
+test('EN↔ES locale toggle (on the KC step) flips the check chrome; the step still renders', async ({
+  page,
+}) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   await expect(page.getByTestId('kc-submit')).toHaveText('Check answers');
   await page.getByTestId('lesson-locale-toggle').click();
   await expect(page.getByTestId('kc-submit')).toHaveText('Comprobar respuestas');
-  await expect(page.getByTestId('lesson-body')).toBeVisible();
+  await expect(page.getByTestId('step-content')).toBeVisible();
 });
 
 test('OFFLINE: a submitted check queues + shows "completes on reconnect", never a faked pass', async ({
@@ -166,6 +186,7 @@ test('OFFLINE: a submitted check queues + shows "completes on reconnect", never 
   context,
 }) => {
   await openLesson(page);
+  await walkToKnowledgeCheck(page);
   await context.setOffline(true);
   const kc = page.getByTestId('knowledge-check');
   for (const id of ['s1', 's2', 'n1', 'n2', 'n3'])

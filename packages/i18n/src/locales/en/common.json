@@ -75,7 +75,12 @@
     "no_body": "This lesson has no content yet.",
     "error_title": "Couldn't load this lesson",
     "toggle_locale": "Switch language",
-    "back": "Back"
+    "back": "Back",
+    "outline": "In this lesson",
+    "step_counter": "Step {{current}} of {{total}}",
+    "progress": "Lesson progress",
+    "next": "Next",
+    "continue_course": "Continue the course"
   },
   "kc": {
     "aria_label": "Knowledge check",

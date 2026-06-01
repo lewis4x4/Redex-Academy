@@ -75,7 +75,12 @@
     "no_body": "Esta lección aún no tiene contenido.",
     "error_title": "No se pudo cargar la lección",
     "toggle_locale": "Cambiar idioma",
-    "back": "Atrás"
+    "back": "Atrás",
+    "outline": "En esta lección",
+    "step_counter": "Paso {{current}} de {{total}}",
+    "progress": "Progreso de la lección",
+    "next": "Siguiente",
+    "continue_course": "Continuar el curso"
   },
   "kc": {
     "aria_label": "Comprobación de conocimientos",
