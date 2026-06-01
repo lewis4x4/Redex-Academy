@@ -287,10 +287,49 @@ begin
   reset role;
 end $$;
 
+-- ----------------------------------------------------------------------------
+-- NEGATIVE (Phase 2 course-player): a cross-org LEARNER gets ZERO unit_progress
+-- rows for ANOTHER org's enrollment. The course-player reads its OWN progress via
+-- unit_progress_select_own, which keys on ENROLLMENT OWNERSHIP (the enrollment's
+-- user_id = current_user_id()), NOT just org. So a learner in org B — even reading
+-- by the (org-A) enrollment_id directly — sees nothing. POSITIVE control: org A's
+-- OWN candidate sees their own unit_progress row. (The cross-org MANAGER zero is
+-- covered by the matrices above; this proves the learner own-read path Phase 2 adds.)
+-- ----------------------------------------------------------------------------
+do $$
+declare
+  v_org_a  uuid := '00000000-0000-0000-0000-00000000aaa1'; -- Redex
+  v_org_b  uuid := '00000000-0000-0000-0000-00000000bbb2'; -- CCS partner
+  v_cand   uuid := '00000000-0000-0000-0000-00000000ccc3'; -- the org-A learner who owns the enrollment
+  v_other  uuid := gen_random_uuid();                      -- a different org-B learner
+  v_count  bigint;
+begin
+  -- A different learner in ANOTHER org reads unit_progress → sees ZERO of org A's rows
+  -- (own-read keys on enrollment ownership; cross-org + cross-user → nothing).
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_other::text, 'org_id', v_org_b::text,
+                      'roles', json_build_array('learner'))::text, true);
+  set local role authenticated;
+  select count(*) into v_count from academy.unit_progress;
+  perform pg_temp.assert(v_count = 0,
+    format('NEGATIVE: a cross-org learner sees ZERO unit_progress rows (got %s)', v_count));
+  reset role;
+
+  -- POSITIVE: the org-A candidate who OWNS the enrollment sees their own progress row.
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', v_cand::text, 'org_id', v_org_a::text,
+                      'roles', json_build_array('learner'))::text, true);
+  set local role authenticated;
+  select count(*) into v_count from academy.unit_progress;
+  perform pg_temp.assert(v_count >= 1,
+    format('POSITIVE: the enrollment-owning learner sees their OWN unit_progress (got %s)', v_count));
+  reset role;
+end $$;
+
 do $$
 begin
   raise notice '------------------------------------------------------------';
-  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero + sim_attempt write-isolation + signoff no-self-sign).';
+  raise notice 'ALL RLS NEGATIVE TESTS PASSED (positive control + cross-org zero + anon zero + sim_attempt write-isolation + signoff no-self-sign + unit_progress learner own-read isolation).';
   raise notice '------------------------------------------------------------';
 end $$;
 

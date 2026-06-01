@@ -4,7 +4,7 @@ import {
   type KnowledgeCheckVerdict,
 } from '@redex/sim-engine';
 import { StatusBadge } from '@redex/ui';
-import { useMemo, useState, type ReactElement } from 'react';
+import { useEffect, useMemo, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '../auth/supabaseClient';
 import { enqueue } from '../offline/sync-queue';
@@ -21,6 +21,9 @@ export interface KnowledgeCheckProps {
   /** Injected for tests/offline. Defaults to crypto.randomUUID + Date.now. */
   genUuid?: () => string;
   now?: () => string;
+  /** Fires ONCE when the SERVER verdict is a pass (outcome==='pass'). The course-player
+   *  uses this to record unit_progress + advance — never fires on a local/offline grade. */
+  onPass?: () => void;
 }
 
 type Answer = {
@@ -65,6 +68,7 @@ export function KnowledgeCheck({
   online = true,
   genUuid,
   now,
+  onPass,
 }: KnowledgeCheckProps): ReactElement {
   const { t } = useTranslation();
   const uuid = genUuid ?? (() => globalThis.crypto.randomUUID());
@@ -131,6 +135,13 @@ export function KnowledgeCheck({
 
   const showVerdict = verdict !== null && outcome !== null;
   const passed = outcome === 'pass';
+
+  // Surface the SERVER pass to the course-player exactly once (gates unit advancement).
+  // Fires only when `outcome==='pass'`, which is set only after grade-knowledge-check
+  // returns passed — never on a local/offline grade (Inv. 5).
+  useEffect(() => {
+    if (passed) onPass?.();
+  }, [passed, onPass]);
 
   return (
     <section
