@@ -2,17 +2,18 @@ import {
   Button,
   Card,
   ErrorState,
+  Input,
   ProgressBar,
   ScreenHead,
   Skeleton,
   StatBlock,
-  StatusBadge,
   Tag,
   cx,
 } from '@redex/ui';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/useAuth';
+import { updateDisplayName } from '../auth/authClient';
 import { supabase } from '../auth/supabaseClient';
 import {
   type CatalogGating,
@@ -37,19 +38,41 @@ const STATE_DOT: Record<GatingState, string> = {
   mastered: 'bg-gold',
 };
 
+// English persona-path labels — i18next defaults for home.persona.* so the chip
+// reads correctly even before the locale bundle ships the key.
+const PERSONA_LABEL: Record<Persona, string> = {
+  nova: 'New technician path',
+  marco: 'Field technician path',
+  priya: 'Office / coordinator path',
+  dana: 'Leadership path',
+};
+
 function tierRank(tier: Tier): number {
   const i = TIER_ORDER.indexOf(tier);
   return i === -1 ? 99 : i;
 }
 
+/** Title-case a raw email handle ("b.lewis" → "B Lewis", "jsmith" → "Jsmith"). */
+function humanizeHandle(handle: string): string {
+  return handle
+    .split(/[._-]+/)
+    .filter(Boolean)
+    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ');
+}
+
 /**
- * The learner Home — a personalized welcome dashboard (the default landing screen).
- * Orients a returning learner in one glance: who they are, where they stand
- * (progress stats), what to pick back up (Continue), what to do next (Recommended),
- * and the ways to explore (skill-map, catalog, backpack). The constellation is no
- * longer the home — it lives one click away as its own sub-page. All facts come
- * from the same RLS-scoped M1 catalog read (`loadCatalogGating`); the credential
- * count is a best-effort enhancement that degrades silently.
+ * The learner Home — a personalized welcome screen (the default landing). A bold
+ * greeting hero with ONE focused next action (Continue / Start), a compact standing
+ * strip, and an Explore row. The Constellation skill-map lives one click away as its
+ * own sub-page. On a learner's first visit (no name on their profile yet) the hero
+ * shows a one-time "what should we call you?" prompt that saves the name to their
+ * auth profile, so every later visit greets them by name.
+ *
+ * All catalog facts come from the RLS-scoped M1 read (`loadCatalogGating`); the
+ * credential count is a best-effort enhancement that degrades silently. Every string
+ * uses an i18next `defaultValue`, so copy renders correctly whether or not the home.*
+ * keys are in the locale bundle (a translation wins when present).
  */
 export function HomeScreen() {
   const { t } = useTranslation();
@@ -57,20 +80,56 @@ export function HomeScreen() {
   const { navigate } = useAppRoute();
   const persona = claims?.persona as Persona | undefined;
 
-  // Best-effort display name: OAuth metadata → email local-part → friendly fallback.
-  const meta = (session?.user.user_metadata ?? {}) as Record<string, unknown>;
-  const rawName =
-    (typeof meta.full_name === 'string' && meta.full_name) ||
-    (typeof meta.name === 'string' && meta.name) ||
-    (typeof meta.first_name === 'string' && meta.first_name) ||
-    (session?.user.email ? session.user.email.split('@')[0] : '') ||
-    t('home.fallback_name');
-  const firstToken =
-    String(rawName)
-      .trim()
-      .split(/[\s.]+/)[0] || String(rawName);
-  const name = firstToken.charAt(0).toUpperCase() + firstToken.slice(1);
+  // t() with an English default baked in.
+  const tt = useCallback(
+    (key: string, def: string, opts?: Record<string, unknown>) =>
+      t(key, { defaultValue: def, ...opts }),
+    [t],
+  );
 
+  // ── Identity / name ────────────────────────────────────────────────────────
+  const meta = (session?.user.user_metadata ?? {}) as Record<string, unknown>;
+  const explicitName =
+    (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+    (typeof meta.name === 'string' && meta.name.trim()) ||
+    '';
+  const hasName = explicitName.length > 0;
+  const emailHandle = session?.user.email ? (session.user.email.split('@')[0] ?? '') : '';
+  const firstToken = (explicitName || emailHandle).trim().split(/[\s.]+/)[0] ?? '';
+  const name = firstToken
+    ? firstToken.charAt(0).toUpperCase() + firstToken.slice(1)
+    : tt('home.fallback_name', 'there');
+
+  // First-run name prompt: shown until the learner saves a name (or skips this
+  // session). Never shown once a real name exists on the profile.
+  const [skippedNamePrompt, setSkippedNamePrompt] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const showNamePrompt = !hasName && !skippedNamePrompt;
+
+  useEffect(() => {
+    // Prefill the draft with the humanized email handle as a friendly suggestion.
+    if (!hasName && emailHandle) setNameDraft((d) => d || humanizeHandle(emailHandle));
+  }, [hasName, emailHandle]);
+
+  const onSaveName = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      const value = nameDraft.trim();
+      if (!value) return;
+      setSavingName(true);
+      setNameError(null);
+      const r = await updateDisplayName(value);
+      setSavingName(false);
+      if (!r.ok) setNameError(r.error);
+      // On success the USER_UPDATED auth event refreshes the session → hasName flips
+      // → the prompt disappears and the greeting uses the new name.
+    },
+    [nameDraft],
+  );
+
+  // ── Catalog + progress ─────────────────────────────────────────────────────
   const [data, setData] = useState<CatalogGating | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +154,6 @@ export function HomeScreen() {
     };
   }, [nonce]);
 
-  // Best-effort active-credential count (RLS-scoped). Non-fatal: errors leave it hidden.
   useEffect(() => {
     let live = true;
     void supabase
@@ -118,13 +176,11 @@ export function HomeScreen() {
     const available = courses.filter((c) => c.state === 'available');
     const byProgression = (a: CourseNode, b: CourseNode) =>
       tierRank(a.tier) - tierRank(b.tier) || a.code.localeCompare(b.code);
-    // Continue: prefer a sim-bearing course (it has a concrete in-app destination).
     const resume =
       [...inProgress].sort(
         (a, b) =>
           Number(SIM_COURSES.has(b.code)) - Number(SIM_COURSES.has(a.code)) || byProgression(a, b),
       )[0] ?? null;
-    // Recommend: the earliest available course, preferring a persona-matched one.
     const recommended =
       [...available].sort(
         (a, b) =>
@@ -136,15 +192,11 @@ export function HomeScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
-  // "Open this course": a sim course → its sim; otherwise the map, where the
-  // unit/lesson affordances live.
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (SIM_COURSES.has(course.code)) {
+      if (SIM_COURSES.has(course.code))
         navigate({ screen: 'sim', course: course.code, unit: null });
-      } else {
-        navigate({ screen: 'constellation', course: null, unit: null });
-      }
+      else navigate({ screen: 'constellation', course: null, unit: null });
     },
     [navigate],
   );
@@ -171,29 +223,21 @@ export function HomeScreen() {
     [claims, navigate, openCourse, t],
   );
 
+  // The single focused action: resume in-progress, else start the recommended.
+  const spotlight = buckets.resume ?? buckets.recommended ?? null;
+  const spotlightKind: 'resume' | 'start' = buckets.resume ? 'resume' : 'start';
   const started = buckets.completed.length + buckets.inProgress.length > 0;
-  const head = (
-    <div className="px-8 pt-2">
-      <ScreenHead
-        eyebrow={t('home.eyebrow')}
-        title={data && started ? t('home.greeting', { name }) : t('home.greeting_new', { name })}
-        subtitle={t('home.subtitle')}
-      />
-    </div>
-  );
+  const pct = buckets.total > 0 ? Math.round((buckets.completed.length / buckets.total) * 100) : 0;
 
+  // ── Loading / error states ─────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="flex flex-col gap-6 pb-10">
-        {head}
-        <div className="grid gap-4 px-8 sm:grid-cols-2 lg:grid-cols-4" aria-busy="true">
+      <div className="flex flex-col gap-8 px-6 pb-12 pt-4 sm:px-8 lg:px-10">
+        <Skeleton height={220} rounded="card" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} height={92} rounded="card" />
+            <Skeleton key={i} height={88} rounded="card" />
           ))}
-        </div>
-        <div className="grid gap-4 px-8 lg:grid-cols-2">
-          <Skeleton height={150} rounded="card" />
-          <Skeleton height={150} rounded="card" />
         </div>
       </div>
     );
@@ -201,11 +245,14 @@ export function HomeScreen() {
 
   if (error) {
     return (
-      <div className="flex flex-col gap-6 pb-10">
-        {head}
-        <div className="px-8">
+      <div className="px-6 pb-12 pt-4 sm:px-8 lg:px-10">
+        <ScreenHead
+          eyebrow={tt('home.eyebrow', 'Your dashboard')}
+          title={tt('home.greeting_new', 'Welcome, {{name}}', { name })}
+        />
+        <div className="mt-4">
           <ErrorState
-            title={t('home.error_title')}
+            title={tt('home.error_title', "We couldn't load your dashboard.")}
             description={error}
             onRetry={reload}
             retryLabel={t('catalog.retry')}
@@ -215,167 +262,288 @@ export function HomeScreen() {
     );
   }
 
-  const pct = buckets.total > 0 ? Math.round((buckets.completed.length / buckets.total) * 100) : 0;
-
-  const CourseCta = ({ course, kind }: { course: CourseNode; kind: 'resume' | 'start' }) => (
-    <Card variant="raised" eyebrow={course.code} title={course.title}>
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <Tag variant="tier">{t(`catalog.tier.${course.tier}`)}</Tag>
-          <Tag>{course.domain}</Tag>
-          {course.isBoss ? <Tag variant="gate">{t('catalog.gate')}</Tag> : null}
-          <span className="ml-auto inline-flex items-center gap-1.5 text-caption text-ink-soft">
-            <span
-              className={cx('inline-block h-2 w-2 rounded-full', STATE_DOT[course.state])}
-              aria-hidden="true"
-            />
-            {stateLabel(course.state)}
-          </span>
-        </div>
-        {kind === 'resume' ? (
-          <Button variant="primary" size="sm" onClick={() => openCourse(course)}>
-            {t('home.continue.resume', { code: course.code })}
+  // ── The spotlight (focused next action) panel ──────────────────────────────
+  const spotlightPanel = spotlight ? (
+    <div className="flex flex-col gap-4">
+      <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+        {spotlightKind === 'resume'
+          ? tt('home.continue.title', 'Continue learning')
+          : started
+            ? tt('home.recommended.title', 'Recommended next')
+            : tt('home.get_started', 'Get started')}
+      </span>
+      <div className="flex flex-col gap-1">
+        <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+          {spotlight.code}
+        </span>
+        <h2 className="text-h2 font-bold tracking-tighttitle text-white">{spotlight.title}</h2>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Tag variant="tier">{t(`catalog.tier.${spotlight.tier}`)}</Tag>
+        <Tag>{spotlight.domain}</Tag>
+        {spotlight.isBoss ? <Tag variant="gate">{t('catalog.gate')}</Tag> : null}
+        <span className="inline-flex items-center gap-1.5 text-caption text-ink-soft">
+          <span
+            className={cx('inline-block h-2 w-2 rounded-full', STATE_DOT[spotlight.state])}
+            aria-hidden="true"
+          />
+          {stateLabel(spotlight.state)}
+        </span>
+      </div>
+      <div className="pt-1">
+        {spotlightKind === 'resume' ? (
+          <Button variant="cta" onClick={() => openCourse(spotlight)}>
+            {tt('home.continue.resume', 'Resume {{code}}', { code: spotlight.code })}
           </Button>
         ) : (
           <Button
-            variant="primary"
-            size="sm"
-            disabled={startingId === course.id}
-            onClick={() => void onStart(course)}
+            variant="cta"
+            disabled={startingId === spotlight.id}
+            onClick={() => void onStart(spotlight)}
           >
-            {startingId === course.id
-              ? t('home.recommended.starting')
-              : t('home.recommended.start', { code: course.code })}
+            {startingId === spotlight.id
+              ? tt('home.recommended.starting', 'Starting…')
+              : tt('home.recommended.start', 'Start {{code}}', { code: spotlight.code })}
           </Button>
         )}
       </div>
-    </Card>
-  );
-
-  return (
-    <div className="flex flex-col gap-6 pb-10">
-      {head}
-      <p ref={liveRef} role="status" aria-live="polite" className="sr-only" />
-
-      {/* ── Who you are + your standing ── */}
-      <div className="px-8">
-        {persona ? (
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            <Tag>{t(`home.persona.${persona}`)}</Tag>
-            {claims?.evaluator_authorized ? (
-              <StatusBadge kind="pass" label={t('home.evaluator_badge')} />
-            ) : null}
-          </div>
-        ) : null}
-
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatBlock
-            align="start"
-            accent
-            value={buckets.inProgress.length}
-            label={t('home.stat.in_progress')}
-          />
-          <StatBlock
-            align="start"
-            value={buckets.completed.length}
-            label={t('home.stat.completed')}
-          />
-          <StatBlock
-            align="start"
-            value={credentialCount ?? buckets.completed.length}
-            label={t('home.stat.credentials')}
-          />
-          <StatBlock
-            align="start"
-            value={buckets.available.length}
-            label={t('home.stat.available')}
-          />
-        </div>
-
-        {buckets.total > 0 ? (
-          <div className="mt-4 flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-caption text-ink-muted">
-              <span>{t('home.progress_label')}</span>
-              <span className="font-label text-ink-soft">{pct}%</span>
-            </div>
-            <ProgressBar
-              value={buckets.completed.length / buckets.total}
-              label={t('home.progress_label')}
-            />
-          </div>
-        ) : null}
-      </div>
-
-      {/* ── Continue + Recommended ── */}
-      <div className="grid gap-4 px-8 lg:grid-cols-2">
-        <section aria-label={t('home.continue.title')} className="flex flex-col gap-2">
-          <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
-            {t('home.continue.title')}
-          </h2>
-          {buckets.resume ? (
-            <CourseCta course={buckets.resume} kind="resume" />
-          ) : (
-            <Card variant="glass" padding="lg">
-              <p className="text-body text-ink-muted">{t('home.continue.none')}</p>
-            </Card>
-          )}
-        </section>
-
-        <section aria-label={t('home.recommended.title')} className="flex flex-col gap-2">
-          <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
-            {t('home.recommended.title')}
-          </h2>
-          {buckets.recommended ? (
-            <CourseCta course={buckets.recommended} kind="start" />
-          ) : (
-            <Card variant="glass" padding="lg">
-              <p className="text-body text-ink-muted">{t('home.recommended.none')}</p>
-            </Card>
-          )}
-        </section>
-      </div>
-
       {startError ? (
-        <p role="alert" className="px-8 text-caption text-state-fail">
+        <p role="alert" className="text-caption text-state-fail">
           {startError}
         </p>
       ) : null}
+    </div>
+  ) : (
+    <div className="flex flex-col gap-4">
+      <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+        {tt('home.all_caught_up.title', 'All caught up')}
+      </span>
+      <p className="text-body-lg text-ink-soft">
+        {tt('home.all_caught_up.desc', "You've started everything that's unlocked. Nice work.")}
+      </p>
+      <div className="pt-1">
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={() => navigate({ screen: 'catalog', course: null, unit: null })}
+        >
+          {tt('home.browse_catalog', 'Browse the catalog')}
+        </Button>
+      </div>
+    </div>
+  );
 
-      {/* ── Explore ── */}
-      <div className="px-8">
-        <h2 className="mb-2 text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
-          {t('home.explore.title')}
+  return (
+    <div className="flex flex-col gap-8 px-6 pb-12 pt-4 sm:px-8 lg:px-10">
+      <p ref={liveRef} role="status" aria-live="polite" className="sr-only" />
+
+      {/* ── HERO: greeting + the one focused action ─────────────────────────── */}
+      <section
+        aria-label={tt('home.eyebrow', 'Your dashboard')}
+        className="relative overflow-hidden rounded-card border border-line bg-surface-1"
+      >
+        {/* brand core-glow wash, decorative */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-red-tint blur-3xl"
+        />
+        <div className="relative grid gap-8 p-7 sm:p-9 lg:grid-cols-[1.1fr_1fr] lg:items-center">
+          {/* Greeting (or first-run name capture) */}
+          <div className="flex flex-col gap-4">
+            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+              {tt('home.eyebrow', 'Your dashboard')}
+            </span>
+
+            {showNamePrompt ? (
+              <form
+                onSubmit={onSaveName}
+                className="flex flex-col gap-3"
+                aria-label="Set your name"
+              >
+                <h1 className="text-display font-bold tracking-tighttitle text-white">
+                  {tt('home.name_prompt.title', 'What should we call you?')}
+                </h1>
+                <p className="max-w-prose text-body text-ink-muted">
+                  {tt(
+                    'home.name_prompt.desc',
+                    "We'll use your name to personalize your dashboard and credentials.",
+                  )}
+                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="sm:w-72">
+                    <Input
+                      label={tt('home.name_prompt.label', 'Your name')}
+                      value={nameDraft}
+                      onChange={(e) => setNameDraft(e.target.value)}
+                      autoComplete="name"
+                      maxLength={60}
+                      placeholder="Jordan Rivera"
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button type="submit" variant="cta" disabled={savingName || !nameDraft.trim()}>
+                      {savingName
+                        ? tt('home.name_prompt.saving', 'Saving…')
+                        : tt('home.name_prompt.save', 'Save')}
+                    </Button>
+                    <button
+                      type="button"
+                      className="text-caption text-ink-muted underline-offset-2 hover:text-white hover:underline"
+                      onClick={() => setSkippedNamePrompt(true)}
+                    >
+                      {tt('home.name_prompt.skip', 'Skip for now')}
+                    </button>
+                  </div>
+                </div>
+                {nameError ? (
+                  <p role="alert" className="text-caption text-state-fail">
+                    {nameError}
+                  </p>
+                ) : null}
+              </form>
+            ) : (
+              <>
+                <h1 className="text-display font-bold tracking-tighttitle text-white">
+                  {started
+                    ? tt('home.greeting', 'Welcome back, {{name}}', { name })
+                    : tt('home.greeting_new', 'Welcome, {{name}}', { name })}
+                </h1>
+                <p className="max-w-prose text-body-lg text-ink-muted">
+                  {tt('home.subtitle', "Here's where you stand and what to do next.")}
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {persona ? (
+                    <Tag variant="tier">
+                      {tt(`home.persona.${persona}`, PERSONA_LABEL[persona])}
+                    </Tag>
+                  ) : null}
+                  {claims?.evaluator_authorized ? (
+                    <Tag>{tt('home.evaluator_badge', 'Authorized evaluator')}</Tag>
+                  ) : null}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* The single focused action */}
+          <Card variant="raised" padding="lg" className="shadow-glow-soft">
+            {spotlightPanel}
+          </Card>
+        </div>
+      </section>
+
+      {/* ── STANDING: compact stat strip + progress ─────────────────────────── */}
+      <section
+        aria-label={tt('home.progress_label', 'Overall progress')}
+        className="flex flex-col gap-4"
+      >
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Card variant="raised" padding="md">
+            <StatBlock
+              align="start"
+              accent
+              value={buckets.inProgress.length}
+              label={tt('home.stat.in_progress', 'In progress')}
+            />
+          </Card>
+          <Card variant="raised" padding="md">
+            <StatBlock
+              align="start"
+              value={buckets.completed.length}
+              label={tt('home.stat.completed', 'Completed')}
+            />
+          </Card>
+          <Card variant="raised" padding="md">
+            <StatBlock
+              align="start"
+              value={credentialCount ?? buckets.completed.length}
+              label={tt('home.stat.credentials', 'Credentials')}
+            />
+          </Card>
+          <Card variant="raised" padding="md">
+            <StatBlock
+              align="start"
+              value={buckets.available.length}
+              label={tt('home.stat.available', 'Ready to start')}
+            />
+          </Card>
+        </div>
+        {buckets.total > 0 ? (
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between text-caption text-ink-muted">
+              <span>{tt('home.progress_label', 'Overall progress')}</span>
+              <span className="font-label text-ink-soft">
+                {tt('home.progress_count', '{{done}} of {{total}} · {{pct}}%', {
+                  done: buckets.completed.length,
+                  total: buckets.total,
+                  pct,
+                })}
+              </span>
+            </div>
+            <ProgressBar
+              value={buckets.completed.length / buckets.total}
+              label={tt('home.progress_label', 'Overall progress')}
+            />
+          </div>
+        ) : null}
+      </section>
+
+      {/* ── EXPLORE ─────────────────────────────────────────────────────────── */}
+      <section aria-label={tt('home.explore.title', 'Explore')} className="flex flex-col gap-3">
+        <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+          {tt('home.explore.title', 'Explore')}
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
-          <button
-            type="button"
-            onClick={() => navigate({ screen: 'constellation', course: null, unit: null })}
-            className="text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-redex"
-          >
-            <Card variant="raised" eyebrow="★" title={t('home.explore.map')}>
-              <p className="text-caption text-ink-muted">{t('home.explore.map_desc')}</p>
-            </Card>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate({ screen: 'catalog', course: null, unit: null })}
-            className="text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-redex"
-          >
-            <Card variant="raised" eyebrow="≣" title={t('home.explore.catalog')}>
-              <p className="text-caption text-ink-muted">{t('home.explore.catalog_desc')}</p>
-            </Card>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate({ screen: 'backpack', course: null, unit: null })}
-            className="text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-redex"
-          >
-            <Card variant="raised" eyebrow="❖" title={t('home.explore.backpack')}>
-              <p className="text-caption text-ink-muted">{t('home.explore.backpack_desc')}</p>
-            </Card>
-          </button>
+          {(
+            [
+              {
+                key: 'map',
+                glyph: '★',
+                title: tt('home.explore.map', 'Skill map'),
+                desc: tt('home.explore.map_desc', 'See how every course connects.'),
+                go: () => navigate({ screen: 'constellation', course: null, unit: null }),
+              },
+              {
+                key: 'catalog',
+                glyph: '≣',
+                title: tt('home.explore.catalog', 'Course catalog'),
+                desc: tt('home.explore.catalog_desc', 'Browse every course as a list.'),
+                go: () => navigate({ screen: 'catalog', course: null, unit: null }),
+              },
+              {
+                key: 'backpack',
+                glyph: '❖',
+                title: tt('home.explore.backpack', 'Digital backpack'),
+                desc: tt('home.explore.backpack_desc', 'Your earned, verifiable credentials.'),
+                go: () => navigate({ screen: 'backpack', course: null, unit: null }),
+              },
+            ] as const
+          ).map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={item.go}
+              className="group text-left transition-transform duration-nav ease-out hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-redex"
+            >
+              <Card
+                variant="raised"
+                padding="lg"
+                className="h-full transition-shadow group-hover:shadow-glow-soft"
+              >
+                <div className="flex flex-col gap-2">
+                  <span aria-hidden="true" className="text-h2 text-redex-bright">
+                    {item.glyph}
+                  </span>
+                  <h3 className="text-body-lg font-bold text-white">{item.title}</h3>
+                  <p className="text-caption text-ink-muted">{item.desc}</p>
+                </div>
+              </Card>
+            </button>
+          ))}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

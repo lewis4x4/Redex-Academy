@@ -8,6 +8,61 @@
     "manager_dashboard": "Panel de gerente",
     "shell_density": "Densidad de interfaz"
   },
+  "home": {
+    "eyebrow": "Tu panel",
+    "greeting": "Hola de nuevo, {{name}}",
+    "greeting_new": "Bienvenido, {{name}}",
+    "subtitle": "Aquí está tu progreso y lo que sigue.",
+    "fallback_name": "de nuevo",
+    "evaluator_badge": "Evaluador autorizado",
+    "get_started": "Empezar",
+    "browse_catalog": "Explorar el catálogo",
+    "name_prompt": {
+      "title": "¿Cómo te llamamos?",
+      "desc": "Usaremos tu nombre para personalizar tu panel y tus credenciales.",
+      "label": "Tu nombre",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "skip": "Omitir por ahora"
+    },
+    "persona": {
+      "nova": "Ruta de técnico nuevo",
+      "marco": "Ruta de técnico de campo",
+      "priya": "Ruta de oficina / coordinación",
+      "dana": "Ruta de liderazgo"
+    },
+    "stat": {
+      "in_progress": "En curso",
+      "completed": "Completados",
+      "credentials": "Credenciales",
+      "available": "Listos para empezar"
+    },
+    "progress_label": "Progreso general",
+    "progress_count": "{{done}} de {{total}} · {{pct}}%",
+    "continue": {
+      "title": "Continúa aprendiendo",
+      "resume": "Retomar {{code}}"
+    },
+    "recommended": {
+      "title": "Recomendado a continuación",
+      "start": "Empezar {{code}}",
+      "starting": "Empezando…"
+    },
+    "all_caught_up": {
+      "title": "Todo al día",
+      "desc": "Ya empezaste todo lo desbloqueado. Buen trabajo."
+    },
+    "explore": {
+      "title": "Explorar",
+      "map": "Mapa de habilidades",
+      "map_desc": "Mira cómo se conecta cada curso.",
+      "catalog": "Catálogo de cursos",
+      "catalog_desc": "Explora todos los cursos en una lista.",
+      "backpack": "Mochila digital",
+      "backpack_desc": "Tus credenciales verificables obtenidas."
+    },
+    "error_title": "No pudimos cargar tu panel."
+  },
   "pwa": {
     "update": {
       "available": "Hay una nueva versión disponible.",
