@@ -67,14 +67,15 @@ export function CatalogScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
-  // Open a course's content: a sim course → its sim; a course with a lesson → that
-  // first lesson; otherwise the skill-map (never a dead end).
+  // Open a course's content: PREFER the first lesson (AC-203 now opens its real lesson;
+  // the graded sim follows in the flow); a sim-only course with no lesson → its sim;
+  // otherwise the skill-map (never a dead end).
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (SIM_COURSES.has(course.code)) {
-        navigate({ screen: 'sim', course: course.code, unit: null });
-      } else if (course.firstUnitId) {
+      if (course.firstUnitId) {
         navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
+      } else if (SIM_COURSES.has(course.code)) {
+        navigate({ screen: 'sim', course: course.code, unit: null });
       } else {
         navigate({ screen: 'constellation', course: null, unit: null });
       }
@@ -197,8 +198,6 @@ export function CatalogScreen() {
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {(byTier.get(tier) ?? []).map((c) => {
-                const isSim =
-                  SIM_COURSES.has(c.code) && c.state !== 'locked' && c.state !== 'available';
                 return (
                   <Card
                     key={c.id}
@@ -234,14 +233,14 @@ export function CatalogScreen() {
                         <p className="text-caption text-ink-muted">{t('catalog.locked_hint')}</p>
                       ) : (
                         // in_progress / passed / mastered → an Open button so the
-                        // learner can re-enter the content (lesson or sim).
+                        // learner can re-enter the course at its first lesson.
                         <Button
                           variant="primary"
                           size="sm"
-                          data-testid={isSim ? 'open-sim' : 'open-course'}
+                          data-testid="open-course"
                           onClick={() => openCourse(c)}
                         >
-                          {isSim ? t('catalog.open_sim') : t('catalog.open_course')}
+                          {t('catalog.open_course')}
                         </Button>
                       )}
                     </div>

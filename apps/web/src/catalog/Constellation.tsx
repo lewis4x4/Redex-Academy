@@ -819,12 +819,29 @@ export function Constellation() {
                     {t(`catalog.state_hint.${selected.state}`)}
                   </p>
                 )}
-                {/* M3 — enter the AC-203 branching egress-fail sim once enrolled. */}
-                {SIM_COURSES.has(selected.code) &&
+                {/* PRIMARY: open the course at its first lesson once enrolled — the
+                    teaching lesson (with its embedded 2D sims) is the entry; the graded
+                    branching sim follows in the flow at ordinal 2. */}
+                {selected.firstUnitId &&
                 selected.state !== 'locked' &&
                 selected.state !== 'available' ? (
                   <Button
                     variant="primary"
+                    size="sm"
+                    data-testid="open-course"
+                    onClick={() =>
+                      navigate({ screen: 'lesson', course: null, unit: selected.firstUnitId })
+                    }
+                  >
+                    {t('catalog.open_course')}
+                  </Button>
+                ) : null}
+                {/* SECONDARY: jump straight to the AC-203 branching egress-fail sim. */}
+                {SIM_COURSES.has(selected.code) &&
+                selected.state !== 'locked' &&
+                selected.state !== 'available' ? (
+                  <Button
+                    variant="secondary"
                     size="sm"
                     data-testid="open-sim"
                     onClick={() => navigate({ screen: 'sim', course: selected.code })}
