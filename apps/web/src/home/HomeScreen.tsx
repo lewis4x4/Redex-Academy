@@ -216,24 +216,29 @@ export function HomeScreen() {
 
   const onStart = useCallback(
     async (course: CourseNode) => {
-      if (!claims?.sub || !claims.org_id) {
-        navigate({ screen: 'constellation', course: null, unit: null });
-        return;
-      }
       setStartingId(course.id);
       setStartError(null);
       try {
-        await enrollSelf({ userId: claims.sub, orgId: claims.org_id, courseId: course.id });
-        if (liveRef.current)
-          liveRef.current.textContent = t('catalog.enrolled', { code: course.code });
+        // Self-enroll only when we have the identity claims for the RLS write. A
+        // learner without an org_id (e.g. self-signed-up, not yet invited) can still
+        // OPEN the course — lessons are published + cross-tenant readable; only the
+        // enrollment write needs an org. So never dead-end to the map: open the
+        // content regardless, and enroll opportunistically when possible.
+        if (claims?.sub && claims.org_id) {
+          await enrollSelf({ userId: claims.sub, orgId: claims.org_id, courseId: course.id });
+          if (liveRef.current)
+            liveRef.current.textContent = t('catalog.enrolled', { code: course.code });
+        }
         openCourse(course);
       } catch (e: unknown) {
+        // Enroll failed (e.g. RLS) — still open the content; surface the note.
         setStartError(e instanceof Error ? e.message : String(e));
+        openCourse(course);
       } finally {
         setStartingId(null);
       }
     },
-    [claims, navigate, openCourse, t],
+    [claims, openCourse, t],
   );
 
   // The single focused action: resume in-progress, else start the recommended.
