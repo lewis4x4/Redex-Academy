@@ -8,6 +8,61 @@
     "manager_dashboard": "Manager dashboard",
     "shell_density": "Shell density"
   },
+  "home": {
+    "eyebrow": "Your dashboard",
+    "greeting": "Welcome back, {{name}}",
+    "greeting_new": "Welcome, {{name}}",
+    "subtitle": "Here's where you stand and what to do next.",
+    "fallback_name": "there",
+    "evaluator_badge": "Authorized evaluator",
+    "get_started": "Get started",
+    "browse_catalog": "Browse the catalog",
+    "name_prompt": {
+      "title": "What should we call you?",
+      "desc": "We'll use your name to personalize your dashboard and credentials.",
+      "label": "Your name",
+      "save": "Save",
+      "saving": "Saving…",
+      "skip": "Skip for now"
+    },
+    "persona": {
+      "nova": "New technician path",
+      "marco": "Field technician path",
+      "priya": "Office / coordinator path",
+      "dana": "Leadership path"
+    },
+    "stat": {
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "credentials": "Credentials",
+      "available": "Ready to start"
+    },
+    "progress_label": "Overall progress",
+    "progress_count": "{{done}} of {{total}} · {{pct}}%",
+    "continue": {
+      "title": "Continue learning",
+      "resume": "Resume {{code}}"
+    },
+    "recommended": {
+      "title": "Recommended next",
+      "start": "Start {{code}}",
+      "starting": "Starting…"
+    },
+    "all_caught_up": {
+      "title": "All caught up",
+      "desc": "You've started everything that's unlocked. Nice work."
+    },
+    "explore": {
+      "title": "Explore",
+      "map": "Skill map",
+      "map_desc": "See how every course connects.",
+      "catalog": "Course catalog",
+      "catalog_desc": "Browse every course as a list.",
+      "backpack": "Digital backpack",
+      "backpack_desc": "Your earned, verifiable credentials."
+    },
+    "error_title": "We couldn't load your dashboard."
+  },
   "pwa": {
     "update": {
       "available": "A new version is available.",

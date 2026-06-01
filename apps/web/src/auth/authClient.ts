@@ -71,6 +71,15 @@ export async function signUpWithPassword(email: string, password: string): Promi
   return error ? { ok: false, error: friendly(error) } : { ok: true };
 }
 
+/** Save the learner's display name to their auth profile (user_metadata.full_name).
+ *  Used by the first-run welcome prompt so the dashboard can greet them by name on
+ *  every later visit. Anon-key safe — a user may always update their OWN metadata;
+ *  this never touches permissions (those are server-minted claims). */
+export async function updateDisplayName(name: string): Promise<AuthResult> {
+  const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+  return error ? { ok: false, error: friendly(error) } : { ok: true };
+}
+
 /** Tertiary: Google Workspace SSO (live completion is a release gate). */
 export async function signInWithGoogle(): Promise<AuthResult> {
   const { error } = await supabase.auth.signInWithOAuth({
