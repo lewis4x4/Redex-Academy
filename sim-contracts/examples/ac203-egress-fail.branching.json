@@ -209,7 +209,7 @@
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac203.release_on_fire_alarm"
+            "line_item_key": "ac203.push_to_exit_30s"
           }
         },
         {
@@ -222,7 +222,7 @@
           "is_safety_decision": true,
           "verdict": {
             "dimension": "safety_compliance",
-            "line_item_key": "ac203.release_on_fire_alarm"
+            "line_item_key": "ac203.push_to_exit_30s"
           }
         }
       ]

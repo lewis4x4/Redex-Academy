@@ -1,0 +1,165 @@
+# Mag Locks, REX & Basic Egress Wiring
+
+A magnetic lock holds a door shut **with electricity**. That single fact is why this
+course is a hard safety gate: get the release wrong and people are trapped. Across the
+sections below you learn the two locks and their opposite rules, the wiring and the
+armature seal that separate a pro from a callback, how people get out, how to follow the
+power to a fault, and how to prove the work the Redex way.
+
+## Two locks, opposite rules
+
+A store needs its back door locked after hours. You've got a mag lock and an electric
+strike in the truck. Pick one — then see if people can still get out in a fire.
+
+<Sim spec="ac-203/mag-vs-strike-pick" />
+
+A magnetic lock and an electric strike chase the same goal — keep the door shut — by
+doing **opposite things with power:**
+
+- **Mag lock = powered to LOCK.** Energize it and the magnet holds. Cut the power and it
+  _releases._ That's **fail-safe**, and it's wired **normally closed (NC)**.
+- **Electric strike = powered to UNLOCK.** It stays locked until you signal it. That's
+  fail-locked (fail-secure), wired **normally open (NO)** — a different course.
+
+This course is about the mag — **the one that holds the door shut _with electricity,_**
+which is exactly why it's dangerous. Get the release wrong and people are trapped. That's
+why this is a hard safety gate.
+
+<Callout tone="safety" label="Safety">
+  Free **egress** is non-negotiable. You may control who comes _in_ as tightly as you like — you may
+  never stop someone getting _out._
+</Callout>
+
+## No power, no hold — and the seal that makes it real
+
+**The Redex mag-lock wiring (the 1200S):**
+
+- Lock **Black → 24V** on the power supply.
+- Lock **Red → NC** on the Alarm.com controller. Locked = **24V** through the controller;
+  unlocked = **0V** (the relay opens). Lose the 24V supply and the mag drops — **fail-safe.**
+
+<Checklist
+  ariaLabel="Wire the 1200S"
+  items={[
+    { id: 'a', label: 'Black to 24V supply' },
+    { id: 'b', label: 'Red to controller NC' },
+    { id: 'c', label: 'Confirm 24V at the lock when locked, 0V when unlocked' },
+  ]}
+/>
+
+Now the part nobody writes down — **the armature seal.** A 1200S only holds its
+**1,200 lb** when the armature plate seats **dead flush** against the magnet face.
+Magnetic hold falls off fast with the tiniest air gap or tilt. So you mount the armature
+**secured but floating:**
+
+- **Loctite** the bolt so it _never_ vibrates loose over thousands of cycles.
+- But **never torque it solid.** Use the **rubber washers from the kit** between the
+  armature and the frame — at least one as standard, more for spacing — so the plate can
+  **rock** (twist slightly any direction) and self-align to a 100% seal when the door
+  closes.
+
+<Callout tone="warning" label="Warning">
+  Over-tighten the armature and you get the worst failure there is: the mag _reads_ locked but only
+  half-seals, holds a fraction of its rating, and the door pulls open — and **nothing on the panel
+  tells you.**
+</Callout>
+
+Set the washers and torque on the bench: over-tight gives a weak hold, loose fails later.
+
+<Sim spec="ac-203/armature-mount" />
+
+## How people get out
+
+A compliant mag door has **two ways out**, and the tech wires both:
+
+1. **Power loss** — lose the 24V supply, the mag drops. (Built in by the wiring above.)
+2. **The push-to-exit (TS9)** — the always-works manual release. Wire it **in-line in the
+   mag's power** — the power runs _through_ the button before the mag. Press it and you
+   cut power directly to the lock; it releases no matter what the controller is doing.
+
+**REX vs. the button — know the difference:**
+
+- The **REX (Bosch DS160) → the controller Inputs** (two available). A **REX** _signals
+  the controller_ to release.
+- The **push-to-exit cuts power directly.** A motion REX alone is **not** a
+  code-compliant release — the manual button is required.
+
+**Placement is code (NFPA 101 §7.2.1.6.2):** the **push-to-exit** mounted **40–48 in.**,
+**within 5 ft** of the door, releases for **≥30 s**, and signed. Place it in the live
+envelope below — the wrong height or distance flags why.
+
+<Sim spec="ac-203/button-placement" />
+
+**The reader is OSDP (ET-35).** Redex runs OSDP, not Wiegand — 4-conductor RS-485,
+**AES-128 encrypted, supervised** (the panel knows if the reader drops or is tampered),
+bidirectional, good to 1,000 ft. Wiegand is unencrypted, one-way, ~500 ft.
+
+<Callout tone="warning" label="Escalate">
+  If the building has a **fire-alarm system**, the fire-alarm release interface is a **specialist
+  job** — flag it and escalate. Don't wire it on this install.
+</Callout>
+
+## Follow the power
+
+Dead mag? **Don't guess — follow the power** with a meter, in order:
+
+1. **The 24V supply** — is 24V coming out? No → it's the supply.
+2. **The controller** — 24V through it when locked, **0V when unlocked**? That proves the
+   controller is passing power correctly.
+3. **End of the run** — meter red/black at the lock end. Lost your 24V here but had it at
+   the controller? You've got a **nick or a cut** in the wire.
+4. **At the mag** — 24V all the way to the lock and it still won't hold? _Now_ you can
+   suspect the mag.
+
+<Callout tone="info" label="Note">
+  Most "dead mag" calls trace back to **the push-button wiring**, not the mag. And a brand-new mag
+  being bad is about **one in a million** — chase the wire first.
+</Callout>
+
+A dead door and a virtual voltmeter: trace it to the fault.
+
+<Sim spec="ac-203/follow-the-power" />
+
+## Decide: is this egress install code-compliant?
+
+This is the flagship branching scenario — you continue to it as a separate sim, not one
+embedded here. You commission a mag-lock **egress** door through a sequence of real
+decisions: fail-state, motion-REX sufficiency, **push-to-exit** placement, and release
+time. Then **the emergency hits and people try to get out.**
+
+The emergency is a **power loss**, and the manual **push-to-exit** must hold the door
+released for the full **≥30 s** while people clear. A wrong call **traps them** — the
+button too high, a motion REX the person never trips, or a door that won't drop. The
+right build lets everyone out. You don't read about the consequence. You watch it.
+
+## Do one, and prove the seal
+
+In the build sim — a separate unit, not embedded here — you wire the full mag + **REX** +
+**push-to-exit** on the 3D Virtual Door and prove **both** release paths live: supply loss
+and the button.
+
+Then the install isn't done until you **prove the seal — the Redex pull test:** lock the
+door, **go outside, and pull as hard as you can.** A properly seated 1,200 lb hold doesn't
+budge. If it gives, your armature isn't sealing — back to the washers.
+
+Remember the fire-alarm interface is a **specialist job** that is **escalated**, not wired
+on this install.
+
+<Checklist
+  ariaLabel="Before you call it done"
+  items={[
+    { id: 'a', label: 'Releases on power loss' },
+    { id: 'b', label: 'Releases on push-to-exit for the full ≥30 s' },
+    { id: 'c', label: 'Push-to-exit 40–48 in. / within 5 ft / signed' },
+    { id: 'd', label: 'Armature sealed (pull test holds)' },
+    { id: 'e', label: 'Emergency lighting present' },
+    { id: 'f', label: 'AHJ confirmed' },
+  ]}
+/>
+
+## Knowledge check
+
+Mastery here gates on the safety items at 90%. Review the call-outs above — especially
+the two release modes and the armature seal — before you submit.
+
+<KnowledgeCheck />

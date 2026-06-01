@@ -1,0 +1,183 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/device-config.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac203.virtual-door-maglock",
+    "engine_kind": "device_config",
+    "title_i18n": "sim.ac203.vdoor.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000f"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac203.vdoor.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac203.vdoor.title",
+      "sim.ac203.vdoor.veto",
+      "sim.ac203.vdoor.screen.wiring",
+      "sim.ac203.vdoor.screen.prove",
+      "sim.ac203.vdoor.field.mag_black",
+      "sim.ac203.vdoor.field.mag_red",
+      "sim.ac203.vdoor.field.rex_input",
+      "sim.ac203.vdoor.field.push_to_exit_wiring",
+      "sim.ac203.vdoor.field.prove_power_loss",
+      "sim.ac203.vdoor.opt.v24_supply",
+      "sim.ac203.vdoor.opt.controller_nc",
+      "sim.ac203.vdoor.opt.ground",
+      "sim.ac203.vdoor.opt.controller_input",
+      "sim.ac203.vdoor.opt.mag_power_inline",
+      "sim.ac203.vdoor.opt.inline_mag_power",
+      "sim.ac203.vdoor.opt.controller_input_only",
+      "sim.ac203.vdoor.rule.failsafe.desc",
+      "sim.ac203.vdoor.rule.failsafe.feedback",
+      "sim.ac203.vdoor.rule.rex.desc",
+      "sim.ac203.vdoor.rule.rex.feedback",
+      "sim.ac203.vdoor.rule.pte.desc",
+      "sim.ac203.vdoor.rule.pte.feedback",
+      "sim.ac203.vdoor.rule.proveloss.desc",
+      "sim.ac203.vdoor.rule.proveloss.feedback",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "device": {
+    "model_i18n": "sim.ac203.vdoor.title",
+    "platform_key": "redex_virtual_door_maglock",
+    "source_citation": "Redex 1200S mag-lock + Bosch DS160 REX + TS9 push-to-exit install standard; NFPA 101 §7.2.1.6.2 (sanitized training build)."
+  },
+  "screens": [
+    {
+      "id": "wiring",
+      "title_i18n": "sim.ac203.vdoor.screen.wiring",
+      "field_ids": ["mag_black", "mag_red", "rex_input", "push_to_exit_wiring"],
+      "ordinal": 0
+    },
+    {
+      "id": "prove",
+      "title_i18n": "sim.ac203.vdoor.screen.prove",
+      "field_ids": ["prove_power_loss"],
+      "ordinal": 1
+    }
+  ],
+  "fields": {
+    "mag_black": {
+      "label_i18n": "sim.ac203.vdoor.field.mag_black",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "v24_supply", "label_i18n": "sim.ac203.vdoor.opt.v24_supply" },
+        { "value": "controller_nc", "label_i18n": "sim.ac203.vdoor.opt.controller_nc" }
+      ]
+    },
+    "mag_red": {
+      "label_i18n": "sim.ac203.vdoor.field.mag_red",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "controller_nc", "label_i18n": "sim.ac203.vdoor.opt.controller_nc" },
+        { "value": "v24_supply", "label_i18n": "sim.ac203.vdoor.opt.v24_supply" },
+        { "value": "ground", "label_i18n": "sim.ac203.vdoor.opt.ground" }
+      ]
+    },
+    "rex_input": {
+      "label_i18n": "sim.ac203.vdoor.field.rex_input",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "controller_input", "label_i18n": "sim.ac203.vdoor.opt.controller_input" },
+        { "value": "mag_power_inline", "label_i18n": "sim.ac203.vdoor.opt.mag_power_inline" }
+      ]
+    },
+    "push_to_exit_wiring": {
+      "label_i18n": "sim.ac203.vdoor.field.push_to_exit_wiring",
+      "type": "enum",
+      "required_field": true,
+      "options": [
+        { "value": "inline_mag_power", "label_i18n": "sim.ac203.vdoor.opt.inline_mag_power" },
+        {
+          "value": "controller_input_only",
+          "label_i18n": "sim.ac203.vdoor.opt.controller_input_only"
+        }
+      ]
+    },
+    "prove_power_loss": {
+      "label_i18n": "sim.ac203.vdoor.field.prove_power_loss",
+      "type": "boolean",
+      "required_field": true,
+      "default": false
+    }
+  },
+  "assertion_rules": [
+    {
+      "id": "fail-safe-wiring",
+      "description_i18n": "sim.ac203.vdoor.rule.failsafe.desc",
+      "expr": "field('mag_black') == 'v24_supply' && field('mag_red') == 'controller_nc'",
+      "dimension": "technical_execution",
+      "line_item_key": "ac203.tech.fail_safe_wiring",
+      "weight": 2,
+      "safety_flag": false,
+      "fail_feedback_i18n": "sim.ac203.vdoor.rule.failsafe.feedback"
+    },
+    {
+      "id": "rex-on-inputs",
+      "description_i18n": "sim.ac203.vdoor.rule.rex.desc",
+      "expr": "field('rex_input') == 'controller_input'",
+      "dimension": "technical_execution",
+      "line_item_key": "ac203.tech.rex_fire_terminated",
+      "weight": 1,
+      "safety_flag": false,
+      "fail_feedback_i18n": "sim.ac203.vdoor.rule.rex.feedback"
+    },
+    {
+      "id": "push-to-exit-inline",
+      "description_i18n": "sim.ac203.vdoor.rule.pte.desc",
+      "expr": "field('push_to_exit_wiring') == 'inline_mag_power'",
+      "dimension": "safety_compliance",
+      "line_item_key": "ac203.push_to_exit_30s",
+      "weight": 3,
+      "safety_flag": true,
+      "fail_feedback_i18n": "sim.ac203.vdoor.rule.pte.feedback"
+    },
+    {
+      "id": "prove-power-loss-release",
+      "description_i18n": "sim.ac203.vdoor.rule.proveloss.desc",
+      "expr": "field('prove_power_loss') == true",
+      "dimension": "safety_compliance",
+      "line_item_key": "ac203.release_on_power_loss",
+      "weight": 3,
+      "safety_flag": true,
+      "fail_feedback_i18n": "sim.ac203.vdoor.rule.proveloss.feedback"
+    }
+  ]
+}

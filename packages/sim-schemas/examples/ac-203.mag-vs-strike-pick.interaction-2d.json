@@ -1,0 +1,83 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac203.mag-vs-strike-pick",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac203.mag-vs-strike.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000f"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac203.mag-vs-strike.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac203.mag-vs-strike.title",
+      "sim.ac203.mag-vs-strike.veto",
+      "sim.ac203.mag-vs-strike.bg.alt",
+      "sim.ac203.mag-vs-strike.power.prompt",
+      "sim.ac203.mag-vs-strike.power.feedback",
+      "sim.ac203.mag-vs-strike.dev.maglock",
+      "sim.ac203.mag-vs-strike.dev.strike",
+      "sim.ac203.mag-vs-strike.rule.powered_lock",
+      "sim.ac203.mag-vs-strike.rule.powered_unlock",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "background": {
+    "schematic_id": "ac203-mag-vs-strike",
+    "alt_i18n": "sim.ac203.mag-vs-strike.bg.alt",
+    "width": 800,
+    "height": 600
+  },
+  "items": [
+    {
+      "id": "power-rule",
+      "kind": "match",
+      "prompt_i18n": "sim.ac203.mag-vs-strike.power.prompt",
+      "feedback_i18n": "sim.ac203.mag-vs-strike.power.feedback",
+      "scoring": { "weight": 1, "dimension": "technical_execution", "safety_flag": false },
+      "left": [
+        { "id": "d-maglock", "text_i18n": "sim.ac203.mag-vs-strike.dev.maglock" },
+        { "id": "d-strike", "text_i18n": "sim.ac203.mag-vs-strike.dev.strike" }
+      ],
+      "right": [
+        { "id": "r-powered-lock", "text_i18n": "sim.ac203.mag-vs-strike.rule.powered_lock" },
+        { "id": "r-powered-unlock", "text_i18n": "sim.ac203.mag-vs-strike.rule.powered_unlock" }
+      ],
+      "answer_key": { "d-maglock": "r-powered-lock", "d-strike": "r-powered-unlock" }
+    }
+  ]
+}

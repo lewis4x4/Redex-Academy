@@ -13,10 +13,13 @@ import { branchingExample } from './examples';
  */
 
 // The 7 ⚠ critical-safety AC-203 line items (is_critical_safety=true, safety_compliance).
+// AC-203 ingestion swapped the fire-alarm-release line (a specialist job — escalated,
+// not wired on this install) for the armature-seal pull-test line; the re-centered
+// branching climax now maps to ac203.push_to_exit_30s (release time), which is already here.
 const CRITICAL_KEYS = new Set([
   'ac203.release_on_power_loss',
   'ac203.push_to_exit_30s',
-  'ac203.release_on_fire_alarm',
+  'ac203.armature_sealed_pull_test',
   'ac203.pte_mount_40_48in_5ft',
   'ac203.no_maglock_defeat_fire_latch',
   'ac203.emergency_lighting_present',
