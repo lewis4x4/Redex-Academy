@@ -117,7 +117,7 @@ test.beforeEach(async ({ page }) => {
 test('browse the constellation → enroll an available course → a locked gate is blocked', async ({
   page,
 }) => {
-  await page.goto('/');
+  await page.goto('/?screen=constellation');
 
   // Past the auth gate into the real logged-in shell (priya → dense).
   await expect(page.getByTestId('shell')).toHaveText('dense');
