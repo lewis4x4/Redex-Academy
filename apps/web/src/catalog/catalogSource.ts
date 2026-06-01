@@ -30,6 +30,9 @@ export interface CourseNode {
   state: GatingState;
   /** AC-203-style hard-gate capstone (heavier frame + ⚠ in the UI). */
   isBoss: boolean;
+  /** The id of this course's FIRST lesson unit (lowest ordinal, kind='lesson') —
+   *  where "Start"/"Continue" sends the learner. null if the course has no lesson. */
+  firstUnitId: string | null;
 }
 
 export interface CatalogGating {
@@ -48,7 +51,7 @@ export async function loadCatalogGating(): Promise<CatalogGating> {
   const [coursesRes, prereqRes, unitsRes, compRes, enrollRes, credRes] = await Promise.all([
     academy().from('courses').select('id,code,title,domain,tier,personas,active_version_id,status'),
     academy().from('course_prerequisites').select('course_id,requires_course_id,kind'),
-    academy().from('units').select('competency_id,course_version_id'),
+    academy().from('units').select('id,ordinal,kind,competency_id,course_version_id'),
     academy().from('competency_state').select('competency_id,status'),
     academy().from('enrollments').select('course_id,status'),
     academy().from('credentials').select('badge_class_id,status'),
@@ -88,15 +91,28 @@ export async function loadCatalogGating(): Promise<CatalogGating> {
   for (const c of courseRows)
     if (c.active_version_id) versionToCourse.set(c.active_version_id, c.id);
   const grantedCompetencies = new Map<string, string[]>();
+  // courseId → its first lesson unit (lowest ordinal among kind='lesson'). This is
+  // where Start/Continue sends the learner, so a course never dead-ends.
+  const firstLessonByCourse = new Map<string, { id: string; ordinal: number }>();
   for (const u of (unitsRes.data ?? []) as Array<{
+    id: string;
+    ordinal: number | null;
+    kind: string;
     competency_id: string | null;
     course_version_id: string;
   }>) {
     const courseId = versionToCourse.get(u.course_version_id);
-    if (!courseId || !u.competency_id) continue;
-    const list = grantedCompetencies.get(courseId) ?? [];
-    if (!list.includes(u.competency_id)) list.push(u.competency_id);
-    grantedCompetencies.set(courseId, list);
+    if (!courseId) continue;
+    if (u.competency_id) {
+      const list = grantedCompetencies.get(courseId) ?? [];
+      if (!list.includes(u.competency_id)) list.push(u.competency_id);
+      grantedCompetencies.set(courseId, list);
+    }
+    if (u.kind === 'lesson') {
+      const ord = u.ordinal ?? Number.MAX_SAFE_INTEGER;
+      const cur = firstLessonByCourse.get(courseId);
+      if (!cur || ord < cur.ordinal) firstLessonByCourse.set(courseId, { id: u.id, ordinal: ord });
+    }
   }
 
   const myCompetencyState = new Map<string, CompetencyStatus>();
@@ -142,6 +158,7 @@ export async function loadCatalogGating(): Promise<CatalogGating> {
     personas: c.personas ?? [],
     state: gating.get(c.id) ?? 'locked',
     isBoss: hardGateInDegree(c.id) >= 2 && !isDependedUpon(c.id),
+    firstUnitId: firstLessonByCourse.get(c.id)?.id ?? null,
   }));
 
   return { courses, prereqs };

@@ -110,6 +110,7 @@
     "enrolled": "Enrolled in {{code}}.",
     "locked_hint": "Locked. Pass its prerequisite courses to unlock this node.",
     "open_sim": "Open simulation",
+    "open_course": "Open course",
     "tier": {
       "foundations": "Foundations",
       "core": "Core",

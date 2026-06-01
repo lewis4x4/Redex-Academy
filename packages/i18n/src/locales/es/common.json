@@ -110,6 +110,7 @@
     "enrolled": "Inscrito en {{code}}.",
     "locked_hint": "Bloqueado. Aprueba sus cursos requisito para desbloquear este nodo.",
     "open_sim": "Abrir simulación",
+    "open_course": "Abrir curso",
     "tier": {
       "foundations": "Fundamentos",
       "core": "Esencial",

@@ -18,6 +18,7 @@ const course = (
   personas: [],
   state: 'locked',
   isBoss: false,
+  firstUnitId: null,
   ...over,
 });
 
