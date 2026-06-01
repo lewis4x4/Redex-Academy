@@ -137,7 +137,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 async function openSim(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  // The AC-203 boss node lives on the constellation sub-page (home is the dashboard).
+  await page.goto('/?screen=constellation');
   await expect(page.getByTestId('shell')).toHaveText('dense'); // past the auth gate
   const gate = page.locator('[data-course="AC-203"]');
   await expect(gate).toHaveAttribute('data-state', 'in_progress'); // enrolled boss node
