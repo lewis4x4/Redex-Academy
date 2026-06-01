@@ -165,6 +165,12 @@ jobs:
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0002_m2_content.sql
       - name: Assert the M2 sim_definitions landed (3 AC specs, published, valid kinds)
         run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/m2_content_test.sql
+      - name: Apply the AC-203 content seed (the flagship — run 1; §5 self-assert)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0003_ac203_content.sql
+      - name: Apply the AC-203 content seed AGAIN (idempotency — UPSERT / DELETE+INSERT re-apply clean)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/seed/0003_ac203_content.sql
+      - name: Assert the AC-203 content contract (KC unit / 12 items / safety split / rubric swap / 6 sims)
+        run: psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 -f supabase/tests/ac203_content_test.sql
 
   # ── Identity guard (REAL @ F3): no work_os_user_id / REDEX_WORKOS_* (one identity space).
   guard-no-workos:

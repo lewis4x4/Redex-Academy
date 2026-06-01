@@ -1,0 +1,122 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac203.button-placement",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac203.button.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000f"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac203.button.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac203.button.title",
+      "sim.ac203.button.veto",
+      "sim.ac203.button.bg.alt",
+      "sim.ac203.button.place.prompt",
+      "sim.ac203.button.place.feedback",
+      "sim.ac203.button.region.too_high",
+      "sim.ac203.button.region.envelope",
+      "sim.ac203.button.region.too_far",
+      "sim.ac203.button.time.prompt",
+      "sim.ac203.button.time.feedback",
+      "sim.ac203.button.time.setting",
+      "sim.ac203.button.time.full_30s",
+      "sim.ac203.button.time.momentary",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "background": {
+    "schematic_id": "ac203-door-elevation",
+    "alt_i18n": "sim.ac203.button.bg.alt",
+    "width": 800,
+    "height": 600
+  },
+  "items": [
+    {
+      "id": "place-the-button",
+      "kind": "hotspot",
+      "prompt_i18n": "sim.ac203.button.place.prompt",
+      "feedback_i18n": "sim.ac203.button.place.feedback",
+      "scoring": {
+        "weight": 1,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac203.pte_mount_40_48in_5ft",
+        "safety_flag": true
+      },
+      "regions": [
+        {
+          "id": "too_high",
+          "label_i18n": "sim.ac203.button.region.too_high",
+          "shape": "rect",
+          "rect": { "x": 300, "y": 40, "w": 200, "h": 140 }
+        },
+        {
+          "id": "envelope",
+          "label_i18n": "sim.ac203.button.region.envelope",
+          "shape": "rect",
+          "rect": { "x": 300, "y": 220, "w": 200, "h": 120 }
+        },
+        {
+          "id": "too_far",
+          "label_i18n": "sim.ac203.button.region.too_far",
+          "shape": "rect",
+          "rect": { "x": 560, "y": 220, "w": 200, "h": 120 }
+        }
+      ],
+      "answer_key": ["envelope"]
+    },
+    {
+      "id": "release-duration",
+      "kind": "match",
+      "prompt_i18n": "sim.ac203.button.time.prompt",
+      "feedback_i18n": "sim.ac203.button.time.feedback",
+      "scoring": {
+        "weight": 1,
+        "dimension": "safety_compliance",
+        "line_item_key": "ac203.push_to_exit_30s",
+        "safety_flag": true
+      },
+      "left": [{ "id": "hold-time", "text_i18n": "sim.ac203.button.time.setting" }],
+      "right": [
+        { "id": "full-30s", "text_i18n": "sim.ac203.button.time.full_30s" },
+        { "id": "momentary", "text_i18n": "sim.ac203.button.time.momentary" }
+      ],
+      "answer_key": { "hold-time": "full-30s" }
+    }
+  ]
+}

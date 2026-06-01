@@ -28,7 +28,7 @@ describe('engine #1 branching — AC-203 egress-fail runs end-to-end', () => {
     sim.choose('failsafe'); // releases on power loss
     sim.choose('pushtoexit'); // manual push-to-exit present (≥30s)
     sim.choose('mount_reachable'); // push-to-exit reachable (40–48in / ≤5ft)
-    sim.choose('facp'); // releases on fire alarm
+    sim.choose('facp'); // push-to-exit holds the release for the full ≥30s
     sim.choose('document'); // tested + logged + AHJ
     expect(sim.isComplete()).toBe(true);
     const v = sim.getVerdict();

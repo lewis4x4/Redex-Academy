@@ -10,7 +10,7 @@ import { expect, test, type Route } from '@playwright/test';
 const SAFETY_KEYS = [
   'ac203.release_on_power_loss',
   'ac203.push_to_exit_30s',
-  'ac203.release_on_fire_alarm',
+  'ac203.armature_sealed_pull_test',
   'ac203.pte_mount_40_48in_5ft',
   'ac203.no_maglock_defeat_fire_latch',
   'ac203.emergency_lighting_present',
@@ -50,7 +50,7 @@ const TEMPLATES = [
     dimension: 'verification_documentation',
     is_critical_safety: false,
     ordinal: 11,
-    label: 'three modes logged',
+    label: 'both modes + pull test logged',
   },
   {
     line_item_key: 'ac203.indep.recognize_no_maglock_escalate',

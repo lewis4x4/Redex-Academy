@@ -1,0 +1,108 @@
+{
+  "$schema": "https://academy.goredex.com/sim-contracts/schemas/interaction-2d.schema.json",
+  "envelope": {
+    "spec_version": "1.0.0",
+    "sim_id": "ac203.follow-the-power",
+    "engine_kind": "interaction_2d",
+    "title_i18n": "sim.ac203.follow-power.title",
+    "competency_ids": ["000000c0-0000-0000-0000-00000000000f"],
+    "locales": ["en", "es"],
+    "scoring": {
+      "pass_threshold": 0.8,
+      "safety_pass_threshold": 0.9,
+      "veto_on_any_safety_failure": true,
+      "veto_feedback_i18n": "sim.ac203.follow-power.veto",
+      "veto_state": {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    },
+    "state_tokens": [
+      {
+        "token": "pass",
+        "shape": "check",
+        "label_i18n": "sim.common.state.pass",
+        "color_role": "success"
+      },
+      {
+        "token": "fail",
+        "shape": "cross",
+        "label_i18n": "sim.common.state.fail",
+        "color_role": "danger"
+      },
+      {
+        "token": "safety_veto",
+        "shape": "octagon",
+        "label_i18n": "sim.common.state.safety_stop",
+        "color_role": "danger"
+      }
+    ],
+    "i18n_string_keys": [
+      "sim.ac203.follow-power.title",
+      "sim.ac203.follow-power.veto",
+      "sim.ac203.follow-power.bg.alt",
+      "sim.ac203.follow-power.trace.prompt",
+      "sim.ac203.follow-power.trace.feedback",
+      "sim.ac203.follow-power.region.supply",
+      "sim.ac203.follow-power.region.controller",
+      "sim.ac203.follow-power.region.run",
+      "sim.ac203.follow-power.region.button",
+      "sim.ac203.follow-power.region.mag",
+      "sim.common.state.pass",
+      "sim.common.state.fail",
+      "sim.common.state.safety_stop"
+    ],
+    "fixture_set_ref": null,
+    "offline_cacheable": true
+  },
+  "background": {
+    "schematic_id": "ac203-power-run",
+    "alt_i18n": "sim.ac203.follow-power.bg.alt",
+    "width": 800,
+    "height": 600
+  },
+  "items": [
+    {
+      "id": "isolate-the-fault",
+      "kind": "hotspot",
+      "prompt_i18n": "sim.ac203.follow-power.trace.prompt",
+      "feedback_i18n": "sim.ac203.follow-power.trace.feedback",
+      "scoring": { "weight": 1, "dimension": "technical_execution", "safety_flag": false },
+      "regions": [
+        {
+          "id": "supply",
+          "label_i18n": "sim.ac203.follow-power.region.supply",
+          "shape": "rect",
+          "rect": { "x": 40, "y": 260, "w": 130, "h": 110 }
+        },
+        {
+          "id": "controller",
+          "label_i18n": "sim.ac203.follow-power.region.controller",
+          "shape": "rect",
+          "rect": { "x": 200, "y": 260, "w": 130, "h": 110 }
+        },
+        {
+          "id": "button",
+          "label_i18n": "sim.ac203.follow-power.region.button",
+          "shape": "rect",
+          "rect": { "x": 360, "y": 260, "w": 130, "h": 110 }
+        },
+        {
+          "id": "run",
+          "label_i18n": "sim.ac203.follow-power.region.run",
+          "shape": "rect",
+          "rect": { "x": 520, "y": 260, "w": 130, "h": 110 }
+        },
+        {
+          "id": "mag",
+          "label_i18n": "sim.ac203.follow-power.region.mag",
+          "shape": "rect",
+          "rect": { "x": 680, "y": 260, "w": 100, "h": 110 }
+        }
+      ],
+      "answer_key": ["button"]
+    }
+  ]
+}

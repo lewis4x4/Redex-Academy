@@ -1,4 +1,12 @@
-import { branchingExample, deviceConfigExample } from '@redex/sim-schemas';
+import {
+  branchingExample,
+  deviceConfigExample,
+  ac203MagVsStrikeSpec,
+  ac203ArmatureMountSpec,
+  ac203ButtonPlacementSpec,
+  ac203FollowThePowerSpec,
+  ac203VirtualDoorSpec,
+} from '@redex/sim-schemas';
 import { describe, expect, it } from 'vitest';
 import { createI18nResolver } from './resolver';
 import { SIM_STRINGS } from './sim-strings';
@@ -6,6 +14,12 @@ import { SIM_STRINGS } from './sim-strings';
 const examples = [
   { name: 'ac203 branching', spec: branchingExample },
   { name: 'aero device-config', spec: deviceConfigExample },
+  // AC-203 (the flagship) — the 4 new embeddable sims + the device-config virtual-door build.
+  { name: 'ac203 mag-vs-strike-pick', spec: ac203MagVsStrikeSpec },
+  { name: 'ac203 armature-mount', spec: ac203ArmatureMountSpec },
+  { name: 'ac203 button-placement', spec: ac203ButtonPlacementSpec },
+  { name: 'ac203 follow-the-power', spec: ac203FollowThePowerSpec },
+  { name: 'ac203 virtual-door-maglock', spec: ac203VirtualDoorSpec },
 ];
 
 describe('sim i18n discipline: EN+ES resolve; safety glossary non-overridable', () => {
