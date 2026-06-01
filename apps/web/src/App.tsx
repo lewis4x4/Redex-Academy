@@ -8,7 +8,7 @@ import { Constellation } from './catalog/Constellation';
 import { CatalogScreen } from './catalog/CatalogScreen';
 import { HomeScreen } from './home/HomeScreen';
 import { SyncStatus } from './components/SyncStatus';
-import { Ac203SimScreen } from './forge/Ac203SimScreen';
+import { CoursePlayerScreen } from './course-player/CoursePlayerScreen';
 import { SignoffScreen } from './features/signoff/SignoffScreen';
 import { BackpackScreen } from './features/backpack/BackpackScreen';
 import { LessonScreen } from './lessons/LessonScreen';
@@ -46,9 +46,12 @@ export default function App() {
   // persona → shell DENSITY only (never permissions).
   const density = personaShell(claims?.persona);
 
-  // M3 — the AC-203 branching egress-fail sim is an auth-gated in-app screen,
-  // entered from its Constellation boss node (?screen=sim&course=AC-203).
-  const inSim = route.screen === 'sim' && route.course === 'AC-203';
+  // Phase 2 — the course-player: one mastery flow that chains a course's units
+  // (lesson → scenario → sim → signoff_prep → knowledge_check), entered from any
+  // course entry point as ?screen=course-player&course=<courseId>. This SUPERSEDES the
+  // legacy ?screen=sim AC-203 entry (deleted): the sim is now reached only by
+  // progressing through the course.
+  const inCoursePlayer = route.screen === 'course-player' && route.course != null;
   // M6 — the Evaluator field sign-off, an auth-gated in-app screen entered from the
   // evaluator section (?screen=signoff). Gated to the 'evaluator' role (RLS is the
   // real boundary; this only hides UI). The signoff itself authorizes server-side.
@@ -71,8 +74,8 @@ export default function App() {
       proofPoints={0}
       onBackpack={() => navigate({ screen: 'backpack', course: null })}
       screenKey={
-        inSim
-          ? 'sim-ac203'
+        inCoursePlayer
+          ? 'course-player'
           : inSignoff
             ? 'signoff'
             : inBackpack
@@ -92,7 +95,12 @@ export default function App() {
               skill-map. Each pill goes somewhere visibly different. */}
           <NavPill
             active={
-              !inSim && !inSignoff && !inBackpack && !inLesson && !inCatalog && !inConstellation
+              !inCoursePlayer &&
+              !inSignoff &&
+              !inBackpack &&
+              !inLesson &&
+              !inCatalog &&
+              !inConstellation
             }
             onClick={() => navigate({ screen: null, course: null, unit: null })}
           >
@@ -118,16 +126,18 @@ export default function App() {
         </Button>
       }
     >
-      {inLesson ? (
+      {inCoursePlayer ? (
+        // The course-player chains the course's units into one mastery flow. It is the
+        // single entry for ALL courses (the player resolves the first incomplete unit).
+        // On exit, return to the Constellation so the learner sees the node's new state.
+        <CoursePlayerScreen
+          courseId={route.course as string}
+          onExit={() => navigate({ screen: 'constellation', course: null, unit: null })}
+        />
+      ) : inLesson ? (
         <LessonScreen
           unitId={route.unit as string}
           onExit={() => navigate({ screen: null, course: null, unit: null })}
-        />
-      ) : inSim ? (
-        // The sim is entered from the Constellation boss node — return there so the
-        // learner sees the node's advanced state (home is the dashboard now).
-        <Ac203SimScreen
-          onExit={() => navigate({ screen: 'constellation', course: null, unit: null })}
         />
       ) : inSignoff ? (
         <SignoffScreen onExit={() => navigate({ screen: null, course: null })} />
