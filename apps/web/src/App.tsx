@@ -5,6 +5,8 @@ import { LoginPage } from './auth/components/LoginPage';
 import { RoleGate } from './auth/components/RoleGate';
 import { signOut, useAuth } from './auth/useAuth';
 import { Constellation } from './catalog/Constellation';
+import { CatalogScreen } from './catalog/CatalogScreen';
+import { HomeScreen } from './home/HomeScreen';
 import { SyncStatus } from './components/SyncStatus';
 import { Ac203SimScreen } from './forge/Ac203SimScreen';
 import { SignoffScreen } from './features/signoff/SignoffScreen';
@@ -57,6 +59,11 @@ export default function App() {
   const inBackpack = route.screen === 'backpack';
   // M2 — an MDX lesson + retry-to-mastery knowledge check, entered with a unit id.
   const inLesson = route.screen === 'lesson' && route.unit != null;
+  // The Catalog — a flat, list view of the published courses, on its OWN screen so
+  // the "Catalog" nav pill lands somewhere visibly distinct from the Home map.
+  const inCatalog = route.screen === 'catalog';
+  // M1 — the Constellation skill-map, now its OWN sub-page (no longer the home).
+  const inConstellation = route.screen === 'constellation';
 
   return (
     <AppShell
@@ -72,24 +79,36 @@ export default function App() {
               ? 'backpack'
               : inLesson
                 ? 'lesson'
-                : 'home'
+                : inCatalog
+                  ? 'catalog'
+                  : inConstellation
+                    ? 'constellation'
+                    : 'home'
       }
       nav={
         <>
-          {/* The Constellation IS the catalog/skill-map home. Both pills were dead
-              (no onClick) — "Catalog" rendered nothing on click. Wire them to the
-              home/catalog view (clearing any sub-screen route). */}
+          {/* Three distinct destinations: Home = the personalized dashboard
+              (default route), Catalog = the flat course list, Constellation = the
+              skill-map. Each pill goes somewhere visibly different. */}
           <NavPill
-            active={!inSim && !inSignoff && !inBackpack && !inLesson}
+            active={
+              !inSim && !inSignoff && !inBackpack && !inLesson && !inCatalog && !inConstellation
+            }
             onClick={() => navigate({ screen: null, course: null, unit: null })}
           >
             Home
           </NavPill>
           <NavPill
-            active={!inSim && !inSignoff && !inBackpack && !inLesson}
-            onClick={() => navigate({ screen: null, course: null, unit: null })}
+            active={inCatalog}
+            onClick={() => navigate({ screen: 'catalog', course: null, unit: null })}
           >
             Catalog
+          </NavPill>
+          <NavPill
+            active={inConstellation}
+            onClick={() => navigate({ screen: 'constellation', course: null, unit: null })}
+          >
+            Constellation
           </NavPill>
         </>
       }
@@ -112,14 +131,25 @@ export default function App() {
         <div className="px-8 pt-2 pb-10">
           <BackpackScreen recipientUserId={session.user.id} />
         </div>
+      ) : inCatalog ? (
+        <CatalogScreen />
+      ) : inConstellation ? (
+        <div className="flex flex-col gap-5 pb-10">
+          <div className="px-8 pt-2">
+            <SyncStatus />
+          </div>
+
+          {/* M1 — the prerequisite-gated skill-map, now its own sub-page. */}
+          <Constellation />
+        </div>
       ) : (
         <div className="flex flex-col gap-5 pb-10">
           <div className="px-8 pt-2">
             <SyncStatus />
           </div>
 
-          {/* M1 — the prerequisite-gated skill-map home (the product's first screen). */}
-          <Constellation />
+          {/* The personalized welcome dashboard (the default landing screen). */}
+          <HomeScreen />
 
           {/* M6 — the Evaluator "Prove one" field sign-off entry (role-gated). */}
           <RoleGate claims={claims} anyOf={['evaluator']}>
