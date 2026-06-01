@@ -185,3 +185,176 @@ test('OFFLINE: a submitted check queues + shows "completes on reconnect", never 
   await page.getByTestId('kc-submit').click();
   await expect(page.getByTestId('kc-verdict')).toContainText('offline'); // pending, not a pass
 });
+
+// ── ROUTING (the AC-203 entry-point fix) ─────────────────────────────────────
+// Opening AC-203 from any entry point (Home spotlight, Catalog card, Constellation
+// boss node) must land on its ORDINAL-1 LESSON — the teaching lesson with its
+// embedded 2D sims — NOT the branching sim. The graded sim follows in the flow at a
+// later ordinal and stays directly reachable from the Constellation's SECONDARY
+// "open-sim" affordance (regression test 4). These tests merge this file's LESSON
+// mocking (units single-by-id / knowledge_check / assessment_items / grade fn / sync,
+// reused from the top-level beforeEach) with ac203-sim.spec's CATALOG/CONSTELLATION
+// mocking (courses / course_prerequisites / the units LIST / competency_state /
+// enrollments). The /units endpoint is therefore DUAL-PURPOSE: a request with no
+// `id=eq.` filter is the catalog list (so `firstUnitId` resolves to the lesson),
+// while an `id=eq.<unit>` or `kind=eq.knowledge_check` request is a lesson read.
+
+const GATE = '000000c1-0000-0000-0000-00000000000e'; // AC-203 course id
+const ROOT1 = '000000c1-0000-0000-0000-0000000000a1'; // FND-101
+const ROOT2 = '000000c1-0000-0000-0000-0000000000a2'; // AC-201
+
+const COURSES = [
+  {
+    id: ROOT1,
+    code: 'FND-101',
+    title: 'Welcome',
+    domain: 'FND',
+    tier: 'foundations',
+    personas: ['priya'],
+    active_version_id: '000000c2-0000-0000-0000-0000000000a1',
+    status: 'published',
+  },
+  {
+    id: ROOT2,
+    code: 'AC-201',
+    title: 'Single-Door',
+    domain: 'AC',
+    tier: 'core',
+    personas: ['priya'],
+    active_version_id: '000000c2-0000-0000-0000-0000000000a2',
+    status: 'published',
+  },
+  {
+    id: GATE,
+    code: 'AC-203',
+    title: 'Mag Locks, REX & Egress',
+    domain: 'AC',
+    tier: 'core',
+    personas: ['priya'],
+    active_version_id: CV, // AC-203 active version → maps the units below to AC-203
+    status: 'published',
+  },
+];
+const PREREQS = [
+  { course_id: GATE, requires_course_id: ROOT1, kind: 'hard_gate' },
+  { course_id: GATE, requires_course_id: ROOT2, kind: 'hard_gate' },
+];
+// The catalog LIST. The ordinal-1 lesson (LESSON_UNIT) on AC-203's active version (CV)
+// is the lowest-ordinal kind='lesson' → catalogSource resolves AC-203.firstUnitId to
+// it. The KC unit (ordinal 2) also belongs to AC-203 and grants the competency.
+const UNITS_LIST = [
+  {
+    id: LESSON_UNIT,
+    ordinal: 1,
+    kind: 'lesson',
+    competency_id: COMP,
+    course_version_id: CV,
+  },
+  {
+    id: KC_UNIT,
+    ordinal: 2,
+    kind: 'knowledge_check',
+    competency_id: COMP,
+    course_version_id: CV,
+  },
+];
+
+test.describe('AC-203 entry points land on the ordinal-1 lesson, not the sim', () => {
+  test.beforeEach(async ({ page }) => {
+    // Supersede the top-level `**/rest/v1/**` handler (registered first → matched
+    // last) with one that ALSO serves the catalog reads. The session seed, the
+    // grade-knowledge-check fn, and /sync from the outer beforeEach are reused as-is.
+    await page.route('**/rest/v1/**', (route) => {
+      const method = route.request().method();
+      if (method === 'OPTIONS') return route.fulfill({ status: 204, headers: CORS, body: '' });
+      const url = new URL(route.request().url());
+      const path = url.pathname;
+      const params = url.searchParams;
+      if (path.endsWith('/courses')) return json(route, COURSES);
+      if (path.endsWith('/course_prerequisites')) return json(route, PREREQS);
+      if (path.endsWith('/assessment_items')) return json(route, ITEMS);
+      if (path.endsWith('/units')) {
+        // DUAL-PURPOSE dispatch by the request's query params:
+        //  • lesson read by id  → the single lesson unit (maybeSingle)
+        //  • the knowledge_check → the single KC unit (maybeSingle)
+        //  • neither (no filter) → the full catalog LIST (drives firstUnitId)
+        if (params.get('id')) return json(route, LESSON_UNIT_ROW);
+        if ((params.get('kind') ?? '').includes('knowledge_check')) return json(route, KC_UNIT_ROW);
+        return json(route, UNITS_LIST);
+      }
+      if (path.endsWith('/enrollments')) {
+        if (method === 'POST')
+          return json(route, [{ id: '000000e1-0000-0000-0000-000000000001' }], 201);
+        // AC-203 enrolled/in_progress → renders the "Open" affordance everywhere.
+        return json(route, [
+          { course_id: ROOT1, status: 'completed' },
+          { course_id: ROOT2, status: 'completed' },
+          { course_id: GATE, status: 'in_progress' },
+        ]);
+      }
+      if (path.endsWith('/competency_state')) return json(route, []);
+      return json(route, []); // credentials, etc.
+    });
+  });
+
+  // What "we landed on the lesson" means — identical to the lesson-render test above:
+  // the ac-203/u1 MDX body mounted with its embedded interaction_2d sims, and NOT a
+  // single sim-missing / sim-unsupported placeholder.
+  const expectOnLesson = async (page: import('@playwright/test').Page) => {
+    await expect(page.getByTestId('lesson-body')).toBeVisible();
+    await expect(page.getByTestId('i2d-submit').first()).toBeVisible(); // an embedded <Sim> mounted
+    await expect(page.getByTestId('sim-missing')).toHaveCount(0);
+    await expect(page.getByTestId('sim-unsupported')).toHaveCount(0);
+    // and we are NOT on the branching sim screen.
+    await expect(page.getByTestId('node-prompt')).toHaveCount(0);
+  };
+
+  test('Home → the AC-203 lesson (the spotlight Resume action, not the sim)', async ({ page }) => {
+    await page.goto('/'); // Home is the default screen
+    // AC-203 is in_progress + a SIM_COURSE → it sorts to the top of the resume
+    // bucket, so the single focused spotlight action is its "Resume AC-203".
+    const resume = page.getByRole('button', { name: /Resume AC-203/i });
+    await expect(resume).toBeVisible();
+    await resume.click();
+    await expectOnLesson(page);
+  });
+
+  test('Catalog → the AC-203 lesson (open-course on the card, not the sim)', async ({ page }) => {
+    await page.goto('/?screen=catalog');
+    const card = page.locator('[data-course="AC-203"]');
+    await expect(card).toHaveAttribute('data-state', 'in_progress'); // enrolled → Open renders
+    await card.getByTestId('open-course').click();
+    await expectOnLesson(page);
+  });
+
+  test('Constellation → the AC-203 lesson (the PRIMARY open-course button, not the sim)', async ({
+    page,
+  }) => {
+    await page.goto('/?screen=constellation');
+    await expect(page.getByTestId('shell')).toHaveText('dense'); // past the auth gate
+    const node = page.locator('[data-course="AC-203"]');
+    await expect(node).toHaveAttribute('data-state', 'in_progress'); // enrolled boss node
+    await node.click();
+    const open = page.getByTestId('open-course');
+    await expect(open).toBeVisible();
+    await open.click();
+    await expectOnLesson(page);
+  });
+
+  test('Regression: the Constellation SECONDARY open-sim still reaches the branching sim', async ({
+    page,
+  }) => {
+    await page.goto('/?screen=constellation');
+    await expect(page.getByTestId('shell')).toHaveText('dense');
+    const node = page.locator('[data-course="AC-203"]');
+    await expect(node).toHaveAttribute('data-state', 'in_progress');
+    await node.click();
+    // Both affordances render on the node detail; the secondary one opens the sim.
+    await expect(page.getByTestId('open-course')).toBeVisible();
+    const openSim = page.getByTestId('open-sim');
+    await expect(openSim).toBeVisible();
+    await openSim.click();
+    await expect(page.getByTestId('node-prompt')).toBeVisible(); // the sim screen mounted
+    await expect(page.getByTestId('lesson-body')).toHaveCount(0); // and NOT the lesson
+  });
+});
