@@ -111,8 +111,8 @@ export function SignoffPrepScreen({
                 className="flex items-start justify-between gap-4 border-b border-line pb-3 last:border-b-0"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-body text-white">{l.label}</span>
-                  <span className="text-caption uppercase tracking-eyebrow text-ink-muted">
+                  <span className="text-body text-ink-strong">{l.label}</span>
+                  <span className="text-caption font-mono uppercase tracking-eyebrow text-ink-muted">
                     {t(DIM_KEY[l.dimension])}
                   </span>
                 </div>

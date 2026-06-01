@@ -59,7 +59,7 @@ export function CourseProgressRail({
             data-state={u.state}
             aria-label={`Unit ${i + 1} of ${units.length}: ${u.label} — ${DOT_WORD[u.state]}`}
             className={cx(
-              'flex h-[20px] w-[20px] items-center justify-center rounded-pill border text-micro font-bold transition-all duration-nav ease-out',
+              'flex h-[20px] w-[20px] items-center justify-center rounded-pill border text-micro font-mono transition-all duration-nav ease-out',
               DOT_STYLE[u.state],
             )}
           >
