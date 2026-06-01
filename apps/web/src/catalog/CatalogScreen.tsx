@@ -67,23 +67,42 @@ export function CatalogScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
+  // Open a course's content: a sim course → its sim; a course with a lesson → that
+  // first lesson; otherwise the skill-map (never a dead end).
+  const openCourse = useCallback(
+    (course: CourseNode) => {
+      if (SIM_COURSES.has(course.code)) {
+        navigate({ screen: 'sim', course: course.code, unit: null });
+      } else if (course.firstUnitId) {
+        navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
+      } else {
+        navigate({ screen: 'constellation', course: null, unit: null });
+      }
+    },
+    [navigate],
+  );
+
+  // Enroll, then open the course's first lesson — so "Enroll" leads somewhere
+  // instead of silently reloading in place (the bug).
   const onEnroll = useCallback(
     async (course: CourseNode) => {
-      if (!claims?.sub || !claims.org_id) return;
+      if (!claims?.sub || !claims.org_id) {
+        openCourse(course); // no identity claims → just open the content
+        return;
+      }
       setEnrollingId(course.id);
       setEnrollError(null);
       try {
         await enrollSelf({ userId: claims.sub, orgId: claims.org_id, courseId: course.id });
         if (liveRef.current)
           liveRef.current.textContent = t('catalog.enrolled', { code: course.code });
-        reload();
+        openCourse(course);
       } catch (e: unknown) {
         setEnrollError(e instanceof Error ? e.message : String(e));
-      } finally {
         setEnrollingId(null);
       }
     },
-    [claims, reload, t],
+    [claims, openCourse, t],
   );
 
   const head = (
@@ -214,21 +233,17 @@ export function CatalogScreen() {
                       ) : c.state === 'locked' ? (
                         <p className="text-caption text-ink-muted">{t('catalog.locked_hint')}</p>
                       ) : (
-                        <p className="text-caption text-ink-muted">
-                          {t(`catalog.state_hint.${c.state}`)}
-                        </p>
-                      )}
-
-                      {isSim ? (
+                        // in_progress / passed / mastered → an Open button so the
+                        // learner can re-enter the content (lesson or sim).
                         <Button
                           variant="primary"
                           size="sm"
-                          data-testid="open-sim"
-                          onClick={() => navigate({ screen: 'sim', course: c.code })}
+                          data-testid={isSim ? 'open-sim' : 'open-course'}
+                          onClick={() => openCourse(c)}
                         >
-                          {t('catalog.open_sim')}
+                          {isSim ? t('catalog.open_sim') : t('catalog.open_course')}
                         </Button>
-                      ) : null}
+                      )}
                     </div>
                   </Card>
                 );

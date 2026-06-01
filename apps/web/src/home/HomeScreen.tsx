@@ -199,11 +199,17 @@ export function HomeScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
+  // Where "open this course" goes: a sim course → its sim; a course with a lesson →
+  // that first lesson; otherwise fall back to the skill-map (never a dead end).
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (SIM_COURSES.has(course.code))
+      if (SIM_COURSES.has(course.code)) {
         navigate({ screen: 'sim', course: course.code, unit: null });
-      else navigate({ screen: 'constellation', course: null, unit: null });
+      } else if (course.firstUnitId) {
+        navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
+      } else {
+        navigate({ screen: 'constellation', course: null, unit: null });
+      }
     },
     [navigate],
   );
