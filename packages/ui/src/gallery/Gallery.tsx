@@ -75,7 +75,7 @@ function Section({
 function Specimen({ caption, children }: { caption: string; children: ReactNode }): ReactElement {
   return (
     <div className="flex flex-col items-start gap-2">
-      <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+      <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
         {caption}
       </span>
       <div className="flex flex-wrap items-center gap-3">{children}</div>
@@ -106,7 +106,9 @@ function TemplateSpecimen({
   return (
     <section className="flex flex-col gap-3 rounded-card border border-line bg-panel p-4">
       <div className="flex flex-col gap-1">
-        <h3 className="text-subtitle font-bold tracking-tighttitle text-white">{name}</h3>
+        <h3 className="font-display text-subtitle font-bold tracking-tighttitle text-ink-strong">
+          {name}
+        </h3>
         <p className="text-caption text-ink-muted">{blurb}</p>
       </div>
       {children}
@@ -451,7 +453,7 @@ export default function Gallery(): ReactElement {
         <Grid>
           <Card variant="panel" padding="lg">
             <div className="flex flex-col gap-4">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 ProgressBar — 25% · 60% · 95%
               </span>
               <ProgressBar value={0.25} label="Module progress 25 percent" />
@@ -461,7 +463,7 @@ export default function Gallery(): ReactElement {
           </Card>
           <Card variant="panel" padding="lg">
             <div className="flex flex-col gap-4">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 Meter — ok / warn / over
               </span>
               {METER_TONES.map((m) => (
@@ -471,7 +473,7 @@ export default function Gallery(): ReactElement {
           </Card>
           <Card variant="panel" padding="lg">
             <div className="flex flex-col gap-4">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 ProgressDots — done / fail / current / todo
               </span>
               <ProgressDots
@@ -534,7 +536,7 @@ export default function Gallery(): ReactElement {
       >
         <div className="flex flex-col gap-6">
           <div>
-            <span className="mb-3 block text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+            <span className="mb-3 block font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
               Earned
             </span>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -544,7 +546,7 @@ export default function Gallery(): ReactElement {
             </div>
           </div>
           <div>
-            <span className="mb-3 block text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+            <span className="mb-3 block font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
               Locked
             </span>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -573,7 +575,7 @@ export default function Gallery(): ReactElement {
             {ICON_NAMES.map((n) => (
               <div key={n} className="flex flex-col items-center gap-2">
                 <Icon name={n} size={28} className={ICON_TINTS[n]} title={n} />
-                <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+                <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                   {n}
                 </span>
               </div>
@@ -612,7 +614,7 @@ export default function Gallery(): ReactElement {
           </Card>
           <Card variant="panel" padding="lg">
             <div className="flex flex-col gap-4">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 Checkbox · Radio · Switch
               </span>
               <Checkbox
@@ -663,7 +665,7 @@ export default function Gallery(): ReactElement {
         <Grid>
           <Card variant="panel" padding="lg">
             <div className="flex flex-col gap-3">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 Skeleton
               </span>
               <Skeleton height="1.25rem" width="60%" />
