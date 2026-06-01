@@ -15,6 +15,7 @@ const COURSES: CourseNode[] = [
     personas: ['priya'],
     state: 'available',
     isBoss: false,
+    firstUnitId: 'u-fnd101',
   },
   {
     id: 'a',
@@ -25,6 +26,7 @@ const COURSES: CourseNode[] = [
     personas: ['priya'],
     state: 'passed',
     isBoss: false,
+    firstUnitId: 'u-ac201',
   },
   {
     id: 'g',
@@ -35,6 +37,7 @@ const COURSES: CourseNode[] = [
     personas: ['priya'],
     state: 'locked',
     isBoss: true,
+    firstUnitId: null,
   },
   {
     id: 'i',
@@ -45,6 +48,7 @@ const COURSES: CourseNode[] = [
     personas: ['marco'],
     state: 'in_progress',
     isBoss: false,
+    firstUnitId: 'u-vid202',
   },
   {
     id: 'm',
@@ -55,6 +59,7 @@ const COURSES: CourseNode[] = [
     personas: ['priya'],
     state: 'mastered',
     isBoss: true,
+    firstUnitId: 'u-int410',
   },
 ];
 const PREREQS: PrereqEdge[] = [

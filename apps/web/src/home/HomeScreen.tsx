@@ -103,15 +103,14 @@ export function HomeScreen() {
   // First-run name prompt: shown until the learner saves a name (or skips this
   // session). Never shown once a real name exists on the profile.
   const [skippedNamePrompt, setSkippedNamePrompt] = useState(false);
-  const [nameDraft, setNameDraft] = useState('');
+  // Prefill the draft once with the humanized email handle as a friendly suggestion
+  // (lazy init — runs at mount, when the authed session/email is already present).
+  const [nameDraft, setNameDraft] = useState(() =>
+    !hasName && emailHandle ? humanizeHandle(emailHandle) : '',
+  );
   const [savingName, setSavingName] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
   const showNamePrompt = !hasName && !skippedNamePrompt;
-
-  useEffect(() => {
-    // Prefill the draft with the humanized email handle as a friendly suggestion.
-    if (!hasName && emailHandle) setNameDraft((d) => d || humanizeHandle(emailHandle));
-  }, [hasName, emailHandle]);
 
   const onSaveName = useCallback(
     async (e: FormEvent) => {
@@ -154,16 +153,24 @@ export function HomeScreen() {
     };
   }, [nonce]);
 
+  // Best-effort active-credential count (RLS-scoped). Non-fatal: any failure leaves
+  // the stat hidden. Wrapped in try/catch because the query is built synchronously —
+  // a stubbed/absent supabase client (e.g. in unit tests) must never crash the
+  // dashboard, mirroring how loadCatalogGating's errors are swallowed.
   useEffect(() => {
     let live = true;
-    void supabase
-      .schema('academy')
-      .from('credentials')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .then(({ count, error: e }) => {
-        if (live && !e && typeof count === 'number') setCredentialCount(count);
-      });
+    try {
+      void supabase
+        .schema('academy')
+        .from('credentials')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .then(({ count, error: e }) => {
+          if (live && !e && typeof count === 'number') setCredentialCount(count);
+        });
+    } catch {
+      /* best-effort: a missing/stubbed client must not crash the dashboard */
+    }
     return () => {
       live = false;
     };
@@ -192,11 +199,17 @@ export function HomeScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
+  // Where "open this course" goes: a sim course → its sim; a course with a lesson →
+  // that first lesson; otherwise fall back to the skill-map (never a dead end).
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (SIM_COURSES.has(course.code))
+      if (SIM_COURSES.has(course.code)) {
         navigate({ screen: 'sim', course: course.code, unit: null });
-      else navigate({ screen: 'constellation', course: null, unit: null });
+      } else if (course.firstUnitId) {
+        navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
+      } else {
+        navigate({ screen: 'constellation', course: null, unit: null });
+      }
     },
     [navigate],
   );
