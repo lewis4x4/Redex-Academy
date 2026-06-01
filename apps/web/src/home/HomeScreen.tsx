@@ -153,16 +153,24 @@ export function HomeScreen() {
     };
   }, [nonce]);
 
+  // Best-effort active-credential count (RLS-scoped). Non-fatal: any failure leaves
+  // the stat hidden. Wrapped in try/catch because the query is built synchronously —
+  // a stubbed/absent supabase client (e.g. in unit tests) must never crash the
+  // dashboard, mirroring how loadCatalogGating's errors are swallowed.
   useEffect(() => {
     let live = true;
-    void supabase
-      .schema('academy')
-      .from('credentials')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active')
-      .then(({ count, error: e }) => {
-        if (live && !e && typeof count === 'number') setCredentialCount(count);
-      });
+    try {
+      void supabase
+        .schema('academy')
+        .from('credentials')
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'active')
+        .then(({ count, error: e }) => {
+          if (live && !e && typeof count === 'number') setCredentialCount(count);
+        });
+    } catch {
+      /* best-effort: a missing/stubbed client must not crash the dashboard */
+    }
     return () => {
       live = false;
     };
