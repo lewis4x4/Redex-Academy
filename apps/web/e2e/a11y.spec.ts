@@ -144,12 +144,42 @@ test('the /auth/callback route has no axe violations (WCAG 2a/2aa)', async ({ pa
   expect(results.violations).toEqual([]);
 });
 
-// M3: the AC-203 branching egress-fail sim screen (the product's first playable sim)
-// must pass axe — labelled choice buttons, colorblind-safe state (shape+glyph+text),
-// the SimStage rails, the SVG tableau (role=img + alt), AA contrast on the dark
-// canvas. Seeded session + the auth-gated ?screen=sim route render it without a
-// backend (the spec is bundled). Reduced motion so axe samples the final paint.
-test('the AC-203 sim screen has no axe violations (WCAG 2a/2aa)', async ({ page }) => {
+// M3 / Phase 2: the AC-203 branching egress-fail sim — now reached INSIDE the
+// course-player (the standalone ?screen=sim entry is retired) — must pass axe:
+// labelled choice buttons, colorblind-safe state (shape+glyph+text), the SimStage
+// rails, the per-unit course progress rail, the SVG tableau (role=img + alt), AA
+// contrast. Seeded session + the course-player reads (the lesson is pre-'passed' so
+// the player resumes on the scenario unit). Reduced motion so axe samples the final paint.
+test('the AC-203 sim inside the course-player has no axe violations (WCAG 2a/2aa)', async ({
+  page,
+}) => {
+  const GATE = '000000c1-0000-0000-0000-00000000000e';
+  const CV = '000000c2-0000-0000-0000-00000000000e';
+  const COMP = '000000c0-0000-0000-0000-00000000000f';
+  const LESSON = '000000c3-000e-0000-0000-000000000001';
+  const SCENARIO = '000000c3-000e-0000-0000-000000000002';
+  const unitsFull = [
+    {
+      id: LESSON,
+      ordinal: 1,
+      kind: 'lesson',
+      title: 'Lesson',
+      competency_id: COMP,
+      course_version_id: CV,
+      content_ref: { mdx_key: 'ac-203/u1' },
+      est_minutes: 50,
+    },
+    {
+      id: SCENARIO,
+      ordinal: 2,
+      kind: 'scenario',
+      title: 'Scenario',
+      competency_id: COMP,
+      course_version_id: CV,
+      content_ref: { engine: 'branching_scenario', spec_key: 'ac-203/egress-compliant', gate: 0.9 },
+      est_minutes: 45,
+    },
+  ];
   await page.addInitScript(() => {
     const b64url = (o: unknown) =>
       btoa(JSON.stringify(o)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -180,17 +210,65 @@ test('the AC-203 sim screen has no axe violations (WCAG 2a/2aa)', async ({ page 
       }),
     );
   });
-  await page.route('**/rest/v1/**', (route) =>
-    route.fulfill({
+  await page.route('**/rest/v1/**', (route) => {
+    const url = new URL(route.request().url());
+    const path = url.pathname;
+    const p = url.searchParams;
+    const body = (() => {
+      if (path.endsWith('/courses'))
+        return p.get('id')
+          ? {
+              id: GATE,
+              code: 'AC-203',
+              title: 'Egress',
+              active_version_id: CV,
+              status: 'published',
+            }
+          : [
+              {
+                id: GATE,
+                code: 'AC-203',
+                title: 'Egress',
+                domain: 'AC',
+                tier: 'core',
+                personas: ['priya'],
+                active_version_id: CV,
+                status: 'published',
+              },
+            ];
+      if (path.endsWith('/units'))
+        return (p.get('select') ?? '').includes('content_ref')
+          ? unitsFull
+          : unitsFull.map((u) => ({
+              id: u.id,
+              ordinal: u.ordinal,
+              kind: u.kind,
+              competency_id: u.competency_id,
+              course_version_id: u.course_version_id,
+            }));
+      if (path.endsWith('/enrollments'))
+        return p.get('user_id')
+          ? {
+              id: 'enr1',
+              status: 'in_progress',
+              course_version_id: CV,
+              started_at: '2026-01-01T00:00:00Z',
+            }
+          : [{ course_id: GATE, status: 'in_progress' }];
+      if (path.endsWith('/unit_progress'))
+        return [{ unit_id: LESSON, status: 'passed', score: 1, attempts: 1 }];
+      return [];
+    })();
+    return route.fulfill({
       status: 200,
       headers: { 'access-control-allow-origin': '*', 'content-type': 'application/json' },
-      body: '[]',
-    }),
-  );
+      body: JSON.stringify(body),
+    });
+  });
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/?screen=sim&course=AC-203'); // auth-gated in-app sim route
-  await page.getByTestId('node-prompt').waitFor(); // sim mounted at the first decision
+  await page.goto(`/?screen=course-player&course=${GATE}`);
+  await page.getByTestId('node-prompt').waitFor(); // the scenario unit mounted at its first decision
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);
 });

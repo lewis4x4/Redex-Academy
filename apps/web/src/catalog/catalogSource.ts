@@ -40,7 +40,159 @@ export interface CatalogGating {
   prereqs: PrereqEdge[];
 }
 
+/** academy.unit_kind — the canonical ordinal unit kinds (matches the migration enum). */
+export type UnitKind =
+  | 'lesson'
+  | 'sim'
+  | 'scenario'
+  | 'knowledge_check'
+  | 'video'
+  | 'checklist'
+  | 'signoff_prep';
+
+/** One unit in a course version's ordinal sequence (the course-player's spine). The
+ *  content_ref is parsed into the engine/spec_key the player dispatches on. */
+export interface CourseUnit {
+  id: string;
+  ordinal: number;
+  kind: UnitKind;
+  title: string;
+  competencyId: string | null;
+  estMinutes: number | null;
+  /** Raw content_ref jsonb (mdx_key / engine / spec_key / gate / mandatory / …). */
+  contentRef: Record<string, unknown>;
+  /** content_ref.engine (e.g. 'branching_scenario' | 'device_config') if present. */
+  engine: string | null;
+  /** content_ref.spec_key (e.g. 'ac-203/egress-compliant') if present. */
+  specKey: string | null;
+}
+
+/** The learner's OWN enrollment in a course (RLS-scoped own read). Carries the LOCKED
+ *  course_version_id so the player resumes that version, never a newer one. */
+export interface CourseEnrollment {
+  id: string;
+  status: EnrollmentStatus;
+  courseVersionId: string;
+  startedAt: string | null;
+}
+
 const academy = () => supabase.schema('academy');
+
+const asRecord = (v: unknown): Record<string, unknown> =>
+  v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+const refString = (ref: Record<string, unknown>, key: string): string | null =>
+  typeof ref[key] === 'string' ? (ref[key] as string) : null;
+
+/**
+ * Load every unit of a course VERSION in ordinal order — the canonical
+ * lesson → scenario → sim → signoff_prep → knowledge_check spine the course-player
+ * walks. RLS-safe: published catalog (units) is cross-tenant readable, exactly like
+ * loadCatalogGating's units read. Throws on a transport error (surfaced by the screen).
+ */
+export async function loadAllUnitsForCourse(courseVersionId: string): Promise<CourseUnit[]> {
+  const { data, error } = await academy()
+    .from('units')
+    .select('id, ordinal, kind, title, content_ref, competency_id, est_minutes')
+    .eq('course_version_id', courseVersionId)
+    .order('ordinal', { ascending: true });
+  if (error) throw new Error(`units read failed: ${error.message}`);
+  return (
+    (data ?? []) as Array<{
+      id: string;
+      ordinal: number | null;
+      kind: string;
+      title: string;
+      content_ref: Record<string, unknown> | null;
+      competency_id: string | null;
+      est_minutes: number | null;
+    }>
+  ).map((u) => {
+    const contentRef = asRecord(u.content_ref);
+    return {
+      id: u.id,
+      ordinal: u.ordinal ?? 0,
+      kind: u.kind as UnitKind,
+      title: u.title,
+      competencyId: u.competency_id,
+      estMinutes: u.est_minutes,
+      contentRef,
+      engine: refString(contentRef, 'engine'),
+      specKey: refString(contentRef, 'spec_key'),
+    };
+  });
+}
+
+/** A course's player-relevant header: title, code, the published active version, and
+ *  its catalog status (so the player can enrollSelf only on an available/published course). */
+export interface CoursePlayerHeader {
+  id: string;
+  code: string;
+  title: string;
+  activeVersionId: string | null;
+  status: string;
+}
+
+/**
+ * Load a single course's header for the course-player (RLS: published catalog is
+ * cross-tenant readable). Returns null if the course id is not visible/published.
+ * Throws on a transport error.
+ */
+export async function loadCourseForPlayer(courseId: string): Promise<CoursePlayerHeader | null> {
+  const { data, error } = await academy()
+    .from('courses')
+    .select('id, code, title, active_version_id, status')
+    .eq('id', courseId)
+    .maybeSingle();
+  if (error) throw new Error(`course read failed: ${error.message}`);
+  if (!data) return null;
+  const row = data as {
+    id: string;
+    code: string;
+    title: string;
+    active_version_id: string | null;
+    status: string;
+  };
+  return {
+    id: row.id,
+    code: row.code,
+    title: row.title,
+    activeVersionId: row.active_version_id,
+    status: row.status,
+  };
+}
+
+/**
+ * Load the learner's OWN enrollment for a course (RLS own-read on enrollments). Returns
+ * null when the learner has no enrollment yet (the player may then enrollSelf if the
+ * course is available). Resolves the LOCKED course_version_id so a mid-course learner
+ * stays on their enrolled version (course-version affinity), never shifted to a newly
+ * published active version. Throws on a transport error.
+ */
+export async function loadEnrollmentForCourse(
+  userId: string,
+  courseId: string,
+): Promise<CourseEnrollment | null> {
+  const { data, error } = await academy()
+    .from('enrollments')
+    .select('id, status, course_version_id, started_at, user_id, course_id')
+    .eq('user_id', userId)
+    .eq('course_id', courseId)
+    .maybeSingle();
+  if (error) throw new Error(`enrollment read failed: ${error.message}`);
+  if (!data) return null;
+  const row = data as {
+    id: string;
+    status: EnrollmentStatus;
+    course_version_id: string;
+    started_at: string | null;
+  };
+  return {
+    id: row.id,
+    status: row.status,
+    courseVersionId: row.course_version_id,
+    startedAt: row.started_at,
+  };
+}
 
 /** Reads the catalog + own progress and resolves every node's gating state. The
  *  catalog is public (status='published'); progress rows are RLS-scoped to the

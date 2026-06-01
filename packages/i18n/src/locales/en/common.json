@@ -82,6 +82,25 @@
     "next": "Next",
     "continue_course": "Continue the course"
   },
+  "course": {
+    "eyebrow": "{{code}} · Egress hard gate",
+    "exit": "Exit course",
+    "progress": "Course progress",
+    "progress_count": "{{done}} of {{total}} units",
+    "error_title": "Couldn't load this course",
+    "not_found": "Course not found.",
+    "no_version": "This course has no published version.",
+    "unknown_unit": "Unsupported unit",
+    "sim_pending_verify": "Build complete — your work is recorded.",
+    "signoff_prep": {
+      "eyebrow": "Field sign-off prep · Egress hard gate",
+      "title": "What your evaluator will check",
+      "subtitle": "This is the exact rubric. A single 0 on any critical-safety line is an automatic fail — there is no override.",
+      "critical": "Critical safety",
+      "done": "I'm ready — continue",
+      "error": "Couldn't load the rubric"
+    }
+  },
   "kc": {
     "aria_label": "Knowledge check",
     "safety_tag": "Safety",

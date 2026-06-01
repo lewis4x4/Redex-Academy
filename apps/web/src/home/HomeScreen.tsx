@@ -27,8 +27,6 @@ import {
 import type { GatingState } from '../catalog/gating';
 import { useAppRoute } from '../navigation';
 
-// Courses whose boss node opens a playable sim (mirrors Catalog/Constellation).
-const SIM_COURSES = new Set(['AC-203']);
 const TIER_ORDER: Tier[] = ['foundations', 'core', 'advanced', 'mastery'];
 
 const STATE_DOT: Record<GatingState, string> = {
@@ -184,11 +182,7 @@ export function HomeScreen() {
     const available = courses.filter((c) => c.state === 'available');
     const byProgression = (a: CourseNode, b: CourseNode) =>
       tierRank(a.tier) - tierRank(b.tier) || a.code.localeCompare(b.code);
-    const resume =
-      [...inProgress].sort(
-        (a, b) =>
-          Number(SIM_COURSES.has(b.code)) - Number(SIM_COURSES.has(a.code)) || byProgression(a, b),
-      )[0] ?? null;
+    const resume = [...inProgress].sort(byProgression)[0] ?? null;
     const recommended =
       [...available].sort(
         (a, b) =>
@@ -200,18 +194,11 @@ export function HomeScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
-  // Where "open this course" goes: PREFER the first lesson (AC-203 now opens its real
-  // teaching lesson, and the graded branching sim follows in the flow at ordinal 2); a
-  // sim-only course with no lesson → its sim; otherwise the skill-map (never a dead end).
+  // Where "open this course" goes: the course-player (one mastery flow chaining every
+  // unit). It resolves the entry unit (first incomplete) by the course id — NOT the code.
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (course.firstUnitId) {
-        navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
-      } else if (SIM_COURSES.has(course.code)) {
-        navigate({ screen: 'sim', course: course.code, unit: null });
-      } else {
-        navigate({ screen: 'constellation', course: null, unit: null });
-      }
+      navigate({ screen: 'course-player', course: course.id, unit: null });
     },
     [navigate],
   );
