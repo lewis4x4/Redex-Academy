@@ -29,7 +29,7 @@ const VARIANT: Record<ButtonVariant, string> = {
     'bg-transparent text-ink-muted border border-transparent hover:text-white hover:bg-surface-hover ' +
     'disabled:text-disabled-fg disabled:bg-transparent',
   cta:
-    'w-full bg-grad-cta text-white shadow-glow font-display tracking-name hover:-translate-y-0.5 ' +
+    'w-full bg-grad-cta text-white shadow-glow font-display font-bold tracking-name hover:-translate-y-0.5 ' +
     'disabled:bg-none disabled:bg-disabled-bg disabled:text-disabled-fg disabled:shadow-none',
 };
 

@@ -11,27 +11,31 @@
 export const colors = {
   // Brand
   red: '#ED1B24',
-  redBright: '#ff3b43',
+  redBright: '#ff5b62', // v2 red-soft (small-text / accent red, AA on dark surfaces)
   redDeep: '#8f0e14',
+  redDim: '#241114', // v2 faint red wash behind a fail/hot surface
   black: '#000000',
 
-  // Surfaces (near-black dark canvas + layered panels)
+  // Surfaces (near-black dark canvas + layered panels — v2 bar values)
   canvas: '#0a0a0c',
-  panel: '#121216',
-  panel2: '#17171d',
-  line: '#26262e',
+  panel: '#131316',
+  panel2: '#1a1a1f',
+  line: '#26262d',
+  lineStrong: '#34343d', // v2 brighter hairline (index/chip/rail-number stroke)
 
-  // Text
-  text: '#ffffff',
+  // Text (v2: OFF-WHITE body, not pure white)
+  text: '#e9e9ee',
+  textStrong: '#ffffff', // pure-white keyword emphasis (.kw)
   muted: '#9a9aa6',
-  dim: '#5a5a66',
+  dim: '#65656f',
 
   // State — ALWAYS paired with shape + text (never color-only; invariant 7)
-  pass: '#36d399',
+  pass: '#39d98a', // v2 green
   fail: '#b3261e',
   veto: '#7a1fa2',
   pending: '#f5a623', // amber
   gold: '#f5c451', // mastered
+  tech: '#ffd9a0', // v2 technical-value accent (warm gold)
 
   // Domain hues
   domainFnd: '#c9ced6',

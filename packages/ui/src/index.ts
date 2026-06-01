@@ -29,6 +29,10 @@ export * from './components/Callout';
 export * from './components/Checklist';
 export * from './components/LessonOutlineRail';
 export * from './components/SimulatorPanel';
+// v2 visual-bar patterns (editorial sequence, inline technical value, reading-measure cap).
+export * from './components/Sequence';
+export * from './components/TechValue';
+export * from './components/Prose';
 
 // Folded in from F1 — the colorblind-safe verdict indicator.
 export { StatusBadge } from './StatusBadge';

@@ -106,7 +106,14 @@ function StepBody({ step, locale }: { step: LessonStep; locale: 'en' | 'es' }): 
     );
   }
   return (
-    <div data-testid="step-content" data-step={step.ordinal} className="flex flex-col gap-4">
+    // The v2 reading column: the relaxed-rhythm prose scope (lists → the .seq sequence,
+    // bullets → disc) capped at the ~68ch measure (640px). The embedded <Sim> rides inside
+    // the same measure — the SimulatorPanel frame is unchanged.
+    <div
+      data-testid="step-content"
+      data-step={step.ordinal}
+      className="rdx-lesson-prose flex max-w-[640px] flex-col gap-4"
+    >
       <Mdx components={mdxComponents} />
     </div>
   );
@@ -295,14 +302,15 @@ export function LessonScreen({ unitId, online = true, onExit }: LessonScreenProp
           />
 
           <Card variant="panel" padding="lg" className="min-w-0">
-            {/* Header row: the step eyebrow + the EN↔ES locale toggle. */}
+            {/* Header row: the v2 masthead — mono red-bright eyebrow + the EN↔ES toggle. */}
             <div className="mb-1 flex items-start justify-between gap-4">
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+              <span className="font-mono text-eyebrow uppercase text-redex-bright">
                 {stepCounter}
               </span>
               <div className="flex items-center gap-2">{localeToggle}</div>
             </div>
-            <h1 className="mb-4 text-h1 font-bold tracking-tighttitle text-white">{step.title}</h1>
+            {/* The v2 display heading: Archivo 800 at 40px/1.04/-1.1px (the bumped text-h1). */}
+            <h1 className="mb-4 font-display text-h1 font-bold text-ink-strong">{step.title}</h1>
 
             {/* The key={currentStep} re-triggers the reduced-motion-gated fadeUp on step change. */}
             <div key={currentStep} className="rdx-anim-fadeup">

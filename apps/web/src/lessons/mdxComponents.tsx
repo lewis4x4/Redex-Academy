@@ -6,9 +6,9 @@ import {
   loadSpec,
   type TelemetrySink,
 } from '@redex/sim-engine';
-import { Callout, Checklist, SimulatorPanel } from '@redex/ui';
+import { Callout, Checklist, SimulatorPanel, TechValue } from '@redex/ui';
 import { M2_AC_SPECS } from '@redex/sim-schemas';
-import { useMemo, type ReactElement } from 'react';
+import { useMemo, type ComponentPropsWithoutRef, type ReactElement } from 'react';
 import { enqueueXapi } from '../offline/xapi-queue';
 import { KnowledgeCheck } from './KnowledgeCheck';
 import { useLessonCtx } from './LessonContext';
@@ -121,13 +121,60 @@ function KnowledgeCheckEmbed(): ReactElement | null {
   );
 }
 
+// ── v2 prose elements ────────────────────────────────────────────────────────
+// The lesson MDX is NOT rewritten — its visual bar comes from how the default markdown
+// elements RENDER (CLAUDE.md: content is not reimplemented). These map the raw HTML the
+// MDX compiler emits to the v2 design tokens: headings → Archivo (font-display), body →
+// the relaxed reading rhythm + off-white ink, **strong** → the pure-white keyword
+// emphasis (.kw), and inline `code` → the gold-mono <TechValue> (so every `24V`/`0V`/`NC`
+// in the copy renders as the warm-gold technical value). Token classes only — no raw hex.
+
+function P(props: ComponentPropsWithoutRef<'p'>): ReactElement {
+  return <p {...props} className="text-prose leading-reading text-ink" />;
+}
+
+function H2(props: ComponentPropsWithoutRef<'h2'>): ReactElement {
+  return <h2 {...props} className="mt-2 font-display font-bold text-title text-ink-strong" />;
+}
+
+function H3(props: ComponentPropsWithoutRef<'h3'>): ReactElement {
+  return <h3 {...props} className="mt-1 font-display font-nav text-subtitle text-ink-strong" />;
+}
+
+function Strong(props: ComponentPropsWithoutRef<'strong'>): ReactElement {
+  // The v2 `.kw` keyword highlight: pure-white emphasis lifted out of the off-white body.
+  return <strong {...props} className="font-nav text-ink-strong" />;
+}
+
+function Em(props: ComponentPropsWithoutRef<'em'>): ReactElement {
+  return <em {...props} className="text-ink-strong" />;
+}
+
+// `ul`/`ol`/`li` are NOT overridden with JS classes (one shared `<li>` can't tell its
+// parent apart). Their v2 look — disc bullets for `ul`, the `.seq` editorial sequence
+// (rounded-square mono index badge + per-row divider) for `ol` — is driven by the scoped
+// `.rdx-lesson-prose` CSS in @redex/ui (styles/lesson-prose.css), so the bullet vs.
+// numbered distinction is made by the real `ul > li` / `ol > li` selector. Content is
+// unchanged; the authored "Follow the power" ordered list renders AS the Sequence.
+
 /** The MDX component contract (M2 task 1): the embeddable components an MDX lesson
- *  may reference. Pure primitives (Callout, Checklist) come from @redex/ui; the
- *  data-bound ones (Sim, KnowledgeCheck, Media) are wired here to the slice data. */
+ *  may reference, PLUS the v2 prose element overrides (headings → font-display, body →
+ *  relaxed reading rhythm, **strong** → keyword emphasis, inline `code` → gold-mono
+ *  TechValue). Lists get the `.seq`/disc treatment from the scoped lesson-prose CSS.
+ *  Pure primitives (Callout, Checklist) come from @redex/ui; the data-bound ones (Sim,
+ *  KnowledgeCheck, Media) are wired here to the slice data. */
 export const mdxComponents = {
   Sim,
   Media,
   KnowledgeCheck: KnowledgeCheckEmbed,
   Callout,
   Checklist,
+  // v2 prose treatment for the default markdown elements (content unchanged).
+  p: P,
+  h2: H2,
+  h3: H3,
+  strong: Strong,
+  em: Em,
+  // inline `code` (e.g. `24V`) → the gold-mono technical value.
+  code: TechValue,
 };

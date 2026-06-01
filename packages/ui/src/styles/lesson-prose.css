@@ -1,0 +1,88 @@
+/* @redex/ui — LESSON PROSE (the v2 reading-column treatment for runtime-compiled MDX).
+ * Scoped to `.rdx-lesson-prose`, applied by the lesson runner's StepBody. The MDX content
+ * is NEVER rewritten — its visual bar comes from how the default markdown elements render
+ * (headings/body via the MDX component map; lists here, because one shared <li> override
+ * can't distinguish a `ul` bullet from an `ol` step). All values are design tokens
+ * (var(--…)) — no raw hex outside tokens.css. */
+
+/* Vertical rhythm between blocks — the bar's ~20–26px stack. The MDX wrapper already
+ * supplies a flex gap; these top-margins refine block-to-block spacing for nested runs. */
+.rdx-lesson-prose > * + * {
+  margin-top: 18px;
+}
+
+/* The v2 masthead lede: a step's FIRST paragraph reads as the standout lede sentence
+ * (18px / 1.55, ink-muted) under the Archivo h1 — the bar's `.lede`. This is the authored
+ * opening sentence, given lede treatment by position; the prose is not rewritten. */
+.rdx-lesson-prose > p:first-child {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+/* Unordered lists → disc bullets, off-white body, red-bright marker, relaxed measure. */
+.rdx-lesson-prose ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+  color: var(--text);
+  line-height: 1.55;
+}
+.rdx-lesson-prose ul > li {
+  margin-top: 8px;
+}
+.rdx-lesson-prose ul > li::marker {
+  color: var(--red-bright);
+}
+
+/* Ordered lists → the v2 `.seq` editorial sequence: a hairline top + per-row divider,
+ * and a rounded-square mono index badge (a CSS counter) leading each step. The authored
+ * **strong** lead in each <li> is the display label (rendered white by the strong map). */
+.rdx-lesson-prose ol {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rdx-seq;
+  border-top: 1px solid var(--line);
+}
+.rdx-lesson-prose ol > li {
+  counter-increment: rdx-seq;
+  display: flex;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  line-height: 1.55;
+}
+.rdx-lesson-prose ol > li::before {
+  content: counter(rdx-seq);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-strong);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--red-bright);
+}
+/* The step body sits beside the badge; its **strong** lead is the display label. */
+.rdx-lesson-prose ol > li > * {
+  margin: 0;
+}
+
+/* The authored **bold** lead of each step is the v2 `.seq .lab` — given the Archivo
+ * display family + the pure-white keyword ink, so the lead reads as the step label that
+ * flows into its description (the author wrote "**label** — desc" as one sentence; the
+ * label is lifted typographically, not restructured). Presentation only — text unchanged. */
+.rdx-lesson-prose ol > li > strong:first-child {
+  font-family: var(--font-display);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+
+/* Reduced-motion is honored globally by the kit's keyframe guard; nothing here animates. */

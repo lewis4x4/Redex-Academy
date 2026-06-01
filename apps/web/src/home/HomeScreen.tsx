@@ -88,13 +88,13 @@ export function HomeScreen() {
   );
 
   // ── Identity / name ────────────────────────────────────────────────────────
-  const meta = (session?.user.user_metadata ?? {}) as Record<string, unknown>;
+  const meta = (session?.user?.user_metadata ?? {}) as Record<string, unknown>;
   const explicitName =
     (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
     (typeof meta.name === 'string' && meta.name.trim()) ||
     '';
   const hasName = explicitName.length > 0;
-  const emailHandle = session?.user.email ? (session.user.email.split('@')[0] ?? '') : '';
+  const emailHandle = session?.user?.email ? (session.user.email.split('@')[0] ?? '') : '';
   const firstToken = (explicitName || emailHandle).trim().split(/[\s.]+/)[0] ?? '';
   const name = firstToken
     ? firstToken.charAt(0).toUpperCase() + firstToken.slice(1)

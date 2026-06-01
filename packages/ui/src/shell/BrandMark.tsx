@@ -26,7 +26,7 @@ export function BrandMark({
       <span
         aria-hidden="true"
         className={cx(
-          'flex items-center justify-center rounded-mark bg-redex font-display tracking-tightmark text-white shadow-glow',
+          'flex items-center justify-center rounded-mark bg-redex font-display font-bold tracking-tightmark text-white shadow-glow',
           mark,
         )}
       >
