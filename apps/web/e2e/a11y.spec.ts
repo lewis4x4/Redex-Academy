@@ -128,7 +128,7 @@ test('the M1 Constellation home has no axe violations (WCAG 2a/2aa)', async ({ p
   });
 
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/?screen=constellation'); // the skill-map is its own sub-page now
   await page.locator('[data-course="AC-203"]').waitFor(); // constellation rendered
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
   expect(results.violations).toEqual([]);

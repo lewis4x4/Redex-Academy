@@ -124,7 +124,11 @@ export default function App() {
           onExit={() => navigate({ screen: null, course: null, unit: null })}
         />
       ) : inSim ? (
-        <Ac203SimScreen onExit={() => navigate({ screen: null, course: null })} />
+        // The sim is entered from the Constellation boss node — return there so the
+        // learner sees the node's advanced state (home is the dashboard now).
+        <Ac203SimScreen
+          onExit={() => navigate({ screen: 'constellation', course: null, unit: null })}
+        />
       ) : inSignoff ? (
         <SignoffScreen onExit={() => navigate({ screen: null, course: null })} />
       ) : inBackpack ? (
@@ -141,6 +145,14 @@ export default function App() {
 
           {/* M1 — the prerequisite-gated skill-map, now its own sub-page. */}
           <Constellation />
+
+          <section aria-label="Session" className="px-8 text-caption text-ink-muted">
+            {t('app.shell_density')}:{' '}
+            <span data-testid="shell" className="font-label text-ink-soft">
+              {density}
+            </span>
+            {claims?.persona ? ` · ${claims.persona}` : ''}
+          </section>
         </div>
       ) : (
         <div className="flex flex-col gap-5 pb-10">
@@ -173,7 +185,7 @@ export default function App() {
             </section>
           </RoleGate>
 
-          <section aria-label="Session" className="px-8 text-caption text-ink-dim">
+          <section aria-label="Session" className="px-8 text-caption text-ink-muted">
             {t('app.shell_density')}:{' '}
             <span data-testid="shell" className="font-label text-ink-soft">
               {density}
