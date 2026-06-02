@@ -8,6 +8,7 @@ import {
   Skeleton,
   StatBlock,
   Tag,
+  TechValue,
   cx,
 } from '@redex/ui';
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -284,18 +285,20 @@ export function HomeScreen() {
   // ── The spotlight (focused next action) panel ──────────────────────────────
   const spotlightPanel = spotlight ? (
     <div className="flex flex-col gap-4">
-      <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+      <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
         {spotlightKind === 'resume'
           ? tt('home.continue.title', 'Continue learning')
           : started
             ? tt('home.recommended.title', 'Recommended next')
             : tt('home.get_started', 'Get started')}
       </span>
-      <div className="flex flex-col gap-1">
-        <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+      <div className="flex flex-col gap-1.5">
+        <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
           {spotlight.code}
         </span>
-        <h2 className="text-h2 font-bold tracking-tighttitle text-white">{spotlight.title}</h2>
+        <h2 className="font-display text-title font-bold tracking-tighttitle text-ink-strong">
+          {spotlight.title}
+        </h2>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <Tag variant="tier">{t(`catalog.tier.${spotlight.tier}`)}</Tag>
@@ -334,7 +337,7 @@ export function HomeScreen() {
     </div>
   ) : (
     <div className="flex flex-col gap-4">
-      <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+      <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
         {tt('home.all_caught_up.title', 'All caught up')}
       </span>
       <p className="text-body-lg text-ink-soft">
@@ -369,7 +372,7 @@ export function HomeScreen() {
         <div className="relative grid gap-8 p-7 sm:p-9 lg:grid-cols-[1.1fr_1fr] lg:items-center">
           {/* Greeting (or first-run name capture) */}
           <div className="flex flex-col gap-4">
-            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+            <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
               {tt('home.eyebrow', 'Your dashboard')}
             </span>
 
@@ -379,10 +382,10 @@ export function HomeScreen() {
                 className="flex flex-col gap-3"
                 aria-label="Set your name"
               >
-                <h1 className="text-display font-bold tracking-tighttitle text-white">
+                <h1 className="font-display text-display font-bold tracking-tighttitle text-ink-strong">
                   {tt('home.name_prompt.title', 'What should we call you?')}
                 </h1>
-                <p className="max-w-prose text-body text-ink-muted">
+                <p className="max-w-prose text-lede text-ink-muted">
                   {tt(
                     'home.name_prompt.desc',
                     "We'll use your name to personalize your dashboard and credentials.",
@@ -424,12 +427,12 @@ export function HomeScreen() {
               </form>
             ) : (
               <>
-                <h1 className="text-display font-bold tracking-tighttitle text-white">
+                <h1 className="font-display text-display font-bold tracking-tighttitle text-ink-strong">
                   {started
                     ? tt('home.greeting', 'Welcome back, {{name}}', { name })
                     : tt('home.greeting_new', 'Welcome, {{name}}', { name })}
                 </h1>
-                <p className="max-w-prose text-body-lg text-ink-muted">
+                <p className="max-w-prose text-lede text-ink-muted">
                   {tt('home.subtitle', "Here's where you stand and what to do next.")}
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -459,32 +462,37 @@ export function HomeScreen() {
         className="flex flex-col gap-4"
       >
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* The standing counts read as gold-mono technical values (the v2 .tech
+              treatment, bumped to the stat size) so the numbers carry the bar's feel. */}
           <Card variant="raised" padding="md">
             <StatBlock
               align="start"
-              accent
-              value={buckets.inProgress.length}
+              value={<TechValue className="text-stat">{buckets.inProgress.length}</TechValue>}
               label={tt('home.stat.in_progress', 'In progress')}
             />
           </Card>
           <Card variant="raised" padding="md">
             <StatBlock
               align="start"
-              value={buckets.completed.length}
+              value={<TechValue className="text-stat">{buckets.completed.length}</TechValue>}
               label={tt('home.stat.completed', 'Completed')}
             />
           </Card>
           <Card variant="raised" padding="md">
             <StatBlock
               align="start"
-              value={credentialCount ?? buckets.completed.length}
+              value={
+                <TechValue className="text-stat">
+                  {credentialCount ?? buckets.completed.length}
+                </TechValue>
+              }
               label={tt('home.stat.credentials', 'Credentials')}
             />
           </Card>
           <Card variant="raised" padding="md">
             <StatBlock
               align="start"
-              value={buckets.available.length}
+              value={<TechValue className="text-stat">{buckets.available.length}</TechValue>}
               label={tt('home.stat.available', 'Ready to start')}
             />
           </Card>
@@ -493,13 +501,13 @@ export function HomeScreen() {
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-caption text-ink-muted">
               <span>{tt('home.progress_label', 'Overall progress')}</span>
-              <span className="font-label text-ink-soft">
+              <TechValue className="text-caption">
                 {tt('home.progress_count', '{{done}} of {{total}} · {{pct}}%', {
                   done: buckets.completed.length,
                   total: buckets.total,
                   pct,
                 })}
-              </span>
+              </TechValue>
             </div>
             <ProgressBar
               value={buckets.completed.length / buckets.total}
@@ -511,7 +519,7 @@ export function HomeScreen() {
 
       {/* ── EXPLORE ─────────────────────────────────────────────────────────── */}
       <section aria-label={tt('home.explore.title', 'Explore')} className="flex flex-col gap-3">
-        <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+        <h2 className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
           {tt('home.explore.title', 'Explore')}
         </h2>
         <div className="grid gap-4 sm:grid-cols-3">
@@ -552,11 +560,13 @@ export function HomeScreen() {
                 className="h-full transition-shadow group-hover:shadow-glow-soft"
               >
                 <div className="flex flex-col gap-2">
-                  <span aria-hidden="true" className="text-h2 text-redex-bright">
+                  <span aria-hidden="true" className="text-display leading-none text-redex-bright">
                     {item.glyph}
                   </span>
-                  <h3 className="text-body-lg font-bold text-white">{item.title}</h3>
-                  <p className="text-caption text-ink-muted">{item.desc}</p>
+                  <h3 className="font-display text-subtitle font-bold tracking-tighttitle text-ink-strong">
+                    {item.title}
+                  </h3>
+                  <p className="text-body text-ink-muted">{item.desc}</p>
                 </div>
               </Card>
             </button>

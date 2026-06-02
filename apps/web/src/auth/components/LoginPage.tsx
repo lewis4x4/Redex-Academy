@@ -98,8 +98,11 @@ export function LoginPage() {
           <header className="flex flex-col items-start gap-4">
             <BrandMark />
             <div>
-              <h1 className="text-h1 font-bold tracking-tighttitle">{t('app.title')}</h1>
-              <p className="mt-1 text-body-lg text-ink-muted">{t('app.tagline')}</p>
+              {/* The v2 display heading: Archivo 800 at text-h1 on the off-white ink-strong. */}
+              <h1 className="font-display text-h1 font-bold tracking-tighttitle text-ink-strong">
+                {t('app.title')}
+              </h1>
+              <p className="mt-2 text-lede text-ink-muted">{t('app.tagline')}</p>
             </div>
           </header>
 

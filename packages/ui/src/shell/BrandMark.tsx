@@ -33,11 +33,14 @@ export function BrandMark({
         R
       </span>
       <div className="flex flex-col leading-tight">
-        <span className="text-subtitle font-bold tracking-name">
+        {/* v2 brand wordmark: the Archivo display family (the bar's `.brand b`).
+            ACADEMY uses the brighter brand red that clears WCAG AA on the dark panel. */}
+        <span className="font-display text-subtitle font-label tracking-name">
           REDEX <span className="text-redex-bright">ACADEMY</span>
         </span>
         {showTagline ? (
-          <span className="-mt-0.5 text-eyebrow uppercase tracking-eyebrow text-ink-muted">
+          // ink-muted (not ink-dim) so the 11px tagline clears WCAG AA on the dark panel.
+          <span className="-mt-0.5 font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
             Mastery, not seat-time
           </span>
         ) : null}

@@ -50,7 +50,9 @@ function BadgeCard({
           <span aria-hidden="true">{status.symbol}</span> {status.label}
         </Tag>
         {credential.expiresAt ? (
-          <span className="text-label text-ink-muted">
+          // The date reads in the mono family (the v2 technical treatment) while the
+          // whole "Expires <date>" stays ONE text node so it remains a single match.
+          <span className="font-mono text-label text-ink-muted">
             {t('backpack.expires', 'Expires')} {credential.expiresAt.slice(0, 10)}
           </span>
         ) : null}

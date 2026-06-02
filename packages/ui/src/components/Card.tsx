@@ -59,12 +59,16 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
       {hasHeader ? (
         <div className="mb-3 flex flex-col gap-1">
           {eyebrow != null ? (
-            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+            // v2 eyebrow: mono red-bright, 3px tracking (the bar's `.eyebrow`).
+            <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
               {eyebrow}
             </span>
           ) : null}
           {title != null ? (
-            <h3 className="text-subtitle font-bold tracking-tighttitle text-white">{title}</h3>
+            // v2 card title: the Archivo display heading on the off-white ink-strong.
+            <h3 className="font-display text-subtitle font-bold tracking-tighttitle text-ink-strong">
+              {title}
+            </h3>
           ) : null}
         </div>
       ) : null}

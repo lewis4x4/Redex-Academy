@@ -1,4 +1,14 @@
-import { Button, Card, EmptyState, ErrorState, ScreenHead, Skeleton, Tag, cx } from '@redex/ui';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  ScreenHead,
+  Skeleton,
+  Tag,
+  TechValue,
+  cx,
+} from '@redex/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/useAuth';
@@ -189,10 +199,10 @@ export function CatalogScreen() {
             className="flex flex-col gap-3"
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+              <h2 className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
                 {t(`catalog.tier.${tier}`)}
               </h2>
-              <span className="text-caption text-ink-muted">{(byTier.get(tier) ?? []).length}</span>
+              <TechValue className="text-caption">{(byTier.get(tier) ?? []).length}</TechValue>
               <span className="h-px flex-1 bg-line" aria-hidden="true" />
             </div>
 

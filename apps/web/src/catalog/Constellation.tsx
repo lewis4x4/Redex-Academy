@@ -351,7 +351,7 @@ export function Constellation() {
 
   const lensPanel = (
     <div className="flex flex-col gap-2" role="group" aria-label={t('catalog.filters')}>
-      <span className="text-eyebrow uppercase tracking-eyebrow text-ink-muted">
+      <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
         {t('catalog.domains')}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -390,7 +390,7 @@ export function Constellation() {
   // ── Constellation node-state legend (colorblind-safe: shape + text, per screen). ──
   const legend = (
     <div className="flex flex-col gap-2">
-      <p className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+      <p className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
         {t('catalog.legend_title')}
       </p>
       <ul className="flex flex-col gap-1.5">
