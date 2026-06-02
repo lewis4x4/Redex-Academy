@@ -40,9 +40,6 @@ import {
 import type { GatingState } from './gating';
 import { useAppRoute } from '../navigation';
 
-// Courses whose boss node opens a playable sim (M3 ships AC-203; M4/M5 extend).
-const SIM_COURSES = new Set(['AC-203']);
-
 const DOMAINS: Domain[] = ['FND', 'INT', 'ADC', 'AC', 'VID', 'SEC'];
 
 // Static (Tailwind-JIT-visible) domain → token classes. The literal strings let
@@ -351,7 +348,7 @@ export function Constellation() {
 
   const lensPanel = (
     <div className="flex flex-col gap-2" role="group" aria-label={t('catalog.filters')}>
-      <span className="text-eyebrow uppercase tracking-eyebrow text-ink-muted">
+      <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
         {t('catalog.domains')}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -390,7 +387,7 @@ export function Constellation() {
   // ── Constellation node-state legend (colorblind-safe: shape + text, per screen). ──
   const legend = (
     <div className="flex flex-col gap-2">
-      <p className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+      <p className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
         {t('catalog.legend_title')}
       </p>
       <ul className="flex flex-col gap-1.5">
@@ -819,34 +816,19 @@ export function Constellation() {
                     {t(`catalog.state_hint.${selected.state}`)}
                   </p>
                 )}
-                {/* PRIMARY: open the course at its first lesson once enrolled — the
-                    teaching lesson (with its embedded 2D sims) is the entry; the graded
-                    branching sim follows in the flow at ordinal 2. */}
-                {selected.firstUnitId &&
-                selected.state !== 'locked' &&
-                selected.state !== 'available' ? (
+                {/* Open the course in the course-player — one mastery flow that chains
+                    every unit (lesson → scenario → sim → signoff_prep → KC). The player
+                    resolves the entry unit (first incomplete). Single CTA for ALL courses. */}
+                {selected.state !== 'locked' && selected.state !== 'available' ? (
                   <Button
                     variant="primary"
                     size="sm"
                     data-testid="open-course"
                     onClick={() =>
-                      navigate({ screen: 'lesson', course: null, unit: selected.firstUnitId })
+                      navigate({ screen: 'course-player', course: selected.id, unit: null })
                     }
                   >
                     {t('catalog.open_course')}
-                  </Button>
-                ) : null}
-                {/* SECONDARY: jump straight to the AC-203 branching egress-fail sim. */}
-                {SIM_COURSES.has(selected.code) &&
-                selected.state !== 'locked' &&
-                selected.state !== 'available' ? (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    data-testid="open-sim"
-                    onClick={() => navigate({ screen: 'sim', course: selected.code })}
-                  >
-                    {t('catalog.open_sim')}
                   </Button>
                 ) : null}
               </div>

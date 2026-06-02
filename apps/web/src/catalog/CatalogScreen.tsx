@@ -1,4 +1,14 @@
-import { Button, Card, EmptyState, ErrorState, ScreenHead, Skeleton, Tag, cx } from '@redex/ui';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  ScreenHead,
+  Skeleton,
+  Tag,
+  TechValue,
+  cx,
+} from '@redex/ui';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/useAuth';
@@ -11,9 +21,6 @@ import {
 } from './catalogSource';
 import type { GatingState } from './gating';
 import { useAppRoute } from '../navigation';
-
-// Courses whose boss node opens a playable sim (mirrors Constellation).
-const SIM_COURSES = new Set(['AC-203']);
 
 // Tier display order (foundations → mastery). Any unknown tier sorts last.
 const TIER_ORDER: Tier[] = ['foundations', 'core', 'advanced', 'mastery'];
@@ -67,18 +74,11 @@ export function CatalogScreen() {
 
   const stateLabel = useCallback((s: GatingState) => t(`catalog.state.${s}`), [t]);
 
-  // Open a course's content: PREFER the first lesson (AC-203 now opens its real lesson;
-  // the graded sim follows in the flow); a sim-only course with no lesson → its sim;
-  // otherwise the skill-map (never a dead end).
+  // Open a course in the course-player (one mastery flow chaining every unit). The
+  // player resolves the entry unit (first incomplete) by the course id — NOT the code.
   const openCourse = useCallback(
     (course: CourseNode) => {
-      if (course.firstUnitId) {
-        navigate({ screen: 'lesson', course: null, unit: course.firstUnitId });
-      } else if (SIM_COURSES.has(course.code)) {
-        navigate({ screen: 'sim', course: course.code, unit: null });
-      } else {
-        navigate({ screen: 'constellation', course: null, unit: null });
-      }
+      navigate({ screen: 'course-player', course: course.id, unit: null });
     },
     [navigate],
   );
@@ -189,10 +189,10 @@ export function CatalogScreen() {
             className="flex flex-col gap-3"
           >
             <div className="flex items-center gap-3">
-              <h2 className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+              <h2 className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
                 {t(`catalog.tier.${tier}`)}
               </h2>
-              <span className="text-caption text-ink-muted">{(byTier.get(tier) ?? []).length}</span>
+              <TechValue className="text-caption">{(byTier.get(tier) ?? []).length}</TechValue>
               <span className="h-px flex-1 bg-line" aria-hidden="true" />
             </div>
 

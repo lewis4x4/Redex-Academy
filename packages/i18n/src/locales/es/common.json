@@ -82,6 +82,25 @@
     "next": "Siguiente",
     "continue_course": "Continuar el curso"
   },
+  "course": {
+    "eyebrow": "{{code}} · Salida — puerta crítica",
+    "exit": "Salir del curso",
+    "progress": "Progreso del curso",
+    "progress_count": "{{done}} de {{total}} unidades",
+    "error_title": "No se pudo cargar este curso",
+    "not_found": "Curso no encontrado.",
+    "no_version": "Este curso no tiene una versión publicada.",
+    "unknown_unit": "Unidad no admitida",
+    "sim_pending_verify": "Construcción completa — tu trabajo quedó registrado.",
+    "signoff_prep": {
+      "eyebrow": "Preparación de la firma de campo · Salida crítica",
+      "title": "Lo que revisará tu evaluador",
+      "subtitle": "Esta es la rúbrica exacta. Un solo 0 en cualquier línea de seguridad crítica es un fallo automático, sin excepción.",
+      "critical": "Seguridad crítica",
+      "done": "Estoy listo — continuar",
+      "error": "No se pudo cargar la rúbrica"
+    }
+  },
   "kc": {
     "aria_label": "Comprobación de conocimientos",
     "safety_tag": "Seguridad",

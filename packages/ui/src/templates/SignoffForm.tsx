@@ -56,7 +56,7 @@ export interface SignoffFormProps extends Omit<HTMLAttributes<HTMLFormElement>, 
 const SECTION_GAP = 'flex flex-col gap-4';
 const DIM_BODY = 'flex flex-col gap-4';
 const SCORE_ROW = 'flex flex-col gap-2 border-t border-line pt-4';
-const FIELD_LABEL = 'text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted';
+const FIELD_LABEL = 'font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted';
 
 /**
  * SignoffForm — the evaluator sign-off RUBRIC layout shell (D1; M6 fills behavior).
@@ -101,10 +101,10 @@ export const SignoffForm = forwardRef<HTMLFormElement, SignoffFormProps>(functio
                 grouping is announced to screen readers. M6 fills the body slots. */}
             <fieldset className="m-0 border-0 p-0" data-dimension={key}>
               <legend className="mb-3 flex flex-col gap-1 p-0">
-                <span className="text-eyebrow font-label uppercase tracking-eyebrow text-redex-bright">
+                <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-redex-bright">
                   Dimension
                 </span>
-                <span className="text-subtitle font-bold tracking-tighttitle text-white">
+                <span className="font-display text-subtitle font-bold tracking-tighttitle text-ink-strong">
                   {label}
                 </span>
               </legend>

@@ -8,6 +8,7 @@ import {
   type SignoffDimensionKey,
   Skeleton,
   StatusBadge,
+  TechValue,
 } from '@redex/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -181,15 +182,22 @@ export function SignoffScreen({ onExit }: SignoffScreenProps) {
                   data-line={l.line_item_key}
                   data-critical={l.is_critical_safety || undefined}
                   className={
-                    'flex flex-col gap-2 rounded-control border p-3 ' +
+                    'flex flex-col gap-2.5 rounded-control border p-3.5 ' +
                     (isVetoed ? 'border-veto-edge bg-veto-tint' : 'border-line bg-surface-1')
                   }
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-body text-ink">{l.label}</span>
-                    {l.is_critical_safety ? (
-                      <StatusBadge kind="safety_veto" label={t('signoff.critical_safety')} />
-                    ) : null}
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {/* v2 line-item label: the Archivo display heading on ink-strong. */}
+                      <span className="font-display text-body-lg font-nav text-ink-strong">
+                        {l.label}
+                      </span>
+                      {l.is_critical_safety ? (
+                        <StatusBadge kind="safety_veto" label={t('signoff.critical_safety')} />
+                      ) : null}
+                    </div>
+                    {/* The rubric line key as a gold-mono technical value. */}
+                    <TechValue className="text-caption">{l.line_item_key}</TechValue>
                   </div>
                   <ScoreControl
                     lineKey={l.line_item_key}
@@ -247,7 +255,7 @@ export function SignoffScreen({ onExit }: SignoffScreenProps) {
           <div className="flex flex-col gap-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-1">
-                <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+                <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                   {t('signoff.candidate_label')}
                 </span>
                 <Input
@@ -258,7 +266,7 @@ export function SignoffScreen({ onExit }: SignoffScreenProps) {
                 />
               </label>
               <label className="flex flex-col gap-1">
-                <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+                <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                   {t('signoff.job_label')}
                 </span>
                 <Input
@@ -275,7 +283,7 @@ export function SignoffScreen({ onExit }: SignoffScreenProps) {
         dimensions={dimensions}
         evidence={
           <label className="flex flex-col gap-1">
-            <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+            <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
               {t('signoff.evidence_label')}
             </span>
             <Input
@@ -296,7 +304,7 @@ export function SignoffScreen({ onExit }: SignoffScreenProps) {
                 allScored ? (preview.safetyVeto ? 'safety_veto' : preview.outcome) : 'incomplete'
               }
             >
-              <span className="text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+              <span className="font-mono text-eyebrow uppercase tracking-eyebrow text-ink-muted">
                 {t('signoff.preview_label')}
               </span>
               {!allScored ? (
