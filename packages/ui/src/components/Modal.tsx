@@ -110,7 +110,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       >
         <h2
           id={titleId}
-          className="px-[26px] pt-[26px] pb-3 text-title font-display tracking-tighttitle text-white"
+          className="px-[26px] pt-[26px] pb-3 text-title font-display font-bold tracking-tighttitle text-white"
         >
           {title}
         </h2>

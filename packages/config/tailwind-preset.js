@@ -17,12 +17,16 @@ export default {
           DEFAULT: 'var(--red)',
           bright: 'var(--red-bright)',
           deep: 'var(--red-deep)',
+          dim: 'var(--red-dim)', // v2 faint red wash (bg-redex-dim)
         },
         canvas: 'var(--canvas)',
         panel: { DEFAULT: 'var(--panel)', 2: 'var(--panel-2)' },
-        line: 'var(--line)',
+        // line = the default hairline; line-strong = the v2 brighter hairline token.
+        line: { DEFAULT: 'var(--line)', strong: 'var(--line-strong)' },
         ink: {
           DEFAULT: 'var(--text)',
+          // v2 pure-white keyword emphasis (the .kw highlight); body stays `ink`.
+          strong: 'var(--text-strong)',
           muted: 'var(--muted)',
           dim: 'var(--dim)',
           soft: 'var(--text-soft)',
@@ -30,6 +34,8 @@ export default {
         green: 'var(--green)',
         amber: 'var(--amber)',
         gold: 'var(--gold)',
+        // v2 technical-value accent (warm gold) — bg-tech / text-tech / border-tech.
+        tech: 'var(--tech)',
         // Academy verdict states — always paired with shape + text (never color-only).
         state: {
           pass: 'var(--state-pass)',
@@ -73,6 +79,8 @@ export default {
         'scrim-drawer': 'var(--scrim-drawer)',
       },
       fontFamily: {
+        // v2: display=Archivo (headings), sans=Inter (body), mono=IBM Plex Mono (tech).
+        display: 'var(--font-display)',
         sans: 'var(--font-sans)',
         mono: 'var(--font-mono)',
       },
@@ -80,21 +88,35 @@ export default {
         nav: '600',
         label: '700',
         bold: '800',
-        display: '900',
+        // `black` (900) is the heaviest weight. NOTE: the `display` weight key was renamed
+        // to `black` so `font-display` is free to be the Archivo FONT-FAMILY utility (v2);
+        // display headings that want 900 now compose `font-display font-black`.
+        black: '900',
       },
       fontSize: {
         micro: ['9px', '1.2'],
-        eyebrow: ['10px', '1.4'],
+        // v2 eyebrow: mono 11px, 3px tracking, uppercase (the bar's .eyebrow).
+        eyebrow: ['11px', { lineHeight: '1.4', letterSpacing: '3px' }],
         label: ['11px', '1.4'],
         caption: ['12px', '1.4'],
+        // v2 body: ~15px Inter at the relaxed 1.72 reading line-height.
         body: ['13px', '1.5'],
         'body-lg': ['14px', '1.5'],
+        prose: ['15px', '1.72'], // the v2 reading-measure body size
+        // v2 lede: 18px / 1.55, ink-muted (the standout sentence under the h1).
+        lede: ['18px', '1.55'],
         subtitle: ['16px', '1.4'],
         stat: ['17px', '1.05'],
         title: ['20px', '1.25'],
-        h1: ['26px', '1.2'],
+        // v2 display h1: 40px / 1.04 / -1.1px tracking, paired with font-display (Archivo 800).
+        h1: ['40px', { lineHeight: '1.04', letterSpacing: '-1.1px' }],
         display: ['34px', '1.05'],
-        'display-lg': ['40px', '1.02'],
+        'display-lg': ['44px', { lineHeight: '1.02', letterSpacing: '-1.4px' }],
+      },
+      lineHeight: {
+        display: '1.04', // v2 Archivo display heading
+        lede: '1.55', // v2 lede + .seq desc
+        reading: '1.72', // v2 relaxed reading measure
       },
       letterSpacing: {
         tightmark: '-1px',

@@ -56,10 +56,10 @@ export interface ScoreValueProps extends HTMLAttributes<HTMLDivElement> {
   align?: StatBlockAlign;
 }
 
-// Score-card variant (D1 §5.12): `.sc-val` 30px/900 + `.unit` 14px muted. The
-// closest scale tokens are text-display (font-display = 900) + text-body-lg for
-// the unit. Larger, display-weight presentation of the same value/label pair.
-const SCORE_VALUE = 'inline-flex items-baseline gap-1 font-display text-display';
+// Score-card variant (D1 §5.12): `.sc-val` 30px/heavy + `.unit` 14px muted. Uses the
+// Archivo display family (font-display) at the heaviest loaded weight (font-bold = 800)
+// + text-display for the numeral, text-body-lg for the unit.
+const SCORE_VALUE = 'inline-flex items-baseline gap-1 font-display font-bold text-display';
 
 /**
  * ScoreValue — the larger, display-weight variant of {@link StatBlock} (D1

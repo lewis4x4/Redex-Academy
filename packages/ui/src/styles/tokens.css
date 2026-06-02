@@ -5,28 +5,38 @@
 :root {
   /* Brand */
   --red: #ed1b24;
-  --red-bright: #ff3b43;
+  /* v2 red-soft — the small-text / accent red. Was #ff3b43; #ff5b62 clears AA on
+   * the dark surfaces and matches the locked bar's --red-soft. */
+  --red-bright: #ff5b62;
   --red-deep: #8f0e14;
+  /* v2 red-dim — the faint red wash behind a fail/hot surface (the bar's --red-dim). */
+  --red-dim: #241114;
   --black: #000000;
 
-  /* Surfaces */
+  /* Surfaces (v2 bar: canvas #0a0a0c · panel #131316 · panel-2 #1a1a1f · surface-3 #222229) */
   --canvas: #0a0a0c;
-  --panel: #121216;
-  --panel-2: #17171d;
-  --line: #26262e;
+  --panel: #131316;
+  --panel-2: #1a1a1f;
+  --line: #26262d;
+  /* v2 brighter hairline — index-badge / chip / rail-number stroke (the bar's --border2). */
+  --line-strong: #34343d;
 
-  /* Text */
-  --text: #ffffff;
+  /* Text (v2 bar: OFF-WHITE body, not pure white) */
+  --text: #e9e9ee;
+  /* Pure-white keyword emphasis (the bar's .kw highlight). The body is --text. */
+  --text-strong: #ffffff;
   --muted: #9a9aa6;
-  --dim: #5a5a66;
+  --dim: #65656f;
 
   /* Accent (prototype usage: done=green, warn/gate=amber) */
-  --green: #36d399;
+  --green: #39d98a;
   --amber: #f5a623;
   --gold: #f5c451;
+  /* v2 technical-value accent (warm gold) — every 24V / 0V / NC mono value rides this. */
+  --tech: #ffd9a0;
 
   /* State (academy verdict states — ALWAYS paired with shape + text, never color-only) */
-  --state-pass: #36d399;
+  --state-pass: #39d98a;
   --state-fail: #b3261e;
   --state-veto: #7a1fa2;
   --state-pending: #f5a623;
@@ -34,8 +44,8 @@
   /* Surface literals promoted from the prototype (so components never hardcode them) */
   --surface-hover: #1c1c22; /* nav/chip/secondary-btn hover */
   --surface-1: #16161b; /* backpack-btn, sim-tab, trophy */
-  --surface-2: #1a1a20; /* chip bg, meter track */
-  --surface-3: #15151b; /* choice card */
+  --surface-2: #1a1a1f; /* chip bg, meter track, seq index badge (v2 surface2) */
+  --surface-3: #222229; /* choice card / elevated chip (v2 surface3) */
   --surface-4: #101015; /* scenario detail / callout */
   --surface-5: #0d0d11; /* panel/card gradient end */
   --fill-track: #22222a; /* progress track */
@@ -53,11 +63,15 @@
   --domain-vid: #7fd0a8;
   --domain-sec: #b89fe0;
 
-  /* Type */
+  /* Type — the v2 self-hosted families (@fontsource, loaded in styles/fonts.css).
+   * display = Archivo (headings), sans = Inter (body), mono = IBM Plex Mono (tech). */
+  --font-display:
+    Archivo, 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+    Arial, sans-serif;
   --font-sans:
     Inter, 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
     Arial, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
 
   /* Radius */
   --radius-mark: 8px;

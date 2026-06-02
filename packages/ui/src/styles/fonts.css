@@ -1,0 +1,26 @@
+/* @redex/ui — SELF-HOSTED fonts (offline-first PWA; NO Google Fonts CDN).
+ * The v2 visual bar's three families, bundled via @fontsource so every app
+ * (web + admin) inherits them with no network at runtime — the service worker
+ * precaches the woff2 the build emits. Imported by styles/index.css before the
+ * token + base layers so the --font-* vars below resolve to a loaded face.
+ *
+ * Weights match the locked bar:
+ *   Archivo (display)      600 / 700 / 800
+ *   Inter (body)           400 / 500 / 600
+ *   IBM Plex Mono (tech)   500 / 600
+ * Only these weights are imported (each @fontsource/<weight>.css emits one
+ * @font-face) so the bundle stays lean. */
+
+/* Archivo — display / headings */
+@import '@fontsource/archivo/600.css';
+@import '@fontsource/archivo/700.css';
+@import '@fontsource/archivo/800.css';
+
+/* Inter — body / reading */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+
+/* IBM Plex Mono — technical values, eyebrows, rail numbers */
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';

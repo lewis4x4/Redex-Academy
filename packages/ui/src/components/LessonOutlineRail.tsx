@@ -31,10 +31,15 @@ export interface LessonOutlineRailProps extends Omit<HTMLAttributes<HTMLElement>
 // (CODING_STANDARDS §9 — never color alone). Token classes only; no raw hex.
 type StepState = 'done' | 'active' | 'todo';
 
+// v2 rail badges: a circular mono-number chip per state. done = filled green (dark glyph)
+// + ✓; active/now = filled red (white number); todo = outlined ink-3 number. The number
+// + glyph + aria-label carry state alongside the color (never color alone). The todo number
+// uses ink-muted (not ink-3) so the small mono digit clears WCAG AA on the panel; the
+// outline border is the quiet ink-3/line-strong (decorative, no contrast floor).
 const DOT_STYLE: Record<StepState, string> = {
   done: 'bg-green text-canvas border-green',
   active: 'bg-redex text-white border-redex',
-  todo: 'bg-transparent text-ink-muted border-line',
+  todo: 'bg-transparent text-ink-muted border-line-strong',
 };
 
 const STATE_WORD: Record<StepState, string> = {
@@ -74,7 +79,7 @@ export const LessonOutlineRail = forwardRef<HTMLElement, LessonOutlineRailProps>
         className={cx('rounded-card border border-line bg-panel p-2', className)}
         {...rest}
       >
-        <p className="px-2 pb-1 pt-1 text-eyebrow font-label uppercase tracking-eyebrow text-ink-muted">
+        <p className="px-2 pb-1 pt-1 font-mono text-label uppercase tracking-label text-ink-muted">
           {heading ?? ariaLabel}
         </p>
         <ol className="m-0 flex list-none flex-col gap-1 p-0">
@@ -103,14 +108,14 @@ export const LessonOutlineRail = forwardRef<HTMLElement, LessonOutlineRailProps>
                   <span
                     aria-hidden="true"
                     className={cx(
-                      'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-pill border text-label font-bold leading-none',
+                      'mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-pill border-[1.5px] font-mono text-label font-nav leading-none',
                       DOT_STYLE[state],
                     )}
                   >
                     {glyph}
                   </span>
                   <span className="flex min-w-0 flex-col">
-                    <span className="text-body font-nav">
+                    <span className="text-body-lg font-nav">
                       <span className="sr-only">{`Step ${i + 1}, ${STATE_WORD[state]}: `}</span>
                       {step.label}
                     </span>

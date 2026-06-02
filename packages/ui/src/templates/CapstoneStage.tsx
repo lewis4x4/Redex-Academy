@@ -96,11 +96,11 @@ export const CapstoneStage = forwardRef<HTMLDivElement, CapstoneStageProps>(func
             </span>
           ) : null}
           {title != null ? (
-            <h1 className="rdx-title-glow text-display-lg font-display tracking-tighttitle text-white">
+            <h1 className="rdx-title-glow text-display-lg font-display font-bold tracking-tighttitle text-white">
               {title}
             </h1>
           ) : (
-            <h1 className="text-display-lg font-display tracking-tighttitle text-ink-muted">
+            <h1 className="text-display-lg font-display font-bold tracking-tighttitle text-ink-muted">
               Capstone title
             </h1>
           )}
