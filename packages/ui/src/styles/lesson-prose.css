@@ -47,16 +47,23 @@
 }
 .rdx-lesson-prose ol > li {
   counter-increment: rdx-seq;
-  display: flex;
-  gap: 16px;
-  padding: 16px 0;
+  /* The number badge is the ONLY column — absolutely placed in the left gutter — so the
+   * step prose flows beside it as ONE normal, wrapping sentence. Its **strong** lead, body
+   * text, and inline mono <TechValue>s flow in place (colored where they sit), capped to the
+   * reading measure. (A `display:flex` li would make EACH inline run a flex item and, with
+   * the default nowrap, force the whole sentence onto one row that overflows the measure and
+   * gaps the values into columns — the "follow the power" fragmentation. Normal flow fixes it.) */
+  position: relative;
+  padding: 16px 0 16px 42px;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   line-height: 1.55;
 }
 .rdx-lesson-prose ol > li::before {
   content: counter(rdx-seq);
-  flex: none;
+  position: absolute;
+  left: 0;
+  top: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,8 +85,17 @@
 /* The authored **bold** lead of each step is the v2 `.seq .lab` — given the Archivo
  * display family + the pure-white keyword ink, so the lead reads as the step label that
  * flows into its description (the author wrote "**label** — desc" as one sentence; the
- * label is lifted typographically, not restructured). Presentation only — text unchanged. */
-.rdx-lesson-prose ol > li > strong:first-child {
+ * label is lifted typographically, not restructured). Presentation only — text unchanged.
+ *
+ * Both forms are matched so the label holds regardless of authoring style: a TIGHT list
+ * puts the lead `strong` directly in the <li>; a LOOSE list (blank lines between items)
+ * wraps each item's content in a <p>, so the lead is `li > p:first-child > strong`. A
+ * bold lead is an ENHANCEMENT, not a requirement — a plain (non-bold) ordered item still
+ * renders as a clean numbered step (badge + flowing prose), just without the lifted label.
+ * Badge alignment assumes the li's 16px / 1.55 first line (pinned below); a density mode
+ * changing that must keep `::before { top }` in step. */
+.rdx-lesson-prose ol > li > strong:first-child,
+.rdx-lesson-prose ol > li > p:first-child > strong:first-child {
   font-family: var(--font-display);
   font-weight: 600;
   color: var(--text-strong);
